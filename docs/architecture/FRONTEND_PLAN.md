@@ -11,20 +11,22 @@
 
 - Target user: Personal creators who want quick, private, low-friction image and short-video edits.
 - Product posture: A focused editing workspace, not a landing page and not a full professional suite.
-- Visual density: Medium-dense desktop tool UI with clear scan paths, compact controls, and stable panel dimensions.
+- Product audience fit: C-end creators should feel guided through a clear media flow instead of dropped into a dense professional dashboard.
+- Visual density: Progressive-disclosure consumer studio UI. Keep the main path spacious and clear, then reveal precise controls only after an asset is selected.
 - First-screen signal: The upload/media workspace is the first screen. Do not show a marketing hero before the tool.
 - Accessibility expectations: Keyboard-accessible upload, media switching, tool buttons, tabs, dialogs, sliders, and export actions; visible focus states; accessible names for icon buttons; no text trapped inside too-small controls.
+- Language expectations: The web app supports English and Simplified Chinese in v1. It should choose the initial language from `navigator.language` when possible and provide an in-app language switcher that does not require reload.
 
 ## Page Map
 
-| Route or screen     | Goal                                                 | Primary action                                                                              | Data needed                                                                                | States                                                                                     |
-| ------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| `/` Media Workspace | Upload, preview, edit, and export selected media     | Add media, select asset, edit, export                                                       | Local files, object URLs, media metadata, edit states, export jobs                         | Empty, drag-over, importing, selected, unsupported, processing, failed, exported           |
-| Media Library Panel | Manage uploaded images/videos in the current session | Select previous/next asset, filter by type, remove asset                                    | MediaAsset list, selected asset id, filter mode                                            | Empty, populated, filtered-empty, metadata-loading, item-error                             |
-| Image Editor Panel  | Apply image-specific operations                      | Crop, rotate, flip, resize, adjust, annotate, watermark, remove background, undo/redo/reset | ImageEditState, operation history, crop preset, annotation objects, background-removal job | Clean, dirty, comparing, background-loading, background-processing, failed, export-ready   |
-| Video Editor Panel  | Apply single-video operations                        | Set trim range, adjust speed, add subtitle cue, export                                      | VideoEditState, duration, current time, thumbnail frames, subtitle cues, export settings   | Metadata-loading, ready, invalid-range, subtitle-editing, processing, failed, export-ready |
-| Export Panel        | Configure and run export for current asset           | Choose output format/quality and download result                                            | Selected asset, edit state, export settings, ExportJob                                     | Disabled, ready, loading-engine, processing, completed, canceled, failed                   |
-| Processing Feedback | Keep long-running work understandable                | Cancel, retry, inspect failure                                                              | ExportJob or background-removal job status                                                 | Queued, loading, progress, canceling, failed, completed                                    |
+| Route or screen     | Goal                                                                            | Primary action                                                                              | Data needed                                                                                | States                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `/` Media Workspace | Upload, preview, edit, and export selected media through a guided consumer flow | Add media, select asset, edit, export                                                       | Local files, object URLs, media metadata, edit states, export jobs, active language        | Empty, drag-over, importing, selected, unsupported, editing, processing, failed, exported  |
+| Media Library Panel | Manage uploaded images/videos in the current session                            | Select previous/next asset, filter by type, remove asset                                    | MediaAsset list, selected asset id, filter mode                                            | Empty, populated, filtered-empty, metadata-loading, item-error                             |
+| Image Editor Panel  | Apply image-specific operations                                                 | Crop, rotate, flip, resize, adjust, annotate, watermark, remove background, undo/redo/reset | ImageEditState, operation history, crop preset, annotation objects, background-removal job | Clean, dirty, comparing, background-loading, background-processing, failed, export-ready   |
+| Video Editor Panel  | Apply single-video operations                                                   | Set trim range, adjust speed, add subtitle cue, export                                      | VideoEditState, duration, current time, thumbnail frames, subtitle cues, export settings   | Metadata-loading, ready, invalid-range, subtitle-editing, processing, failed, export-ready |
+| Export Panel        | Configure and run export for current asset                                      | Choose output format/quality and download result                                            | Selected asset, edit state, export settings, ExportJob                                     | Disabled, ready, loading-engine, processing, completed, canceled, failed                   |
+| Processing Feedback | Keep long-running work understandable                                           | Cancel, retry, inspect failure                                                              | ExportJob or background-removal job status                                                 | Queued, loading, progress, canceling, failed, completed                                    |
 
 ## First MVP Page
 
@@ -44,6 +46,16 @@
   - Image background-removal loading/processing/failed states.
   - Video metadata-loading, invalid trim range, subtitle editing, and processing states.
   - Export disabled, ready, processing, completed, canceled, and failed states.
+- Interaction model:
+  - Use a clear guided flow rather than a traditional dense workstation: Import, Edit, Export.
+  - The primary action at each step should be visually obvious and reachable without scanning multiple panels.
+  - Advanced controls should be grouped into short sections with visible labels and helper copy.
+  - Mobile should show the same flow as stacked steps instead of a cramped desktop panel.
+- Localization:
+  - All user-facing UI strings in the first MVP screen should come from an English/Chinese message dictionary.
+  - Initial language should be detected from the browser language with English fallback.
+  - Manual language switching should be available from the top toolbar.
+  - Export filenames may remain ASCII-safe for now, but visible labels and status messages should localize.
 - Data/API/mock behavior:
   - Data source is browser-local `File` objects, object URLs, derived metadata, and in-memory/session draft state.
   - No backend API in v1.
@@ -93,9 +105,9 @@
   - `/`: Media Workspace.
   - No additional v1 route unless a later source-of-truth update adds settings or help screens.
 - Shared layout:
-  - Desktop: three-region tool layout: left media library, center preview stage, right editor/export panel.
-  - Tablet: media library collapses into a drawer; editor panel remains visible or tabbed below preview.
-  - Mobile: segmented workflow tabs: Library, Preview, Edit, Export.
+  - Desktop: consumer studio layout with a top app bar, guided step strip, media tray, large preview stage, and one current task panel.
+  - Tablet: media tray becomes horizontal or collapsible; task panel moves below or beside preview based on width.
+  - Mobile: stacked guided steps with Preview first after import, then Edit and Export controls; avoid forcing a dense four-panel dashboard into one viewport.
 - Data fetching pattern:
   - No server fetching for user media in v1.
   - Local files enter through file input or drag/drop.
@@ -121,6 +133,7 @@
 
 - UI library: shadcn/ui components built on Radix primitives and Tailwind CSS.
 - Icon library: lucide-react, imported icon-by-icon for tool buttons.
+- Style direction: Refined consumer creation studio. Professional and calm, but more approachable than an admin tool. Use clear step hierarchy, large preview, concise helper copy, and polished action states.
 - Color tokens:
   - Background: neutral near-white and neutral dark variants for preview comfort.
   - Primary action: clear blue/cyan accent.
@@ -155,6 +168,8 @@
   - Use sliders or number inputs for numeric values.
   - Use segmented controls/tabs for mode switches.
   - Use menus/selects for output format and quality options.
+  - Use text labels beside unfamiliar icons for consumer-facing clarity.
+  - Show visible status for export preparation and other asynchronous work.
 
 ## Desktop Workspace Layout
 
@@ -198,14 +213,14 @@
 
 ## Implementation Order
 
-1. First MVP page shell: `/` workspace layout, upload dropzone, media library, preview placeholder, editor/export panel placeholders.
+1. First MVP page shell: `/` guided studio layout, upload dropzone, media tray, preview, current task panel, and language switcher.
 2. Media model and selection: local file import, metadata extraction, thumbnails, previous/next navigation, type filter, empty/error states.
-3. Image core: preview, crop/rotate/flip/resize/adjust, undo/redo/reset, original comparison, image export.
-4. Image annotations: text, brush, rectangle, arrow, watermark controls.
-5. Image background removal: local model loading, processing state, result preview, failure handling.
-6. Video core: video preview, metadata, trim start/end controls, speed controls, manual subtitle cue editor.
-7. Video export: ffmpeg.wasm Worker path, progress, cancel/retry where feasible, output download.
-8. Browser verification: responsive layout, keyboard shortcuts, no media upload network path, smoke export flows.
+3. Image core: preview, crop/rotate/flip/resize/adjust, undo/redo/reset, original comparison, watermark text, image export.
+4. Browser/i18n verification: English and Chinese UI, browser-language default, manual switching, upload/edit/export smoke, no media upload network path.
+5. Image annotations: brush, rectangle, arrow, richer watermark controls.
+6. Image background removal: local model loading, processing state, result preview, failure handling.
+7. Video core: video preview, metadata, trim start/end controls, speed controls, manual subtitle cue editor.
+8. Video export: ffmpeg.wasm Worker path, progress, cancel/retry where feasible, output download.
 
 ## Change Rule
 
