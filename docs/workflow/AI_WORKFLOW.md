@@ -41,15 +41,15 @@
 
 ## Evidence By Work Type
 
-| Work type | Evidence |
-| --- | --- |
-| Docs | Changed file paths, summary of decisions, readiness audit if applicable |
-| Frontend | Typecheck/lint/test/build output when scripts exist, browser verification, responsive screenshots or interaction notes |
-| Media processing | Unit tests for command/settings logic, browser evidence for preview/export/progress/failure, Worker boundary evidence |
-| Backend/API | Updated `BACKEND_SPEC.md`, tests, health check/API sample if a backend is later approved |
-| Database/persistence | Updated `DATABASE_DESIGN.md`, schema/storage design, rollback/retention note, privacy evidence |
-| Security/privacy | Risk table, affected files, normal and forbidden path verification, network/storage inspection |
-| Deployment | Build output, deployment URL or preview evidence, header/env verification, rollback path |
+| Work type            | Evidence                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Docs                 | Changed file paths, summary of decisions, readiness audit if applicable                                                |
+| Frontend             | Typecheck/lint/test/build output when scripts exist, browser verification, responsive screenshots or interaction notes |
+| Media processing     | Unit tests for command/settings logic, browser evidence for preview/export/progress/failure, Worker boundary evidence  |
+| Backend/API          | Updated `BACKEND_SPEC.md`, tests, health check/API sample if a backend is later approved                               |
+| Database/persistence | Updated `DATABASE_DESIGN.md`, schema/storage design, rollback/retention note, privacy evidence                         |
+| Security/privacy     | Risk table, affected files, normal and forbidden path verification, network/storage inspection                         |
+| Deployment           | Build output, deployment URL or preview evidence, header/env verification, rollback path                               |
 
 When implementation changes design or contracts, docs evidence must come before code evidence.
 

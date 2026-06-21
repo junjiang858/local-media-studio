@@ -15,20 +15,20 @@ This baseline defines the engineering rules for the first Product MVP: a local-f
 
 These scripts are the intended root `package.json` contract once scaffolding begins. Package names may be adjusted during scaffolding, but the script names and quality-gate meaning should remain stable.
 
-| Script | Command | Required now | Notes |
-| --- | --- | --- | --- |
-| `dev` | `pnpm --filter @local-media-toolbox/web dev` | Yes, when app scaffold exists | Starts the Vite dev server for the web app. |
-| `build` | `pnpm --filter @local-media-toolbox/web build` | Yes, when app scaffold exists | Produces a production static build. |
-| `typecheck` | `pnpm --filter @local-media-toolbox/web typecheck && pnpm --filter @local-media-toolbox/shared typecheck && pnpm --filter @local-media-toolbox/media-core typecheck` | Yes, when packages exist | TypeScript must pass for app and shared/media packages. |
-| `lint` | `pnpm --filter @local-media-toolbox/web lint && pnpm --filter @local-media-toolbox/shared lint && pnpm --filter @local-media-toolbox/media-core lint` | Yes, when packages exist | ESLint must cover app, workers, and shared packages. |
-| `format:check` | `prettier . --check` | Yes, when tooling exists | Checks Markdown, JSON, CSS, TS/TSX, and config files. |
-| `format` | `prettier . --write` | Yes, when tooling exists | Developer convenience; not a substitute for `format:check` in CI. |
-| `test` | `pnpm --filter @local-media-toolbox/web test && pnpm --filter @local-media-toolbox/shared test && pnpm --filter @local-media-toolbox/media-core test` | Yes, when testable code exists | Runs unit/component tests through Vitest. |
-| `test:watch` | `pnpm --filter @local-media-toolbox/web test:watch` | Later | Local development convenience. |
-| `test:e2e` | `pnpm --filter @local-media-toolbox/web test:e2e` | Yes, after first UI workflow exists | Runs Playwright browser tests with small media fixtures. |
-| `check` | `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build` | Yes, when scaffold exists | Minimal local and CI quality gate. |
-| `check:e2e` | `pnpm check && pnpm test:e2e` | Later | Full UI workflow gate after first slice exists. |
-| `clean` | `pnpm --filter @local-media-toolbox/web clean && pnpm --filter @local-media-toolbox/shared clean && pnpm --filter @local-media-toolbox/media-core clean` | Later | Removes generated build/test artifacts where useful. |
+| Script         | Command                                                                                                                                                              | Required now                        | Notes                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------- |
+| `dev`          | `pnpm --filter @local-media-toolbox/web dev`                                                                                                                         | Yes, when app scaffold exists       | Starts the Vite dev server for the web app.                       |
+| `build`        | `pnpm --filter @local-media-toolbox/web build`                                                                                                                       | Yes, when app scaffold exists       | Produces a production static build.                               |
+| `typecheck`    | `pnpm --filter @local-media-toolbox/web typecheck && pnpm --filter @local-media-toolbox/shared typecheck && pnpm --filter @local-media-toolbox/media-core typecheck` | Yes, when packages exist            | TypeScript must pass for app and shared/media packages.           |
+| `lint`         | `pnpm --filter @local-media-toolbox/web lint && pnpm --filter @local-media-toolbox/shared lint && pnpm --filter @local-media-toolbox/media-core lint`                | Yes, when packages exist            | ESLint must cover app, workers, and shared packages.              |
+| `format:check` | `prettier . --check`                                                                                                                                                 | Yes, when tooling exists            | Checks Markdown, JSON, CSS, TS/TSX, and config files.             |
+| `format`       | `prettier . --write`                                                                                                                                                 | Yes, when tooling exists            | Developer convenience; not a substitute for `format:check` in CI. |
+| `test`         | `pnpm --filter @local-media-toolbox/web test && pnpm --filter @local-media-toolbox/shared test && pnpm --filter @local-media-toolbox/media-core test`                | Yes, when testable code exists      | Runs unit/component tests through Vitest.                         |
+| `test:watch`   | `pnpm --filter @local-media-toolbox/web test:watch`                                                                                                                  | Later                               | Local development convenience.                                    |
+| `test:e2e`     | `pnpm --filter @local-media-toolbox/web test:e2e`                                                                                                                    | Yes, after first UI workflow exists | Runs Playwright browser tests with small media fixtures.          |
+| `check`        | `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build`                                                                                        | Yes, when scaffold exists           | Minimal local and CI quality gate.                                |
+| `check:e2e`    | `pnpm check && pnpm test:e2e`                                                                                                                                        | Later                               | Full UI workflow gate after first slice exists.                   |
+| `clean`        | `pnpm --filter @local-media-toolbox/web clean && pnpm --filter @local-media-toolbox/shared clean && pnpm --filter @local-media-toolbox/media-core clean`             | Later                               | Removes generated build/test artifacts where useful.              |
 
 ## Code Quality
 
@@ -93,13 +93,13 @@ Planned implementation layout:
 
 ## Testing Layers
 
-| Layer | Tool | Covers | Required now |
-| --- | --- | --- | --- |
-| Unit | Vitest | Zod schemas, subtitle cue validation, time-range math, export setting validation, ffmpeg command builders, image operation reducers | Yes, once code exists |
-| Component | React Testing Library + Vitest | Upload controls, media library list, toolbar states, export panel validation, dialogs, progress/error states | Yes, once UI exists |
-| Browser/e2e | Playwright | Upload fixture media, switch assets, image edit/export smoke, video trim/speed/subtitle/export smoke, unsupported file messaging | Yes, after first UI workflow exists |
-| Security regression | Vitest + Playwright | No media upload/network calls in v1, unsupported formats, large-file warnings, worker failure handling, no raw media persistence beyond documented behavior | Yes, after relevant code exists |
-| Visual/canvas sanity | Playwright screenshots and targeted canvas checks | Nonblank previews, visible crop/annotation/watermark changes, export panel states | Yes, for implemented visual workflows |
+| Layer                | Tool                                              | Covers                                                                                                                                                      | Required now                          |
+| -------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Unit                 | Vitest                                            | Zod schemas, subtitle cue validation, time-range math, export setting validation, ffmpeg command builders, image operation reducers                         | Yes, once code exists                 |
+| Component            | React Testing Library + Vitest                    | Upload controls, media library list, toolbar states, export panel validation, dialogs, progress/error states                                                | Yes, once UI exists                   |
+| Browser/e2e          | Playwright                                        | Upload fixture media, switch assets, image edit/export smoke, video trim/speed/subtitle/export smoke, unsupported file messaging                            | Yes, after first UI workflow exists   |
+| Security regression  | Vitest + Playwright                               | No media upload/network calls in v1, unsupported formats, large-file warnings, worker failure handling, no raw media persistence beyond documented behavior | Yes, after relevant code exists       |
+| Visual/canvas sanity | Playwright screenshots and targeted canvas checks | Nonblank previews, visible crop/annotation/watermark changes, export panel states                                                                           | Yes, for implemented visual workflows |
 
 ## Test Fixtures
 

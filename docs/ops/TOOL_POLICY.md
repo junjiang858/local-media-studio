@@ -21,15 +21,15 @@ The AI agent may do these without extra confirmation during normal project work:
 
 ## Project Open
 
-| Tool | Purpose | Allowed | Forbidden | Evidence |
-| --- | --- | --- | --- | --- |
-| Local shell | Engineering commands | `rg`, `find`, `sed`, package scripts, test/build commands, local dev server | Destructive filesystem operations without confirmation | Command summary and relevant output |
-| apply_patch | Project file edits | Source docs and implementation edits within approved scope | Editing source-of-truth docs without consent | Changed file paths and summary |
-| pnpm | Package manager and scripts | Install documented dependencies after implementation approval, run scripts | Installing undocumented major dependencies or changing package manager | `pnpm-lock.yaml`, scripts, command output |
-| Local browser/Playwright | UI and privacy verification | Test local app, screenshots, upload fixture media, inspect network/storage | Uploading private user media or logging into unrelated accounts | Browser notes, screenshots, test output |
-| Web search/docs | Current technical facts | Official docs, GitHub repos, package registries, security/license checks | Treating stale/unofficial sources as final for critical decisions | Links and decision summary |
-| Vercel/static hosting tools | Preview/static deploy after deployment approval | Preview deploy, inspect headers/logs | Production deploy, rollback, DNS, billing without confirmation | Preview URL, build logs, header checks |
-| Git | Version safety | `git status`, `git diff`, `git init` after confirmation, commits after confirmation | `reset --hard`, force push, branch deletion, checkout reverting user work without confirmation | Status/diff summary and commit hash when applicable |
+| Tool                        | Purpose                                         | Allowed                                                                             | Forbidden                                                                                      | Evidence                                            |
+| --------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Local shell                 | Engineering commands                            | `rg`, `find`, `sed`, package scripts, test/build commands, local dev server         | Destructive filesystem operations without confirmation                                         | Command summary and relevant output                 |
+| apply_patch                 | Project file edits                              | Source docs and implementation edits within approved scope                          | Editing source-of-truth docs without consent                                                   | Changed file paths and summary                      |
+| pnpm                        | Package manager and scripts                     | Install documented dependencies after implementation approval, run scripts          | Installing undocumented major dependencies or changing package manager                         | `pnpm-lock.yaml`, scripts, command output           |
+| Local browser/Playwright    | UI and privacy verification                     | Test local app, screenshots, upload fixture media, inspect network/storage          | Uploading private user media or logging into unrelated accounts                                | Browser notes, screenshots, test output             |
+| Web search/docs             | Current technical facts                         | Official docs, GitHub repos, package registries, security/license checks            | Treating stale/unofficial sources as final for critical decisions                              | Links and decision summary                          |
+| Vercel/static hosting tools | Preview/static deploy after deployment approval | Preview deploy, inspect headers/logs                                                | Production deploy, rollback, DNS, billing without confirmation                                 | Preview URL, build logs, header checks              |
+| Git                         | Version safety                                  | `git status`, `git diff`, `git init` after confirmation, commits after confirmation | `reset --hard`, force push, branch deletion, checkout reverting user work without confirmation | Status/diff summary and commit hash when applicable |
 
 ## Must Confirm First
 

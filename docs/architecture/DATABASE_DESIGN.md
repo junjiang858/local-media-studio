@@ -17,26 +17,26 @@ The product is a local-first single-user browser tool. Uploaded media stays in t
 
 These are frontend/domain objects, not database tables in v1.
 
-| Object | Purpose | Owner |
-| --- | --- | --- |
-| MediaAsset | Represents one uploaded image or video plus derived metadata and local object URL | Local browser session |
-| MediaLibrary | Tracks current session assets, selected asset, filter mode, and ordering | Local browser session |
-| ImageEditState | Stores crop, rotation, flip, resize, adjustments, annotations, watermark, background-removal result state, and undo/redo history | Local browser session |
-| VideoEditState | Stores trim range, speed, manual subtitle cues, thumbnail metadata, and export options | Local browser session |
-| SubtitleCue | Represents a manually authored subtitle segment with start time, end time, and text | Local browser session |
-| ExportJob | Tracks local processing job status, progress, cancellation, retry, result object URL, and failure reason | Local browser session |
-| LocalDraft | Stores recoverable lightweight draft metadata/edit operations when implemented | Browser storage, if explicitly enabled |
+| Object         | Purpose                                                                                                                          | Owner                                  |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| MediaAsset     | Represents one uploaded image or video plus derived metadata and local object URL                                                | Local browser session                  |
+| MediaLibrary   | Tracks current session assets, selected asset, filter mode, and ordering                                                         | Local browser session                  |
+| ImageEditState | Stores crop, rotation, flip, resize, adjustments, annotations, watermark, background-removal result state, and undo/redo history | Local browser session                  |
+| VideoEditState | Stores trim range, speed, manual subtitle cues, thumbnail metadata, and export options                                           | Local browser session                  |
+| SubtitleCue    | Represents a manually authored subtitle segment with start time, end time, and text                                              | Local browser session                  |
+| ExportJob      | Tracks local processing job status, progress, cancellation, retry, result object URL, and failure reason                         | Local browser session                  |
+| LocalDraft     | Stores recoverable lightweight draft metadata/edit operations when implemented                                                   | Browser storage, if explicitly enabled |
 
 ## Persistence Boundary
 
-| Data category | v1 storage decision | Allowed content | Forbidden content |
-| --- | --- | --- | --- |
-| Uploaded raw media files | In-memory browser `File` references and object URLs only | User-selected file references for the active session | Silent long-term raw media storage in IndexedDB, OPFS, localStorage, or remote services |
-| Media metadata | In-memory; optional lightweight browser draft | File name, MIME type, dimensions, duration, size, last modified timestamp | Full local filesystem paths or private folder structure |
-| Edit operations | In-memory; optional lightweight browser draft | Crop rectangles, rotation angle, flip flags, adjustment values, annotation objects, subtitle cue timing/text | Embedded raw media bytes unless explicitly approved later |
-| Generated previews/results | In-memory object URLs; user-initiated download | Temporary preview blobs and export result blobs | Automatic cloud upload or hidden persistent archive |
-| Background-removal model/cache | Browser asset/model cache where the library/runtime requires it | Model/application assets, not user media | Persisted source images or masks beyond documented session behavior |
-| Analytics or telemetry | Not allowed in v1 | None | File names, media content, subtitles, local paths, derived image/video content |
+| Data category                  | v1 storage decision                                             | Allowed content                                                                                              | Forbidden content                                                                       |
+| ------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Uploaded raw media files       | In-memory browser `File` references and object URLs only        | User-selected file references for the active session                                                         | Silent long-term raw media storage in IndexedDB, OPFS, localStorage, or remote services |
+| Media metadata                 | In-memory; optional lightweight browser draft                   | File name, MIME type, dimensions, duration, size, last modified timestamp                                    | Full local filesystem paths or private folder structure                                 |
+| Edit operations                | In-memory; optional lightweight browser draft                   | Crop rectangles, rotation angle, flip flags, adjustment values, annotation objects, subtitle cue timing/text | Embedded raw media bytes unless explicitly approved later                               |
+| Generated previews/results     | In-memory object URLs; user-initiated download                  | Temporary preview blobs and export result blobs                                                              | Automatic cloud upload or hidden persistent archive                                     |
+| Background-removal model/cache | Browser asset/model cache where the library/runtime requires it | Model/application assets, not user media                                                                     | Persisted source images or masks beyond documented session behavior                     |
+| Analytics or telemetry         | Not allowed in v1                                               | None                                                                                                         | File names, media content, subtitles, local paths, derived image/video content          |
 
 ## Tables
 
@@ -44,34 +44,34 @@ No database tables exist in v1.
 
 ### Not Applicable: media_assets
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| id | Not applicable | no | n/a | Use in-memory client-generated IDs only; no persisted table primary key. |
+| Field | Type           | Required | Default | Notes                                                                    |
+| ----- | -------------- | -------- | ------- | ------------------------------------------------------------------------ |
+| id    | Not applicable | no       | n/a     | Use in-memory client-generated IDs only; no persisted table primary key. |
 
 ### Not Applicable: edit_projects
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| id | Not applicable | no | n/a | Full project persistence is deferred. |
+| Field | Type           | Required | Default | Notes                                 |
+| ----- | -------------- | -------- | ------- | ------------------------------------- |
+| id    | Not applicable | no       | n/a     | Full project persistence is deferred. |
 
 ### Not Applicable: export_jobs
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| id | Not applicable | no | n/a | Export jobs are local runtime state, not persisted database records. |
+| Field | Type           | Required | Default | Notes                                                                |
+| ----- | -------------- | -------- | ------- | -------------------------------------------------------------------- |
+| id    | Not applicable | no       | n/a     | Export jobs are local runtime state, not persisted database records. |
 
 ## Relationships
 
 These relationships are runtime state relationships, not database foreign keys in v1.
 
-| From | To | Type | Reason |
-| --- | --- | --- | --- |
-| MediaLibrary | MediaAsset | One-to-many runtime collection | A session can contain multiple uploaded assets. |
-| MediaAsset | ImageEditState | One-to-zero-or-one runtime state | Image assets have image-specific edit operations. |
-| MediaAsset | VideoEditState | One-to-zero-or-one runtime state | Video assets have video-specific edit operations. |
-| VideoEditState | SubtitleCue | One-to-many runtime collection | A video can have multiple manual subtitle segments. |
-| MediaAsset | ExportJob | One-to-many runtime history while active | A user may run export more than once during a session. |
-| LocalDraft | MediaAsset/edit states | Snapshot reference | Draft recovery may restore lightweight metadata and operations. |
+| From           | To                     | Type                                     | Reason                                                          |
+| -------------- | ---------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| MediaLibrary   | MediaAsset             | One-to-many runtime collection           | A session can contain multiple uploaded assets.                 |
+| MediaAsset     | ImageEditState         | One-to-zero-or-one runtime state         | Image assets have image-specific edit operations.               |
+| MediaAsset     | VideoEditState         | One-to-zero-or-one runtime state         | Video assets have video-specific edit operations.               |
+| VideoEditState | SubtitleCue            | One-to-many runtime collection           | A video can have multiple manual subtitle segments.             |
+| MediaAsset     | ExportJob              | One-to-many runtime history while active | A user may run export more than once during a session.          |
+| LocalDraft     | MediaAsset/edit states | Snapshot reference                       | Draft recovery may restore lightweight metadata and operations. |
 
 ## Indexes
 
@@ -79,8 +79,8 @@ No database indexes exist in v1.
 
 If a future persistent local store is introduced, indexes should be justified by real lookup needs such as recent draft listing, asset id lookup, or project restore. Do not add indexes speculatively.
 
-| Store or table | Fields | Query reason |
-| --- | --- | --- |
+| Store or table       | Fields         | Query reason                                                |
+| -------------------- | -------------- | ----------------------------------------------------------- |
 | Not applicable in v1 | Not applicable | No server database or persistent indexed collection exists. |
 
 ## Browser Storage Design
@@ -104,14 +104,14 @@ Any deferred storage option requires updating this document before implementatio
 
 ## Lifecycle And Retention
 
-| Data | Created when | Cleared when | Retention rule |
-| --- | --- | --- | --- |
-| File object reference | User selects or drops media | User removes asset, clears workspace, closes session, or browser releases page memory | Session-scoped only in v1 |
-| Object URL | App creates preview/result URL | Asset removed, preview replaced, export result cleared, or page unloads | Must be revoked deliberately |
-| Edit state | User applies operations | User resets asset, removes asset, clears workspace, or draft expires | Runtime state; optional lightweight draft only |
-| Export result blob | Export completes | User downloads/clears result or page unloads | Temporary local result only |
-| Background-removal job state | User starts background removal | Job completes, fails, cancels, or asset clears | Runtime state only |
-| Lightweight draft metadata | App saves recoverable draft | User clears draft, draft becomes stale, or feature disabled | Must not include raw media bytes unless docs are updated |
+| Data                         | Created when                   | Cleared when                                                                          | Retention rule                                           |
+| ---------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| File object reference        | User selects or drops media    | User removes asset, clears workspace, closes session, or browser releases page memory | Session-scoped only in v1                                |
+| Object URL                   | App creates preview/result URL | Asset removed, preview replaced, export result cleared, or page unloads               | Must be revoked deliberately                             |
+| Edit state                   | User applies operations        | User resets asset, removes asset, clears workspace, or draft expires                  | Runtime state; optional lightweight draft only           |
+| Export result blob           | Export completes               | User downloads/clears result or page unloads                                          | Temporary local result only                              |
+| Background-removal job state | User starts background removal | Job completes, fails, cancels, or asset clears                                        | Runtime state only                                       |
+| Lightweight draft metadata   | App saves recoverable draft    | User clears draft, draft becomes stale, or feature disabled                           | Must not include raw media bytes unless docs are updated |
 
 ## Security Notes
 

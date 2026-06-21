@@ -17,14 +17,14 @@
 
 ## Page Map
 
-| Route or screen | Goal | Primary action | Data needed | States |
-| --- | --- | --- | --- | --- |
-| `/` Media Workspace | Upload, preview, edit, and export selected media | Add media, select asset, edit, export | Local files, object URLs, media metadata, edit states, export jobs | Empty, drag-over, importing, selected, unsupported, processing, failed, exported |
-| Media Library Panel | Manage uploaded images/videos in the current session | Select previous/next asset, filter by type, remove asset | MediaAsset list, selected asset id, filter mode | Empty, populated, filtered-empty, metadata-loading, item-error |
-| Image Editor Panel | Apply image-specific operations | Crop, rotate, flip, resize, adjust, annotate, watermark, remove background, undo/redo/reset | ImageEditState, operation history, crop preset, annotation objects, background-removal job | Clean, dirty, comparing, background-loading, background-processing, failed, export-ready |
-| Video Editor Panel | Apply single-video operations | Set trim range, adjust speed, add subtitle cue, export | VideoEditState, duration, current time, thumbnail frames, subtitle cues, export settings | Metadata-loading, ready, invalid-range, subtitle-editing, processing, failed, export-ready |
-| Export Panel | Configure and run export for current asset | Choose output format/quality and download result | Selected asset, edit state, export settings, ExportJob | Disabled, ready, loading-engine, processing, completed, canceled, failed |
-| Processing Feedback | Keep long-running work understandable | Cancel, retry, inspect failure | ExportJob or background-removal job status | Queued, loading, progress, canceling, failed, completed |
+| Route or screen     | Goal                                                 | Primary action                                                                              | Data needed                                                                                | States                                                                                     |
+| ------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `/` Media Workspace | Upload, preview, edit, and export selected media     | Add media, select asset, edit, export                                                       | Local files, object URLs, media metadata, edit states, export jobs                         | Empty, drag-over, importing, selected, unsupported, processing, failed, exported           |
+| Media Library Panel | Manage uploaded images/videos in the current session | Select previous/next asset, filter by type, remove asset                                    | MediaAsset list, selected asset id, filter mode                                            | Empty, populated, filtered-empty, metadata-loading, item-error                             |
+| Image Editor Panel  | Apply image-specific operations                      | Crop, rotate, flip, resize, adjust, annotate, watermark, remove background, undo/redo/reset | ImageEditState, operation history, crop preset, annotation objects, background-removal job | Clean, dirty, comparing, background-loading, background-processing, failed, export-ready   |
+| Video Editor Panel  | Apply single-video operations                        | Set trim range, adjust speed, add subtitle cue, export                                      | VideoEditState, duration, current time, thumbnail frames, subtitle cues, export settings   | Metadata-loading, ready, invalid-range, subtitle-editing, processing, failed, export-ready |
+| Export Panel        | Configure and run export for current asset           | Choose output format/quality and download result                                            | Selected asset, edit state, export settings, ExportJob                                     | Disabled, ready, loading-engine, processing, completed, canceled, failed                   |
+| Processing Feedback | Keep long-running work understandable                | Cancel, retry, inspect failure                                                              | ExportJob or background-removal job status                                                 | Queued, loading, progress, canceling, failed, completed                                    |
 
 ## First MVP Page
 
@@ -59,32 +59,32 @@
 
 ## Component Map
 
-| Component | Purpose | Reuse scope |
-| --- | --- | --- |
-| `AppShell` | Owns full-height workspace layout and responsive panel regions | App-wide |
-| `TopToolbar` | Global upload, undo/redo where applicable, compare, export, and status actions | Workspace |
-| `UploadDropzone` | Drag/drop and file-picker entry | Workspace and empty state |
-| `MediaLibraryPanel` | Shows media list, filters, metadata, selected item, previous/next navigation | Workspace |
-| `MediaAssetCard` | Compact thumbnail, type, name, size, dimensions/duration, error badge | Media library |
-| `PreviewStage` | Hosts selected image/video preview and edit overlay | Workspace |
-| `ImagePreviewCanvas` | Image display, crop preview, comparison, annotation/watermark rendering | Image workflow |
-| `VideoPreviewPlayer` | Video playback, current time, subtitle preview, trim markers | Video workflow |
-| `EditorPanel` | Switches between image/video tool groups based on selected asset type | Workspace |
-| `ImageToolTabs` | Crop, transform, adjust, annotate, watermark, background removal | Image workflow |
-| `VideoToolTabs` | Trim, speed, subtitles, export options | Video workflow |
-| `CropPresetControl` | Social crop presets and custom ratio controls | Image workflow |
-| `AdjustmentControls` | Brightness, contrast, saturation sliders | Image workflow |
-| `AnnotationToolbar` | Text, brush, rectangle, arrow, selection controls | Image workflow |
-| `WatermarkControls` | Text/image watermark placement and opacity controls | Image workflow |
-| `BackgroundRemovalPanel` | Starts local background removal and shows model/job progress | Image workflow |
-| `TrimRangeControl` | Start/end inputs and visual trim range | Video workflow |
-| `SpeedControl` | Speed preset and custom speed input | Video workflow |
-| `SubtitleCueList` | Manual subtitle cue creation, validation, editing, deletion | Video workflow |
-| `ExportPanel` | Output format, quality, resolution/size where feasible, export action | Workspace |
-| `ProcessingJobToast` | Progress, cancel, retry, and failure reason for long-running jobs | App-wide |
-| `EmptyState` | First-run upload prompt and filtered-empty guidance | Workspace |
-| `ErrorState` | Unsupported format, metadata failure, processing failure, export failure | App-wide |
-| `KeyboardShortcutLayer` | Previous/next, play/pause, undo/redo, reset, export shortcuts | Workspace |
+| Component                | Purpose                                                                        | Reuse scope               |
+| ------------------------ | ------------------------------------------------------------------------------ | ------------------------- |
+| `AppShell`               | Owns full-height workspace layout and responsive panel regions                 | App-wide                  |
+| `TopToolbar`             | Global upload, undo/redo where applicable, compare, export, and status actions | Workspace                 |
+| `UploadDropzone`         | Drag/drop and file-picker entry                                                | Workspace and empty state |
+| `MediaLibraryPanel`      | Shows media list, filters, metadata, selected item, previous/next navigation   | Workspace                 |
+| `MediaAssetCard`         | Compact thumbnail, type, name, size, dimensions/duration, error badge          | Media library             |
+| `PreviewStage`           | Hosts selected image/video preview and edit overlay                            | Workspace                 |
+| `ImagePreviewCanvas`     | Image display, crop preview, comparison, annotation/watermark rendering        | Image workflow            |
+| `VideoPreviewPlayer`     | Video playback, current time, subtitle preview, trim markers                   | Video workflow            |
+| `EditorPanel`            | Switches between image/video tool groups based on selected asset type          | Workspace                 |
+| `ImageToolTabs`          | Crop, transform, adjust, annotate, watermark, background removal               | Image workflow            |
+| `VideoToolTabs`          | Trim, speed, subtitles, export options                                         | Video workflow            |
+| `CropPresetControl`      | Social crop presets and custom ratio controls                                  | Image workflow            |
+| `AdjustmentControls`     | Brightness, contrast, saturation sliders                                       | Image workflow            |
+| `AnnotationToolbar`      | Text, brush, rectangle, arrow, selection controls                              | Image workflow            |
+| `WatermarkControls`      | Text/image watermark placement and opacity controls                            | Image workflow            |
+| `BackgroundRemovalPanel` | Starts local background removal and shows model/job progress                   | Image workflow            |
+| `TrimRangeControl`       | Start/end inputs and visual trim range                                         | Video workflow            |
+| `SpeedControl`           | Speed preset and custom speed input                                            | Video workflow            |
+| `SubtitleCueList`        | Manual subtitle cue creation, validation, editing, deletion                    | Video workflow            |
+| `ExportPanel`            | Output format, quality, resolution/size where feasible, export action          | Workspace                 |
+| `ProcessingJobToast`     | Progress, cancel, retry, and failure reason for long-running jobs              | App-wide                  |
+| `EmptyState`             | First-run upload prompt and filtered-empty guidance                            | Workspace                 |
+| `ErrorState`             | Unsupported format, metadata failure, processing failure, export failure       | App-wide                  |
+| `KeyboardShortcutLayer`  | Previous/next, play/pause, undo/redo, reset, export shortcuts                  | Workspace                 |
 
 ## Frontend Architecture
 
@@ -188,13 +188,13 @@
 
 ## State Matrix
 
-| Area | Empty | Loading/processing | Error | Success |
-| --- | --- | --- | --- | --- |
-| Upload | Dropzone invites file selection | Importing files and reading metadata | Some files unsupported or unreadable | Media appears in library |
-| Media library | No assets or filtered-empty | Metadata or thumbnail generating | Asset-level error badge | Selected asset highlighted |
-| Image editor | No image selected | Background removal/model loading/exporting | Operation failed with retry/reset | Preview updates and export enabled |
-| Video editor | No video selected | Metadata loading, thumbnail generating, exporting | Invalid range, unsupported codec, export failed | Preview plays and export enabled |
-| Export | Disabled until valid asset/settings | Progress with cancel when feasible | Failure reason plus retry/reset | Download action/result visible |
+| Area          | Empty                               | Loading/processing                                | Error                                           | Success                            |
+| ------------- | ----------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ---------------------------------- |
+| Upload        | Dropzone invites file selection     | Importing files and reading metadata              | Some files unsupported or unreadable            | Media appears in library           |
+| Media library | No assets or filtered-empty         | Metadata or thumbnail generating                  | Asset-level error badge                         | Selected asset highlighted         |
+| Image editor  | No image selected                   | Background removal/model loading/exporting        | Operation failed with retry/reset               | Preview updates and export enabled |
+| Video editor  | No video selected                   | Metadata loading, thumbnail generating, exporting | Invalid range, unsupported codec, export failed | Preview plays and export enabled   |
+| Export        | Disabled until valid asset/settings | Progress with cancel when feasible                | Failure reason plus retry/reset                 | Download action/result visible     |
 
 ## Implementation Order
 

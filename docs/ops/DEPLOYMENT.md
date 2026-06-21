@@ -15,20 +15,20 @@ Deployment must support static assets for the app, ffmpeg.wasm assets, backgroun
 
 ## Environments
 
-| Environment | Purpose | URL or command | Notes |
-| --- | --- | --- | --- |
-| Local | Development and browser verification | `pnpm dev` after scaffolding | Starts Vite dev server for `apps/web`. |
-| Test | Local automated checks | `pnpm check` and later `pnpm test:e2e` | Uses tiny fixture media only. |
-| Staging | Preview deploy for browser/device checks | Vercel preview or equivalent static preview | Requires approval before external preview deploy. |
-| Production | Public static web app | Vercel production or equivalent static host | Requires explicit production deploy confirmation. |
+| Environment | Purpose                                  | URL or command                              | Notes                                             |
+| ----------- | ---------------------------------------- | ------------------------------------------- | ------------------------------------------------- |
+| Local       | Development and browser verification     | `pnpm dev` after scaffolding                | Starts Vite dev server for `apps/web`.            |
+| Test        | Local automated checks                   | `pnpm check` and later `pnpm test:e2e`      | Uses tiny fixture media only.                     |
+| Staging     | Preview deploy for browser/device checks | Vercel preview or equivalent static preview | Requires approval before external preview deploy. |
+| Production  | Public static web app                    | Vercel production or equivalent static host | Requires explicit production deploy confirmation. |
 
 ## Environment Variables
 
 No runtime secrets are required in v1.
 
-| Name | Required | Scope | Notes |
-| --- | --- | --- | --- |
-| None | No | v1 | The app should run without API keys or server credentials. |
+| Name | Required | Scope | Notes                                                      |
+| ---- | -------- | ----- | ---------------------------------------------------------- |
+| None | No       | v1    | The app should run without API keys or server credentials. |
 
 Future public build-time flags, model asset base paths, analytics keys, cloud endpoints, or API URLs require source-of-truth updates before implementation.
 

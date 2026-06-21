@@ -35,48 +35,48 @@ The app still has backend-like processing boundaries inside the browser: ffmpeg.
 
 ## Business Rules
 
-| Rule | Enforced where | Failure behavior |
-| --- | --- | --- |
-| User media must not be uploaded to a backend or third-party API in v1 | Frontend upload layer, Worker job layer, tool policy, browser privacy tests | Block the operation and show a privacy/scope error |
-| Only user-selected files can enter the workspace | UploadDropzone/file input handlers | Reject implicit file access and show unsupported input state |
-| Unsupported media formats/codecs must fail visibly | Metadata extraction and preview/export validation | Mark asset as unsupported and explain the limitation |
-| Export requires a selected asset and valid settings | Export panel validation and Worker job builder | Disable export and show field-level error |
-| Video trim ranges must be valid | Video edit state validation | Disable export until start/end are valid |
-| Subtitle cues must have valid timing and text | Subtitle cue validation | Show cue-level error and prevent export |
-| Long-running jobs must expose status | Worker job orchestration | Show loading/progress, cancellation if feasible, retry/reset on failure |
-| Raw media persistence is forbidden unless docs change | Data/storage boundary and security tests | Block persistence path and update source docs before any change |
+| Rule                                                                  | Enforced where                                                              | Failure behavior                                                        |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| User media must not be uploaded to a backend or third-party API in v1 | Frontend upload layer, Worker job layer, tool policy, browser privacy tests | Block the operation and show a privacy/scope error                      |
+| Only user-selected files can enter the workspace                      | UploadDropzone/file input handlers                                          | Reject implicit file access and show unsupported input state            |
+| Unsupported media formats/codecs must fail visibly                    | Metadata extraction and preview/export validation                           | Mark asset as unsupported and explain the limitation                    |
+| Export requires a selected asset and valid settings                   | Export panel validation and Worker job builder                              | Disable export and show field-level error                               |
+| Video trim ranges must be valid                                       | Video edit state validation                                                 | Disable export until start/end are valid                                |
+| Subtitle cues must have valid timing and text                         | Subtitle cue validation                                                     | Show cue-level error and prevent export                                 |
+| Long-running jobs must expose status                                  | Worker job orchestration                                                    | Show loading/progress, cancellation if feasible, retry/reset on failure |
+| Raw media persistence is forbidden unless docs change                 | Data/storage boundary and security tests                                    | Block persistence path and update source docs before any change         |
 
 ## API Contracts
 
 No HTTP API contracts exist in v1.
 
-| Method | Path | Input | Output | Errors |
-| --- | --- | --- | --- | --- |
+| Method         | Path           | Input                | Output           | Errors            |
+| -------------- | -------------- | -------------------- | ---------------- | ----------------- |
 | Not applicable | Not applicable | No HTTP request body | No HTTP response | No backend errors |
 
 ## Local Worker Contracts
 
 These are internal browser contracts, not network APIs.
 
-| Contract | Input | Output | Errors |
-| --- | --- | --- | --- |
-| `extractMediaMetadata` | `File`, generated asset id | dimensions, duration, MIME type, file size, preview URL metadata | unsupported type, unreadable file, metadata timeout |
-| `generateVideoThumbnails` | video `File` or object URL, sample count/time points | thumbnail blobs/object URLs and timestamps | codec unsupported, decode failed, memory limit |
-| `runImageBackgroundRemoval` | image blob/object URL, job id, options | foreground image blob/mask/result URL | model load failed, inference failed, canceled, memory limit |
-| `buildImageExport` | source image, ImageEditState, export settings | output blob and suggested filename | invalid image state, canvas export failed, unsupported format |
-| `runVideoExport` | source video, VideoEditState, subtitle cues, export settings | output blob and suggested filename | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit |
-| `serializeWebVTT` | subtitle cue list | WebVTT text/blob | invalid cue timing, empty cue text where required |
+| Contract                    | Input                                                        | Output                                                           | Errors                                                                       |
+| --------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `extractMediaMetadata`      | `File`, generated asset id                                   | dimensions, duration, MIME type, file size, preview URL metadata | unsupported type, unreadable file, metadata timeout                          |
+| `generateVideoThumbnails`   | video `File` or object URL, sample count/time points         | thumbnail blobs/object URLs and timestamps                       | codec unsupported, decode failed, memory limit                               |
+| `runImageBackgroundRemoval` | image blob/object URL, job id, options                       | foreground image blob/mask/result URL                            | model load failed, inference failed, canceled, memory limit                  |
+| `buildImageExport`          | source image, ImageEditState, export settings                | output blob and suggested filename                               | invalid image state, canvas export failed, unsupported format                |
+| `runVideoExport`            | source video, VideoEditState, subtitle cues, export settings | output blob and suggested filename                               | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit |
+| `serializeWebVTT`           | subtitle cue list                                            | WebVTT text/blob                                                 | invalid cue timing, empty cue text where required                            |
 
 ## Data Flow
 
-| Flow | Reads | Writes | Notes |
-| --- | --- | --- | --- |
-| Media import | Browser-selected `File` objects | In-memory MediaAsset list and object URLs | No remote upload. Object URLs must be revoked. |
-| Image editing | MediaAsset and ImageEditState | In-memory ImageEditState and preview render | Use operation state, not destructive mutation of the original file. |
-| Background removal | Selected image and job settings | Runtime job state and generated result blob/object URL | Model assets may load from app/CDN path; user image remains local. |
-| Video editing | MediaAsset and VideoEditState | In-memory VideoEditState, thumbnail metadata, subtitle cues | Single-asset only; no multi-track timeline in v1. |
-| Export | Selected asset, edit state, export settings | Runtime ExportJob and user-downloaded blob | Export result is temporary unless user downloads it. |
-| Draft recovery | Lightweight edit metadata | Browser storage draft metadata when implemented | Raw media bytes are not silently persisted. |
+| Flow               | Reads                                       | Writes                                                      | Notes                                                               |
+| ------------------ | ------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
+| Media import       | Browser-selected `File` objects             | In-memory MediaAsset list and object URLs                   | No remote upload. Object URLs must be revoked.                      |
+| Image editing      | MediaAsset and ImageEditState               | In-memory ImageEditState and preview render                 | Use operation state, not destructive mutation of the original file. |
+| Background removal | Selected image and job settings             | Runtime job state and generated result blob/object URL      | Model assets may load from app/CDN path; user image remains local.  |
+| Video editing      | MediaAsset and VideoEditState               | In-memory VideoEditState, thumbnail metadata, subtitle cues | Single-asset only; no multi-track timeline in v1.                   |
+| Export             | Selected asset, edit state, export settings | Runtime ExportJob and user-downloaded blob                  | Export result is temporary unless user downloads it.                |
+| Draft recovery     | Lightweight edit metadata                   | Browser storage draft metadata when implemented             | Raw media bytes are not silently persisted.                         |
 
 ## Auth And Permissions
 
@@ -111,13 +111,13 @@ These are internal browser contracts, not network APIs.
 
 ## Security Boundary
 
-| Risk | Rule | Verification |
-| --- | --- | --- |
-| Accidental media upload | No app code or dependency integration may upload user media in v1 | Browser network inspection and tests around upload/export flows |
-| Raw media in logs | Logs must not include raw media, subtitles, local paths, or generated content | Console/log review during browser tests |
-| Long-running UI lockup | Heavy processing should run through Worker APIs | Browser interaction stays responsive during jobs |
-| Unsafe persistence | Raw media must not be silently stored long-term | Storage inspection and code review |
-| Dependency/license risk | Background-removal AGPL/license caveat must remain documented | Pre-release dependency/license review |
+| Risk                    | Rule                                                                          | Verification                                                    |
+| ----------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Accidental media upload | No app code or dependency integration may upload user media in v1             | Browser network inspection and tests around upload/export flows |
+| Raw media in logs       | Logs must not include raw media, subtitles, local paths, or generated content | Console/log review during browser tests                         |
+| Long-running UI lockup  | Heavy processing should run through Worker APIs                               | Browser interaction stays responsive during jobs                |
+| Unsafe persistence      | Raw media must not be silently stored long-term                               | Storage inspection and code review                              |
+| Dependency/license risk | Background-removal AGPL/license caveat must remain documented                 | Pre-release dependency/license review                           |
 
 ## Change Rule
 
