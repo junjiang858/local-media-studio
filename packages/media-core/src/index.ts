@@ -10,6 +10,7 @@ const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 export type ImageCropAspect = "free" | "1:1" | "4:5" | "9:16" | "16:9";
 export type ImageAdjustment = "brightness" | "contrast" | "saturation";
 export type ImageExportFormat = "png" | "jpeg" | "webp";
+export type VideoExportFormat = "mp4" | "webm";
 export type WatermarkPosition =
   | "top-left"
   | "top-right"
@@ -85,6 +86,23 @@ export type ImageEditAction =
   | { type: "undo" }
   | { type: "redo" }
   | { type: "reset" };
+
+export type VideoEditState = {
+  exportFormat: VideoExportFormat;
+  speed: number;
+  subtitles: SubtitleCue[];
+  trimEnd: number | null;
+  trimStart: number;
+};
+
+export type VideoEditAction =
+  | { type: "set-trim"; startTime: number; endTime: number | null }
+  | { type: "set-speed"; speed: number }
+  | { type: "set-format"; format: VideoExportFormat }
+  | { type: "add-subtitle"; cue: SubtitleCue }
+  | { type: "update-subtitle"; cueId: string; patch: Partial<Omit<SubtitleCue, "id">> }
+  | { type: "remove-subtitle"; cueId: string }
+  | { type: "reset"; duration?: number | null };
 
 export type ImageExportPlan = {
   crop: { x: number; y: number; width: number; height: number };
@@ -253,6 +271,84 @@ export function getCurrentImageEditState(history: ImageEditHistory): ImageEditSt
   return cloneImageEditState(history.present);
 }
 
+export function initialVideoEditState(duration?: number | null): VideoEditState {
+  return {
+    exportFormat: "mp4",
+    speed: 1,
+    subtitles: [],
+    trimEnd: typeof duration === "number" && duration > 0 ? Math.round(duration * 100) / 100 : null,
+    trimStart: 0,
+  };
+}
+
+export function updateVideoEditState(
+  state: VideoEditState,
+  action: VideoEditAction,
+): VideoEditState {
+  if (action.type === "reset") {
+    return initialVideoEditState(action.duration);
+  }
+
+  if (action.type === "set-trim") {
+    const trimStart = Math.max(0, roundSeconds(action.startTime));
+    const trimEnd =
+      typeof action.endTime === "number"
+        ? Math.max(trimStart + 0.1, roundSeconds(action.endTime))
+        : null;
+
+    return {
+      ...cloneVideoEditState(state),
+      trimEnd,
+      trimStart,
+    };
+  }
+
+  if (action.type === "set-speed") {
+    return {
+      ...cloneVideoEditState(state),
+      speed: Math.round(clamp(action.speed, 0.25, 4) * 100) / 100,
+    };
+  }
+
+  if (action.type === "set-format") {
+    return {
+      ...cloneVideoEditState(state),
+      exportFormat: action.format,
+    };
+  }
+
+  if (action.type === "add-subtitle") {
+    return {
+      ...cloneVideoEditState(state),
+      subtitles: [...state.subtitles, normalizeSubtitleCue(action.cue)],
+    };
+  }
+
+  if (action.type === "update-subtitle") {
+    return {
+      ...cloneVideoEditState(state),
+      subtitles: state.subtitles.map((cue) =>
+        cue.id === action.cueId ? normalizeSubtitleCue({ ...cue, ...action.patch }) : cue,
+      ),
+    };
+  }
+
+  return {
+    ...cloneVideoEditState(state),
+    subtitles: state.subtitles.filter((cue) => cue.id !== action.cueId),
+  };
+}
+
+export function getActiveSubtitleCue(
+  state: VideoEditState,
+  currentTime: number,
+): SubtitleCue | null {
+  return (
+    state.subtitles.find((cue) => currentTime >= cue.startTime && currentTime <= cue.endTime) ??
+    null
+  );
+}
+
 export function applyImageEditAction(
   history: ImageEditHistory,
   action: ImageEditAction,
@@ -405,6 +501,26 @@ function cloneImageEditState(state: ImageEditState): ImageEditState {
   };
 }
 
+function cloneVideoEditState(state: VideoEditState): VideoEditState {
+  return {
+    ...state,
+    subtitles: state.subtitles.map((cue) => ({ ...cue })),
+  };
+}
+
+function normalizeSubtitleCue(cue: SubtitleCue): SubtitleCue {
+  const startTime = Math.max(0, roundSeconds(cue.startTime));
+  const endTime = Math.max(startTime + 0.1, roundSeconds(cue.endTime));
+  const text = cue.text.trim() || "Subtitle";
+
+  return subtitleCueSchema.parse({
+    ...cue,
+    endTime,
+    startTime,
+    text,
+  });
+}
+
 function cloneAnnotation(annotation: ImageAnnotation): ImageAnnotation {
   if (annotation.type === "brush") {
     return {
@@ -524,4 +640,12 @@ function sanitizeBaseName(fileName: string): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function roundSeconds(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.round(value * 100) / 100;
 }

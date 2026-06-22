@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
-import { formatDuration, formatFileSize } from "@local-media-studio/media-core";
-import type { ImageEditState } from "@local-media-studio/media-core";
+import {
+  formatDuration,
+  formatFileSize,
+  getActiveSubtitleCue,
+} from "@local-media-studio/media-core";
+import type { ImageEditState, VideoEditState } from "@local-media-studio/media-core";
 import type { Copy } from "../../i18n";
 import { getKindLabel } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
@@ -17,6 +21,7 @@ export function SelectedPreview({
   onFullscreenToggle,
   onZoomChange,
   t,
+  videoState,
   zoom,
 }: {
   asset: WorkspaceAsset;
@@ -27,12 +32,15 @@ export function SelectedPreview({
   onFullscreenToggle: () => void;
   onZoomChange: (zoom: number) => void;
   t: Copy;
+  videoState: VideoEditState | null;
   zoom: number;
 }) {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [previewBounds, setPreviewBounds] = useState<PreviewBounds | null>(null);
+  const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const frameRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const dragRef = useRef({
     isDragging: false,
     panX: 0,
@@ -59,6 +67,18 @@ export function SelectedPreview({
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !videoState) {
+      return;
+    }
+
+    video.playbackRate = videoState.speed;
+  }, [videoState?.speed, videoState]);
+
+  const activeSubtitleCue = videoState ? getActiveSubtitleCue(videoState, currentVideoTime) : null;
 
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -152,9 +172,31 @@ export function SelectedPreview({
               transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom / 100})`,
             }}
           >
-            <video className="video-preview" controls src={asset.objectUrl}>
+            <video
+              ref={videoRef}
+              className="video-preview"
+              controls
+              onLoadedMetadata={(event) => {
+                if (videoState?.trimStart) {
+                  event.currentTarget.currentTime = videoState.trimStart;
+                }
+              }}
+              onTimeUpdate={(event) => {
+                const currentTime = event.currentTarget.currentTime;
+                setCurrentVideoTime(currentTime);
+
+                if (videoState?.trimEnd && currentTime >= videoState.trimEnd) {
+                  event.currentTarget.pause();
+                  event.currentTarget.currentTime = videoState.trimStart;
+                }
+              }}
+              src={asset.objectUrl}
+            >
               <track kind="captions" />
             </video>
+            {activeSubtitleCue ? (
+              <div className="video-subtitle-overlay">{activeSubtitleCue.text}</div>
+            ) : null}
           </div>
         )}
 

@@ -215,4 +215,32 @@ describe("media workspace shell", () => {
     expect(await screen.findAllByText("cover-photo-background-removed.png")).not.toHaveLength(0);
     expect(screen.getAllByText("cover photo.png").length).toBeGreaterThan(0);
   });
+
+  it("edits a selected video with trim, speed, subtitles, and format controls", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText(/choose media files/i),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    );
+
+    await user.clear(screen.getByLabelText(/start time/i));
+    await user.type(screen.getByLabelText(/start time/i), "1.2");
+    await user.clear(screen.getByLabelText(/end time/i));
+    await user.type(screen.getByLabelText(/end time/i), "8.4");
+
+    await user.click(screen.getByRole("tab", { name: /speed/i }));
+    await user.selectOptions(screen.getByLabelText(/playback speed/i), "1.5");
+
+    await user.click(screen.getByRole("tab", { name: /subtitles/i }));
+    await user.click(screen.getByRole("button", { name: /add subtitle/i }));
+
+    expect(screen.getByDisplayValue(/subtitle text/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /format/i }));
+    await user.selectOptions(screen.getByLabelText(/video format/i), "webm");
+
+    expect(screen.getByLabelText(/video format/i)).toHaveValue("webm");
+  });
 });

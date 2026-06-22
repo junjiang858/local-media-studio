@@ -1,5 +1,10 @@
 import { useRef, useState } from "react";
-import type { ImageEditAction, ImageEditState } from "@local-media-studio/media-core";
+import type {
+  ImageEditAction,
+  ImageEditState,
+  VideoEditAction,
+  VideoEditState,
+} from "@local-media-studio/media-core";
 import type { WorkerJob } from "@local-media-studio/shared";
 import type { Copy } from "../../i18n";
 import { StudioIcon, type StudioIconName } from "../../icons/studio-icons";
@@ -14,17 +19,21 @@ export function EditorRail({
   imageState,
   isVisible,
   onApplyImageAction,
+  onApplyVideoAction,
   onRemoveBackground,
   selectedAsset,
   t,
+  videoState,
 }: {
   backgroundRemovalJob: WorkerJob | null;
   imageState: ImageEditState | null;
   isVisible: boolean;
   onApplyImageAction: (action: ImageEditAction) => void;
+  onApplyVideoAction: (action: VideoEditAction) => void;
   onRemoveBackground: () => void;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
+  videoState: VideoEditState | null;
 }) {
   const [activeTab, setActiveTab] = useState("transform");
   const tabListRef = useRef<HTMLDivElement>(null);
@@ -92,8 +101,14 @@ export function EditorRail({
             onRemoveBackground={onRemoveBackground}
             t={t}
           />
-        ) : selectedAsset?.kind === "video" ? (
-          <VideoEditorPanel activeTab={visibleActiveTab ?? "trim"} t={t} />
+        ) : selectedAsset?.kind === "video" && videoState ? (
+          <VideoEditorPanel
+            activeTab={visibleActiveTab ?? "trim"}
+            duration={selectedAsset.duration ?? null}
+            onApply={onApplyVideoAction}
+            t={t}
+            videoState={videoState}
+          />
         ) : (
           <p className="empty-panel-copy">{t.selectAssetToEdit}</p>
         )}

@@ -12,7 +12,9 @@ import {
   getCurrentImageEditState,
   getNextAssetId,
   initialImageEditHistory,
+  initialVideoEditState,
   serializeWebVtt,
+  updateVideoEditState,
   updateWorkerJobProgress,
 } from "./index";
 
@@ -180,5 +182,50 @@ describe("media core helpers", () => {
       message: "Export canceled",
       status: "canceled",
     });
+  });
+
+  it("updates single-video edit settings for trim, speed, subtitles, and format", () => {
+    const initialState = initialVideoEditState(12);
+    const editedState = updateVideoEditState(
+      updateVideoEditState(
+        updateVideoEditState(initialState, {
+          endTime: 8,
+          startTime: 2,
+          type: "set-trim",
+        }),
+        {
+          speed: 1.5,
+          type: "set-speed",
+        },
+      ),
+      {
+        cue: {
+          endTime: 4,
+          id: "cue-1",
+          startTime: 2,
+          text: "Hello clip",
+        },
+        type: "add-subtitle",
+      },
+    );
+    const finalState = updateVideoEditState(editedState, {
+      format: "webm",
+      type: "set-format",
+    });
+
+    expect(finalState).toMatchObject({
+      exportFormat: "webm",
+      speed: 1.5,
+      trimEnd: 8,
+      trimStart: 2,
+    });
+    expect(finalState.subtitles).toEqual([
+      {
+        endTime: 4,
+        id: "cue-1",
+        startTime: 2,
+        text: "Hello clip",
+      },
+    ]);
   });
 });

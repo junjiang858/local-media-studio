@@ -326,6 +326,31 @@ svg {
   width: 100%;
 }
 
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tight);
+  background: rgba(13, 17, 23, 0.46);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.secondary-button.full-width {
+  width: 100%;
+}
+
+.secondary-button:hover {
+  border-color: rgba(135, 151, 170, 0.42);
+  color: var(--ink);
+  background: rgba(36, 45, 56, 0.72);
+}
+
 .media-add-button {
   min-height: 34px;
   padding: 0 12px;
@@ -1048,6 +1073,21 @@ svg {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.42));
 }
 
+.video-subtitle-overlay {
+  position: absolute;
+  right: 8%;
+  bottom: 9%;
+  left: 8%;
+  padding: 8px 12px;
+  color: #f8fbff;
+  font-size: clamp(14px, 2vw, 24px);
+  font-weight: 760;
+  line-height: 1.35;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.78);
+  pointer-events: none;
+}
+
 .video-preview {
   width: min(100%, 900px);
   max-height: 62vh;
@@ -1311,6 +1351,20 @@ svg {
   border-color: rgba(255, 113, 113, 0.34);
   color: #ffb4b4;
   background: rgba(255, 113, 113, 0.08);
+}
+
+.subtitle-cue-list {
+  display: grid;
+  gap: 10px;
+}
+
+.subtitle-cue-row {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tight);
+  background: rgba(13, 17, 23, 0.42);
 }
 
 .crop-preset-grid {

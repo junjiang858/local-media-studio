@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
   getCurrentImageEditState,
   initialImageEditHistory,
+  initialVideoEditState,
   type ImageEditAction,
+  type VideoEditAction,
 } from "@local-media-studio/media-core";
 import { EditorRail } from "../components/editor/EditorRail";
 import { MediaLibraryPanel } from "../components/media-library/MediaLibraryPanel";
@@ -33,11 +35,13 @@ export default function App() {
   const selectedAssetId = useMediaStore((state) => state.selectedAssetId);
   const filter = useMediaStore((state) => state.filter);
   const imageHistories = useMediaStore((state) => state.imageHistories);
+  const videoEdits = useMediaStore((state) => state.videoEdits);
   const addFiles = useMediaStore((state) => state.addFiles);
   const selectAsset = useMediaStore((state) => state.selectAsset);
   const selectAdjacent = useMediaStore((state) => state.selectAdjacent);
   const setFilter = useMediaStore((state) => state.setFilter);
   const applyImageAction = useMediaStore((state) => state.applyImageAction);
+  const applyVideoAction = useMediaStore((state) => state.applyVideoAction);
   const updateAssetMetadata = useMediaStore((state) => state.updateAssetMetadata);
   const removeSelected = useMediaStore((state) => state.removeSelected);
   const jobs = useJobStore((state) => state.jobs);
@@ -54,6 +58,10 @@ export default function App() {
   const selectedImageState =
     selectedAsset?.kind === "image"
       ? getCurrentImageEditState(imageHistories[selectedAsset.id] ?? initialImageEditHistory())
+      : null;
+  const selectedVideoState =
+    selectedAsset?.kind === "video"
+      ? (videoEdits[selectedAsset.id] ?? initialVideoEditState(selectedAsset.duration))
       : null;
   const backgroundRemovalJob =
     selectedAsset?.kind === "image"
@@ -101,6 +109,14 @@ export default function App() {
     }
 
     applyImageAction(selectedAsset.id, action);
+  }
+
+  function handleApplyVideoAction(action: VideoEditAction) {
+    if (selectedAsset?.kind !== "video") {
+      return;
+    }
+
+    applyVideoAction(selectedAsset.id, action);
   }
 
   async function handleRemoveBackground() {
@@ -201,6 +217,7 @@ export default function App() {
           onZoomChange={setZoom}
           selectedAsset={selectedAsset}
           t={t}
+          videoState={selectedVideoState}
           zoom={zoom}
         />
 
@@ -210,9 +227,11 @@ export default function App() {
             imageState={selectedImageState}
             isVisible={currentMobileTab === "edit" || currentMobileTab === "export"}
             onApplyImageAction={handleApplyImageAction}
+            onApplyVideoAction={handleApplyVideoAction}
             onRemoveBackground={() => void handleRemoveBackground()}
             selectedAsset={selectedAsset}
             t={t}
+            videoState={selectedVideoState}
           />
         ) : null}
       </div>

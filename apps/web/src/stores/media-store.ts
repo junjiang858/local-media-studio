@@ -4,8 +4,15 @@ import {
   classifyMediaKind,
   getNextAssetId,
   initialImageEditHistory,
+  initialVideoEditState,
+  updateVideoEditState,
 } from "@local-media-studio/media-core";
-import type { ImageEditAction, ImageEditHistory } from "@local-media-studio/media-core";
+import type {
+  ImageEditAction,
+  ImageEditHistory,
+  VideoEditAction,
+  VideoEditState,
+} from "@local-media-studio/media-core";
 import type { MediaAsset, MediaKind } from "@local-media-studio/shared";
 
 export type MediaFilter = "all" | MediaKind;
@@ -17,11 +24,13 @@ type MediaStore = {
   selectedAssetId: string | null;
   filter: MediaFilter;
   imageHistories: Record<string, ImageEditHistory>;
+  videoEdits: Record<string, VideoEditState>;
   addFiles: (files: File[]) => void;
   selectAsset: (assetId: string) => void;
   selectAdjacent: (direction: 1 | -1) => void;
   setFilter: (filter: MediaFilter) => void;
   applyImageAction: (assetId: string, action: ImageEditAction) => void;
+  applyVideoAction: (assetId: string, action: VideoEditAction) => void;
   updateAssetMetadata: (assetId: string, metadata: MediaMetadataUpdate) => void;
   removeSelected: () => void;
 };
@@ -31,6 +40,7 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
   selectedAssetId: null,
   filter: "all",
   imageHistories: {},
+  videoEdits: {},
   addFiles: (files) => {
     const acceptedAssets = files.map(createMediaAsset);
     const newImageHistories = Object.fromEntries(
@@ -38,10 +48,16 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
         .filter((asset) => asset.kind === "image")
         .map((asset) => [asset.id, initialImageEditHistory()]),
     );
+    const newVideoEdits = Object.fromEntries(
+      acceptedAssets
+        .filter((asset) => asset.kind === "video")
+        .map((asset) => [asset.id, initialVideoEditState(asset.duration)]),
+    );
 
     set((state) => ({
       assets: [...state.assets, ...acceptedAssets],
       imageHistories: { ...state.imageHistories, ...newImageHistories },
+      videoEdits: { ...state.videoEdits, ...newVideoEdits },
       selectedAssetId: acceptedAssets[0]?.id ?? state.selectedAssetId,
     }));
   },
@@ -81,17 +97,45 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
       };
     });
   },
+  applyVideoAction: (assetId, action) => {
+    set((state) => {
+      const videoState = state.videoEdits[assetId] ?? initialVideoEditState();
+
+      return {
+        videoEdits: {
+          ...state.videoEdits,
+          [assetId]: updateVideoEditState(videoState, action),
+        },
+      };
+    });
+  },
   updateAssetMetadata: (assetId, metadata) => {
-    set((state) => ({
-      assets: state.assets.map((asset) =>
+    set((state) => {
+      const nextAssets = state.assets.map((asset) =>
         asset.id === assetId
           ? {
               ...asset,
               ...metadata,
             }
           : asset,
-      ),
-    }));
+      );
+
+      return {
+        assets: nextAssets,
+        videoEdits:
+          typeof metadata.duration === "number" &&
+          state.videoEdits[assetId] &&
+          state.videoEdits[assetId].trimEnd === null
+            ? {
+                ...state.videoEdits,
+                [assetId]: {
+                  ...state.videoEdits[assetId],
+                  trimEnd: Math.round(metadata.duration * 100) / 100,
+                },
+              }
+            : state.videoEdits,
+      };
+    });
   },
   removeSelected: () => {
     const state = get();
@@ -104,14 +148,17 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
     const remainingAssets = state.assets.filter((asset) => asset.id !== state.selectedAssetId);
     const visibleAssets = getVisibleAssets(remainingAssets, state.filter);
     const remainingHistories = { ...state.imageHistories };
+    const remainingVideoEdits = { ...state.videoEdits };
 
     if (state.selectedAssetId) {
       delete remainingHistories[state.selectedAssetId];
+      delete remainingVideoEdits[state.selectedAssetId];
     }
 
     set({
       assets: remainingAssets,
       imageHistories: remainingHistories,
+      videoEdits: remainingVideoEdits,
       selectedAssetId: visibleAssets[0]?.id ?? null,
     });
   },
