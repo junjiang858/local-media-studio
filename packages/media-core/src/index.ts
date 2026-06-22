@@ -1,4 +1,9 @@
-import { subtitleCueSchema, type MediaKind, type SubtitleCue } from "@local-media-studio/shared";
+import {
+  subtitleCueSchema,
+  type MediaKind,
+  type SubtitleCue,
+  type WorkerJob,
+} from "@local-media-studio/shared";
 
 const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 
@@ -42,6 +47,12 @@ export type ImageExportPlan = {
   mimeType: `image/${ImageExportFormat}`;
   quality: number;
   suggestedFilename: string;
+};
+
+export type WorkerJobProgressUpdate = {
+  status?: Extract<WorkerJob["status"], "queued" | "loading" | "processing">;
+  progress?: number;
+  message?: string;
 };
 
 const defaultImageEditState: ImageEditState = {
@@ -129,6 +140,57 @@ export function serializeWebVtt(cues: readonly SubtitleCue[]): string {
   });
 
   return lines.join("\n");
+}
+
+export function createWorkerJob(id: string, type: WorkerJob["type"], message?: string): WorkerJob {
+  return {
+    id,
+    type,
+    status: "queued",
+    progress: 0,
+    ...(message ? { message } : {}),
+  };
+}
+
+export function updateWorkerJobProgress(
+  job: WorkerJob,
+  update: WorkerJobProgressUpdate,
+): WorkerJob {
+  return {
+    ...job,
+    status: update.status ?? job.status,
+    progress:
+      typeof update.progress === "number"
+        ? Math.round(clamp(update.progress, 0, 100))
+        : job.progress,
+    ...(update.message ? { message: update.message } : {}),
+  };
+}
+
+export function completeWorkerJob(job: WorkerJob, message?: string): WorkerJob {
+  return {
+    ...job,
+    status: "completed",
+    progress: 100,
+    ...(message ? { message } : {}),
+    error: undefined,
+  };
+}
+
+export function failWorkerJob(job: WorkerJob, error: NonNullable<WorkerJob["error"]>): WorkerJob {
+  return {
+    ...job,
+    status: "failed",
+    error,
+  };
+}
+
+export function cancelWorkerJob(job: WorkerJob, message?: string): WorkerJob {
+  return {
+    ...job,
+    status: "canceled",
+    ...(message ? { message } : {}),
+  };
 }
 
 export function initialImageEditHistory(): ImageEditHistory {

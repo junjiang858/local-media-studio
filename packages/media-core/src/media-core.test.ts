@@ -2,13 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   applyImageEditAction,
   buildImageExportPlan,
+  cancelWorkerJob,
   classifyMediaKind,
+  completeWorkerJob,
+  createWorkerJob,
+  failWorkerJob,
   formatDuration,
   formatFileSize,
   getCurrentImageEditState,
   getNextAssetId,
   initialImageEditHistory,
   serializeWebVtt,
+  updateWorkerJobProgress,
 } from "./index";
 
 describe("media core helpers", () => {
@@ -91,5 +96,52 @@ describe("media core helpers", () => {
     expect(plan.outputHeight).toBe(600);
     expect(plan.mimeType).toBe("image/jpeg");
     expect(plan.suggestedFilename).toBe("cover-photo-edited.jpg");
+  });
+
+  it("tracks worker job lifecycle with progress, failure, and cancellation states", () => {
+    const queuedJob = createWorkerJob("job-1", "video-export", "Preparing export");
+    const loadingJob = updateWorkerJobProgress(queuedJob, {
+      message: "Loading engine",
+      progress: 8,
+      status: "loading",
+    });
+    const processingJob = updateWorkerJobProgress(loadingJob, {
+      message: "Encoding",
+      progress: 64,
+      status: "processing",
+    });
+    const completedJob = completeWorkerJob(processingJob, "Export ready");
+    const failedJob = failWorkerJob(processingJob, {
+      code: "codec-unsupported",
+      message: "Unsupported codec",
+      recoverable: true,
+    });
+    const canceledJob = cancelWorkerJob(processingJob, "Export canceled");
+
+    expect(queuedJob).toMatchObject({
+      id: "job-1",
+      message: "Preparing export",
+      progress: 0,
+      status: "queued",
+      type: "video-export",
+    });
+    expect(processingJob.progress).toBe(64);
+    expect(completedJob).toMatchObject({
+      message: "Export ready",
+      progress: 100,
+      status: "completed",
+    });
+    expect(failedJob).toMatchObject({
+      error: {
+        code: "codec-unsupported",
+        message: "Unsupported codec",
+        recoverable: true,
+      },
+      status: "failed",
+    });
+    expect(canceledJob).toMatchObject({
+      message: "Export canceled",
+      status: "canceled",
+    });
   });
 });
