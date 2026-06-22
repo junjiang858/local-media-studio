@@ -4,6 +4,13 @@ import { expect, test } from "@playwright/test";
 test("edits and downloads an image without external media upload requests", async ({ page }) => {
   const externalRequests: string[] = [];
 
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "showSaveFilePicker", {
+      configurable: true,
+      value: undefined,
+    });
+  });
+
   page.on("request", (request) => {
     const url = new URL(request.url());
     const isHttp = url.protocol === "http:" || url.protocol === "https:";
@@ -15,12 +22,23 @@ test("edits and downloads an image without external media upload requests", asyn
   });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /create privately/i })).toBeVisible();
+  await expect(page.getByText(/magicmedia/i)).toBeVisible();
+  await expect(page.getByText(/local only/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /^upload$/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /add media/i })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: /start your creation/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /import media/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /explore templates/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /export current asset/i })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /^edit$/i })).toHaveCount(0);
 
   await page
     .getByLabel(/choose media files/i)
     .setInputFiles(path.join(import.meta.dirname, "../fixtures/local-image.svg"));
   await expect(page.getByRole("button", { name: /local-image\.svg/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^edit$/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^export$/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /export current asset/i })).toBeVisible();
 
   await page.getByLabel(/crop preset/i).selectOption("1:1");
   await page.getByRole("button", { name: /rotate 90/i }).click();
@@ -29,12 +47,10 @@ test("edits and downloads an image without external media upload requests", asyn
   await page.getByLabel(/brightness/i).fill("14");
   await page.getByLabel(/watermark text/i).fill("Draft");
 
-  await page.getByRole("button", { name: /prepare export/i }).click();
-  await expect(page.getByText(/download ready/i)).toBeVisible();
-
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("link", { name: /download local-image-edited.png/i }).click();
+  await page.getByRole("button", { name: /export current asset/i }).click();
   const download = await downloadPromise;
+  await expect(page.getByText(/export saved/i)).toBeVisible();
 
   expect(download.suggestedFilename()).toBe("local-image-edited.png");
   expect(externalRequests).toEqual([]);
@@ -47,10 +63,14 @@ test("uses Chinese for Chinese browsers and allows manual English switching", as
   const page = await context.newPage();
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /私密创作/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /添加媒体/i }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: /开始你的创作/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /导入媒体/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /探索模板/i })).toHaveCount(0);
 
   await page.getByLabel(/语言/i).selectOption("en");
-  await expect(page.getByRole("heading", { name: /create privately/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /add media/i }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /import media/i })).toBeVisible();
 
   await context.close();
 });

@@ -1,6 +1,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  Columns2,
   Download,
   FlipHorizontal,
   FlipVertical,
@@ -8,6 +9,9 @@ import {
   FileVideo,
   Filter,
   ImagePlus,
+  Languages,
+  Maximize2,
+  Minimize2,
   Redo2,
   RotateCcw,
   RotateCw,
@@ -17,6 +21,8 @@ import {
   Subtitles,
   Undo2,
   Upload,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { create } from "zustand";
@@ -44,19 +50,37 @@ type MobileTab = "library" | "preview" | "edit" | "export";
 type Language = "en" | "zh";
 type WorkspaceAsset = MediaAsset & { file: File };
 type ImageExportResult = {
+  blob: Blob;
   url: string;
   filename: string;
   size: number;
 };
+type SaveFilePickerOptions = {
+  suggestedName?: string;
+  types?: Array<{
+    description: string;
+    accept: Record<string, string[]>;
+  }>;
+};
+type SaveFilePickerHandle = {
+  createWritable: () => Promise<{
+    write: (data: Blob) => Promise<void> | void;
+    close: () => Promise<void> | void;
+  }>;
+};
+type SaveFilePickerWindow = Window & {
+  showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<SaveFilePickerHandle>;
+};
 
 const copy = {
   en: {
-    brand: "Local Media Studio",
-    brandTitle: "Private media studio",
+    brand: "MagicMedia",
+    brandTitle: "Image Editing Details",
     heroTitle: "Create privately. Export in seconds.",
     heroSubtitle:
-      "Import local images or short clips, make focused edits, and download clean results without sending media away.",
+      "Import local images or short clips, make focused edits, and download clean results. Files stay in this browser.",
     addMedia: "Add media",
+    importMedia: "Import Media",
     chooseMedia: "Choose media files",
     previousAsset: "Previous asset",
     nextAsset: "Next asset",
@@ -66,6 +90,7 @@ const copy = {
     privacy: "No media leaves this browser.",
     privacyStatus: "Privacy status",
     localOnly: "local only",
+    localAdvantage: "Local only",
     flowLabel: "Creation flow",
     stepImport: "Import",
     stepImportDetail: "Choose local media",
@@ -85,14 +110,26 @@ const copy = {
     all: "All",
     image: "Image",
     video: "Video",
-    emptyLibrary: "Your imported media will appear here.",
+    noMediaYet: "No media yet",
+    emptyLibrary: "Import files to start editing.",
     remove: "Remove",
-    privateDefault: "Private by default",
-    emptyPreviewTitle: "Start with local media",
+    privateDefault: "Local workspace",
+    emptyPreviewTitle: "Start Your Creation",
     emptyPreviewBody:
-      "Drop files here or choose media. The preview stays centered while the next best action stays close.",
+      "Drag and drop your images or videos here, or click to browse your local workspace.",
+    emptyCapabilityQuality: "4K support",
+    emptyCapabilityRaw: "RAW photos",
+    emptyCapabilityFormats: "MP4, MOV, WEBM",
     compareOriginal: "Compare original",
     showEdited: "Show edited",
+    compareView: "Compare view",
+    originalVersion: "Original",
+    editedVersion: "Edited",
+    previewTools: "Preview tools",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    fullscreenPreview: "Fullscreen preview",
+    exitFullscreenPreview: "Exit fullscreen preview",
     selectAssetToEdit: "Select a media asset to reveal image or video tools.",
     cropPreset: "Crop preset",
     original: "Original",
@@ -102,6 +139,8 @@ const copy = {
     wide: "16:9 Wide",
     undoImageEdit: "Undo image edit",
     redoImageEdit: "Redo image edit",
+    undoShort: "Undo",
+    redoShort: "Redo",
     reset: "Reset",
     rotateMinus: "Rotate -90",
     rotatePlus: "Rotate 90",
@@ -124,9 +163,12 @@ const copy = {
     subtitleDetail: "Cue editor and WebVTT export",
     format: "Format",
     quality: "Quality",
-    prepareExport: "Prepare export",
+    prepareExport: "Export",
+    exportCurrentAsset: "Export current asset",
     preparingImageExport: "Preparing local image export...",
-    downloadReady: "Download ready.",
+    downloadReady: "Export ready.",
+    exportSaved: "Export saved.",
+    exportCanceled: "Export canceled.",
     videoExportNext: "Video export is the next local worker slice.",
     imageExportFailed: "Image export failed.",
     canvasUnavailable: "Canvas export is not available in this browser.",
@@ -137,11 +179,12 @@ const copy = {
     previewOf: "Preview of",
   },
   zh: {
-    brand: "Local Media Studio",
-    brandTitle: "本地媒体创作",
+    brand: "MagicMedia",
+    brandTitle: "图片编辑详情",
     heroTitle: "私密创作，快速导出。",
-    heroSubtitle: "导入本地图片或短视频，完成聚焦编辑，再下载干净成品；素材不会离开你的浏览器。",
+    heroSubtitle: "导入本地图片或短视频，完成聚焦编辑，再下载干净成品。素材只留在你的浏览器。",
     addMedia: "添加媒体",
+    importMedia: "导入媒体",
     chooseMedia: "选择媒体文件",
     previousAsset: "上一个素材",
     nextAsset: "下一个素材",
@@ -151,6 +194,7 @@ const copy = {
     privacy: "媒体不会离开这个浏览器。",
     privacyStatus: "隐私状态",
     localOnly: "仅本地",
+    localAdvantage: "本地处理",
     flowLabel: "创作流程",
     stepImport: "导入",
     stepImportDetail: "选择本地素材",
@@ -170,13 +214,25 @@ const copy = {
     all: "全部",
     image: "图片",
     video: "视频",
-    emptyLibrary: "导入的素材会出现在这里。",
+    noMediaYet: "还没有媒体",
+    emptyLibrary: "导入文件即可开始编辑。",
     remove: "移除",
-    privateDefault: "默认私密",
-    emptyPreviewTitle: "从本地素材开始",
-    emptyPreviewBody: "拖入文件或选择媒体。预览保持居中，下一步操作保持在手边。",
+    privateDefault: "本地工作区",
+    emptyPreviewTitle: "开始你的创作",
+    emptyPreviewBody: "将图片或视频拖放到这里，或点击浏览你的本地工作区。",
+    emptyCapabilityQuality: "支持 4K",
+    emptyCapabilityRaw: "RAW 照片",
+    emptyCapabilityFormats: "MP4、MOV、WEBM",
     compareOriginal: "对比原图",
     showEdited: "显示编辑后",
+    compareView: "对比视图",
+    originalVersion: "原图",
+    editedVersion: "编辑后",
+    previewTools: "预览工具",
+    zoomIn: "放大",
+    zoomOut: "缩小",
+    fullscreenPreview: "全屏预览",
+    exitFullscreenPreview: "退出全屏预览",
     selectAssetToEdit: "选择一个素材后即可显示图片或视频工具。",
     cropPreset: "裁剪比例",
     original: "原始",
@@ -186,6 +242,8 @@ const copy = {
     wide: "16:9 宽屏",
     undoImageEdit: "撤销图片编辑",
     redoImageEdit: "重做图片编辑",
+    undoShort: "Undo",
+    redoShort: "Redo",
     reset: "重置",
     rotateMinus: "左转 90",
     rotatePlus: "右转 90",
@@ -207,9 +265,12 @@ const copy = {
     subtitleDetail: "字幕段编辑与 WebVTT 导出",
     format: "格式",
     quality: "质量",
-    prepareExport: "准备导出",
+    prepareExport: "导出",
+    exportCurrentAsset: "导出当前素材",
     preparingImageExport: "正在准备本地图片导出...",
-    downloadReady: "下载已准备好。",
+    downloadReady: "导出已准备好。",
+    exportSaved: "导出已保存。",
+    exportCanceled: "已取消导出。",
     videoExportNext: "视频导出会在下一个本地 Worker 切片实现。",
     imageExportFailed: "图片导出失败。",
     canvasUnavailable: "当前浏览器不支持 Canvas 导出。",
@@ -319,6 +380,9 @@ export default function App() {
   const [language, setLanguage] = useState<Language>(() => detectInitialLanguage());
   const [activeTab, setActiveTab] = useState<MobileTab>("preview");
   const [isDragActive, setIsDragActive] = useState(false);
+  const [compareOriginal, setCompareOriginal] = useState(false);
+  const [previewZoom, setPreviewZoom] = useState(1);
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const t = copy[language];
   const assets = useMediaStore((state) => state.assets);
   const selectedAssetId = useMediaStore((state) => state.selectedAssetId);
@@ -327,12 +391,19 @@ export default function App() {
   const addFiles = useMediaStore((state) => state.addFiles);
   const selectAdjacent = useMediaStore((state) => state.selectAdjacent);
   const setFilter = useMediaStore((state) => state.setFilter);
+  const applyImageAction = useMediaStore((state) => state.applyImageAction);
   const selectedAsset = assets.find((asset) => asset.id === selectedAssetId) ?? null;
+  const hasMedia = assets.length > 0;
+  const workspaceTabs: MobileTab[] = hasMedia
+    ? ["library", "preview", "edit", "export"]
+    : ["library", "preview"];
+  const visibleActiveTab = workspaceTabs.includes(activeTab) ? activeTab : "preview";
   const visibleAssets = useMemo(() => getVisibleAssets(assets, filter), [assets, filter]);
   const selectedImageState =
     selectedAsset?.kind === "image"
       ? getCurrentImageEditState(imageHistories[selectedAsset.id] ?? initialImageEditHistory())
       : null;
+  const canEditSelectedImage = selectedAsset?.kind === "image";
 
   function openFilePicker() {
     fileInputRef.current?.click();
@@ -344,6 +415,18 @@ export default function App() {
     }
 
     addFiles(Array.from(files));
+  }
+
+  function applySelectedImageAction(action: ImageEditAction) {
+    if (!selectedAsset || selectedAsset.kind !== "image") {
+      return;
+    }
+
+    applyImageAction(selectedAsset.id, action);
+  }
+
+  function adjustPreviewZoom(delta: number) {
+    setPreviewZoom((current) => Math.min(2, Math.max(0.5, Number((current + delta).toFixed(2)))));
   }
 
   return (
@@ -361,17 +444,62 @@ export default function App() {
       }}
     >
       <header className="top-toolbar">
-        <div className="brand-lockup" aria-label="Local Media Studio">
-          <span className="brand-mark">LM</span>
-          <div>
-            <p className="eyebrow">{t.brand}</p>
-            <p className="brand-title">{t.brandTitle}</p>
+        <div className="brand-lockup" aria-label={t.brand}>
+          <p className="brand-wordmark">{t.brand}</p>
+          <span className="local-advantage-tag" aria-label={t.privacyStatus}>
+            <ShieldCheck size={14} aria-hidden="true" />
+            {t.localAdvantage}
+          </span>
+        </div>
+
+        <div className="top-center-tools" aria-label={t.imageEditControls}>
+          <div className="toolbar-segment asset-nav">
+            <button
+              className="icon-button"
+              type="button"
+              aria-label={t.previousAsset}
+              disabled={assets.length < 2}
+              onClick={() => selectAdjacent(-1)}
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <button
+              className="icon-button"
+              type="button"
+              aria-label={t.nextAsset}
+              disabled={assets.length < 2}
+              onClick={() => selectAdjacent(1)}
+            >
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="toolbar-segment history-nav">
+            <button
+              className="icon-button labeled-icon-button"
+              type="button"
+              aria-label={t.undoImageEdit}
+              disabled={!canEditSelectedImage}
+              onClick={() => applySelectedImageAction({ type: "undo" })}
+            >
+              <Undo2 size={16} aria-hidden="true" />
+              <span>{t.undoShort}</span>
+            </button>
+            <button
+              className="icon-button labeled-icon-button"
+              type="button"
+              aria-label={t.redoImageEdit}
+              disabled={!canEditSelectedImage}
+              onClick={() => applySelectedImageAction({ type: "redo" })}
+            >
+              <Redo2 size={16} aria-hidden="true" />
+              <span>{t.redoShort}</span>
+            </button>
           </div>
         </div>
 
-        <div className="toolbar-actions">
-          <label className="language-select">
-            {t.language}
+        <div className="top-settings">
+          <label className="language-select toolbar-language">
+            <Languages size={16} aria-hidden="true" />
             <select
               aria-label={t.language}
               value={language}
@@ -381,74 +509,41 @@ export default function App() {
               <option value="zh">{t.chinese}</option>
             </select>
           </label>
-          <input
-            ref={fileInputRef}
-            className="sr-only"
-            id="media-upload"
-            type="file"
-            accept="image/*,video/*"
-            multiple
-            aria-label={t.chooseMedia}
-            onChange={(event) => handleFiles(event.currentTarget.files)}
-          />
-          <button className="primary-button" type="button" onClick={openFilePicker}>
-            <Upload size={18} aria-hidden="true" />
-            {t.addMedia}
-          </button>
-          <button
-            className="icon-button"
-            type="button"
-            aria-label={t.previousAsset}
-            onClick={() => selectAdjacent(-1)}
-          >
-            <ChevronLeft size={18} aria-hidden="true" />
-          </button>
-          <button
-            className="icon-button"
-            type="button"
-            aria-label={t.nextAsset}
-            onClick={() => selectAdjacent(1)}
-          >
-            <ChevronRight size={18} aria-hidden="true" />
-          </button>
         </div>
-      </header>
 
-      <section className="privacy-strip" aria-label={t.privacyStatus}>
-        <ShieldCheck size={16} aria-hidden="true" />
-        <span>{t.privacy}</span>
-        <strong>{t.localOnly}</strong>
-      </section>
-
-      <section className="studio-intro">
-        <div className="studio-copy">
-          <p className="eyebrow">{t.privateDefault}</p>
-          <h1>{t.heroTitle}</h1>
-          <p>{t.heroSubtitle}</p>
-        </div>
-        <ol className="flow-steps" aria-label={t.flowLabel}>
+        <input
+          ref={fileInputRef}
+          className="sr-only"
+          id="media-upload"
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          aria-label={t.chooseMedia}
+          onChange={(event) => handleFiles(event.currentTarget.files)}
+        />
+        <h1 className="sr-only">{t.heroTitle}</h1>
+        <ol className="sr-only" aria-label={t.flowLabel}>
           {[
             { label: t.stepImport, detail: t.stepImportDetail },
             { label: t.stepEdit, detail: t.stepEditDetail },
             { label: t.stepExport, detail: t.stepExportDetail },
-          ].map((step, index) => (
+          ].map((step) => (
             <li key={step.label}>
-              <span>{index + 1}</span>
               <strong>{step.label}</strong>
               <small>{step.detail}</small>
             </li>
           ))}
         </ol>
-      </section>
+      </header>
 
       <nav className="mobile-tabs" aria-label={t.workspaceSections}>
-        {(["library", "preview", "edit", "export"] as const).map((tab) => (
+        {workspaceTabs.map((tab) => (
           <button
             key={tab}
             type="button"
             role="tab"
-            aria-selected={activeTab === tab}
-            className={activeTab === tab ? "active" : ""}
+            aria-selected={visibleActiveTab === tab}
+            className={visibleActiveTab === tab ? "active" : ""}
             onClick={() => setActiveTab(tab)}
           >
             {getTabLabel(tab, t)}
@@ -456,13 +551,26 @@ export default function App() {
         ))}
       </nav>
 
-      <div className={`workspace-grid ${isDragActive ? "drag-active" : ""}`}>
-        <aside className={`panel media-library ${activeTab === "library" ? "mobile-active" : ""}`}>
+      <div
+        className={`workspace-grid ${hasMedia ? "" : "workspace-empty"} ${
+          isDragActive ? "drag-active" : ""
+        }`}
+      >
+        <aside
+          className={`panel media-library ${visibleActiveTab === "library" ? "mobile-active" : ""}`}
+        >
           <PanelHeader
             eyebrow={`${assets.length} ${t.assets}`}
             title={t.library}
             icon={<Filter size={16} aria-hidden="true" />}
           />
+          <button className="library-dropzone" type="button" onClick={openFilePicker}>
+            <ImagePlus size={18} aria-hidden="true" />
+            <span>
+              <strong>{t.addMedia}</strong>
+              <small>{t.privateDefault}</small>
+            </span>
+          </button>
           <div className="segmented-control" aria-label={t.filterMediaType}>
             {(["all", "image", "video"] as const).map((option) => (
               <button
@@ -479,6 +587,7 @@ export default function App() {
           {visibleAssets.length === 0 ? (
             <div className="empty-library">
               <ImagePlus size={30} aria-hidden="true" />
+              <strong>{t.noMediaYet}</strong>
               <p>{t.emptyLibrary}</p>
             </div>
           ) : (
@@ -495,36 +604,67 @@ export default function App() {
           )}
         </aside>
 
-        <section className={`preview-stage ${activeTab === "preview" ? "mobile-active" : ""}`}>
+        <section
+          className={`preview-stage ${selectedAsset ? "" : "empty-stage"} ${
+            visibleActiveTab === "preview" ? "mobile-active" : ""
+          }`}
+        >
           {selectedAsset ? (
-            <SelectedPreview asset={selectedAsset} imageState={selectedImageState} t={t} />
+            <SelectedPreview
+              asset={selectedAsset}
+              imageState={selectedImageState}
+              t={t}
+              compareOriginal={compareOriginal}
+              isFullscreen={isPreviewFullscreen}
+              zoom={previewZoom}
+              onCompareToggle={() => setCompareOriginal((current) => !current)}
+              onFullscreenToggle={() => setIsPreviewFullscreen((current) => !current)}
+              onZoomIn={() => adjustPreviewZoom(0.1)}
+              onZoomOut={() => adjustPreviewZoom(-0.1)}
+            />
           ) : (
             <EmptyPreview onAddMedia={openFilePicker} t={t} />
           )}
         </section>
 
-        <aside className={`panel inspector ${activeTab === "edit" ? "mobile-active" : ""}`}>
-          <PanelHeader
-            eyebrow={selectedAsset ? getKindLabel(selectedAsset.kind, t) : t.noAsset}
-            title={t.edit}
-            icon={<Scissors size={16} aria-hidden="true" />}
-          />
-          <EditorPanel asset={selectedAsset} imageState={selectedImageState} t={t} />
-        </aside>
+        {hasMedia ? (
+          <aside
+            className={`panel inspector-rail ${
+              visibleActiveTab === "edit" || visibleActiveTab === "export" ? "mobile-active" : ""
+            }`}
+          >
+            <section
+              className={`rail-section editor-section ${
+                visibleActiveTab === "edit" ? "mobile-active-section" : ""
+              }`}
+            >
+              <PanelHeader
+                eyebrow={selectedAsset ? getKindLabel(selectedAsset.kind, t) : t.noAsset}
+                title={t.edit}
+                icon={<Scissors size={16} aria-hidden="true" />}
+              />
+              <EditorPanel asset={selectedAsset} imageState={selectedImageState} t={t} />
+            </section>
 
-        <aside className={`panel export-panel ${activeTab === "export" ? "mobile-active" : ""}`}>
-          <PanelHeader
-            eyebrow={t.output}
-            title={t.export}
-            icon={<Download size={16} aria-hidden="true" />}
-          />
-          <ExportPanel
-            key={selectedAsset?.id ?? "empty-export-panel"}
-            asset={selectedAsset}
-            imageState={selectedImageState}
-            t={t}
-          />
-        </aside>
+            <section
+              className={`rail-section export-section ${
+                visibleActiveTab === "export" ? "mobile-active-section" : ""
+              }`}
+            >
+              <PanelHeader
+                eyebrow={t.output}
+                title={t.export}
+                icon={<Download size={16} aria-hidden="true" />}
+              />
+              <ExportPanel
+                key={selectedAsset?.id ?? "empty-export-panel"}
+                asset={selectedAsset}
+                imageState={selectedImageState}
+                t={t}
+              />
+            </section>
+          </aside>
+        ) : null}
       </div>
     </main>
   );
@@ -562,6 +702,11 @@ function MediaAssetRow({
   const selectAsset = useMediaStore((state) => state.selectAsset);
   const removeSelected = useMediaStore((state) => state.removeSelected);
   const Icon = asset.kind === "image" ? FileImage : FileVideo;
+  const metadata = [
+    getKindLabel(asset.kind, t),
+    formatFileSize(asset.size),
+    ...(asset.duration ? [formatDuration(asset.duration)] : []),
+  ];
 
   return (
     <li>
@@ -576,8 +721,9 @@ function MediaAssetRow({
         <span className="asset-copy">
           <strong>{asset.name}</strong>
           <small>
-            {getKindLabel(asset.kind, t)} · {formatFileSize(asset.size)}
-            {asset.duration ? ` · ${formatDuration(asset.duration)}` : ""}
+            {metadata.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
           </small>
         </span>
       </button>
@@ -591,18 +737,27 @@ function MediaAssetRow({
 }
 
 function EmptyPreview({ onAddMedia, t }: { onAddMedia: () => void; t: Copy }) {
+  const capabilities = [t.emptyCapabilityQuality, t.emptyCapabilityRaw, t.emptyCapabilityFormats];
+
   return (
     <div className="empty-preview">
-      <div className="empty-orbit" aria-hidden="true">
-        <Upload size={42} />
+      <div className="empty-upload-panel">
+        <span className="empty-upload-icon" aria-hidden="true">
+          <Upload size={34} />
+          <span>+</span>
+        </span>
+        <h2>{t.emptyPreviewTitle}</h2>
+        <p>{t.emptyPreviewBody}</p>
+        <button className="primary-button empty-import-button" type="button" onClick={onAddMedia}>
+          <Upload size={16} aria-hidden="true" />
+          {t.importMedia}
+        </button>
+        <ul className="empty-capabilities" aria-label={t.privateDefault}>
+          {capabilities.map((capability) => (
+            <li key={capability}>{capability}</li>
+          ))}
+        </ul>
       </div>
-      <p className="eyebrow">{t.privateDefault}</p>
-      <h2>{t.emptyPreviewTitle}</h2>
-      <p>{t.emptyPreviewBody}</p>
-      <button className="primary-button" type="button" onClick={onAddMedia}>
-        <Upload size={18} aria-hidden="true" />
-        {t.addMedia}
-      </button>
     </div>
   );
 }
@@ -611,50 +766,137 @@ function SelectedPreview({
   asset,
   imageState,
   t,
+  compareOriginal,
+  isFullscreen,
+  zoom,
+  onCompareToggle,
+  onFullscreenToggle,
+  onZoomIn,
+  onZoomOut,
 }: {
   asset: WorkspaceAsset;
   imageState: ImageEditState | null;
   t: Copy;
+  compareOriginal: boolean;
+  isFullscreen: boolean;
+  zoom: number;
+  onCompareToggle: () => void;
+  onFullscreenToggle: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }) {
-  const [compareOriginal, setCompareOriginal] = useState(false);
-  const previewState = compareOriginal ? null : imageState;
+  const zoomStyle = { "--preview-zoom": String(zoom) } as React.CSSProperties;
+  const canCompare = asset.kind === "image";
 
   return (
-    <div className="selected-preview">
+    <div className={`selected-preview ${isFullscreen ? "fullscreen-preview" : ""}`}>
       <div className="preview-meta">
         <span>{asset.kind}</span>
         <strong>{asset.name}</strong>
         <span>{formatFileSize(asset.size)}</span>
       </div>
+      <div className="preview-controls" aria-label={t.previewTools}>
+        <button
+          className="icon-button"
+          type="button"
+          aria-label={t.zoomOut}
+          disabled={zoom <= 0.5}
+          onClick={onZoomOut}
+        >
+          <ZoomOut size={16} aria-hidden="true" />
+        </button>
+        <span className="zoom-readout">{Math.round(zoom * 100)}%</span>
+        <button
+          className="icon-button"
+          type="button"
+          aria-label={t.zoomIn}
+          disabled={zoom >= 2}
+          onClick={onZoomIn}
+        >
+          <ZoomIn size={16} aria-hidden="true" />
+        </button>
+        <button
+          className="icon-button"
+          type="button"
+          aria-label={compareOriginal ? t.showEdited : t.compareOriginal}
+          aria-pressed={compareOriginal}
+          disabled={!canCompare}
+          onClick={onCompareToggle}
+        >
+          <Columns2 size={16} aria-hidden="true" />
+        </button>
+        <button
+          className="icon-button"
+          type="button"
+          aria-label={isFullscreen ? t.exitFullscreenPreview : t.fullscreenPreview}
+          aria-pressed={isFullscreen}
+          onClick={onFullscreenToggle}
+        >
+          {isFullscreen ? (
+            <Minimize2 size={16} aria-hidden="true" />
+          ) : (
+            <Maximize2 size={16} aria-hidden="true" />
+          )}
+        </button>
+      </div>
       <div className="preview-frame">
         {asset.kind === "image" ? (
-          <figure className="image-preview-stack">
-            <div
-              className={`image-preview-crop crop-${previewState?.cropAspect.replace(":", "-") ?? "free"}`}
-            >
-              <img
-                src={asset.objectUrl}
-                alt={`${t.previewOf} ${asset.name}`}
-                style={getImagePreviewStyle(previewState)}
-              />
-              {previewState?.watermarkText ? (
-                <span className="watermark-preview">{previewState.watermarkText}</span>
-              ) : null}
-            </div>
-            <figcaption>
-              <button
-                className="text-button"
-                type="button"
-                aria-pressed={compareOriginal}
-                onClick={() => setCompareOriginal((current) => !current)}
-              >
-                {compareOriginal ? t.showEdited : t.compareOriginal}
-              </button>
+          <figure
+            className={`image-preview-stack ${compareOriginal ? "compare-active" : ""}`}
+            style={zoomStyle}
+          >
+            {compareOriginal ? (
+              <div className="compare-grid">
+                <ImagePreviewPane asset={asset} imageState={null} label={t.originalVersion} t={t} />
+                <ImagePreviewPane
+                  asset={asset}
+                  imageState={imageState}
+                  label={t.editedVersion}
+                  t={t}
+                />
+              </div>
+            ) : (
+              <ImagePreviewPane asset={asset} imageState={imageState} t={t} />
+            )}
+            <figcaption className="sr-only">
+              {compareOriginal ? t.compareOriginal : t.showEdited}
             </figcaption>
           </figure>
         ) : (
-          <video src={asset.objectUrl} controls aria-label={`Preview of ${asset.name}`} />
+          <div className="video-preview-stack" style={zoomStyle}>
+            <video src={asset.objectUrl} controls aria-label={`Preview of ${asset.name}`} />
+          </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ImagePreviewPane({
+  asset,
+  imageState,
+  label,
+  t,
+}: {
+  asset: WorkspaceAsset;
+  imageState: ImageEditState | null;
+  label?: string;
+  t: Copy;
+}) {
+  return (
+    <div className="image-preview-pane">
+      {label ? <span className="compare-label">{label}</span> : null}
+      <div
+        className={`image-preview-crop crop-${imageState?.cropAspect.replace(":", "-") ?? "free"}`}
+      >
+        <img
+          src={asset.objectUrl}
+          alt={`${t.previewOf} ${asset.name}`}
+          style={getImagePreviewStyle(imageState)}
+        />
+        {imageState?.watermarkText ? (
+          <span className="watermark-preview">{imageState.watermarkText}</span>
+        ) : null}
       </div>
     </div>
   );
@@ -716,27 +958,13 @@ function ImageEditorPanel({
 
   return (
     <div className="tool-form" aria-label={t.imageEditControls}>
-      <div className="tool-row">
-        <button
-          className="icon-button"
-          type="button"
-          aria-label={t.undoImageEdit}
-          onClick={() => apply({ type: "undo" })}
-        >
-          <Undo2 size={16} aria-hidden="true" />
-        </button>
-        <button
-          className="icon-button"
-          type="button"
-          aria-label={t.redoImageEdit}
-          onClick={() => apply({ type: "redo" })}
-        >
-          <Redo2 size={16} aria-hidden="true" />
-        </button>
-        <button className="text-button" type="button" onClick={() => apply({ type: "reset" })}>
-          {t.reset}
-        </button>
-      </div>
+      <button
+        className="text-button full-width"
+        type="button"
+        onClick={() => apply({ type: "reset" })}
+      >
+        {t.reset}
+      </button>
 
       <label>
         {t.cropPreset}
@@ -859,6 +1087,7 @@ function ExportPanel({
   const [quality, setQuality] = useState(86);
   const [jobMessage, setJobMessage] = useState<string | null>(null);
   const [exportResult, setExportResult] = useState<ImageExportResult | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (!exportResult) {
@@ -868,7 +1097,7 @@ function ExportPanel({
     return () => URL.revokeObjectURL(exportResult.url);
   }, [exportResult]);
 
-  async function handlePrepareExport() {
+  async function handleExport() {
     if (!asset) {
       return;
     }
@@ -879,6 +1108,7 @@ function ExportPanel({
     }
 
     setJobMessage(t.preparingImageExport);
+    setIsExporting(true);
 
     try {
       const result = await exportEditedImage({
@@ -891,8 +1121,12 @@ function ExportPanel({
 
       setExportResult(result);
       setJobMessage(t.downloadReady);
+      await saveImageExport(result, format);
+      setJobMessage(t.exportSaved);
     } catch (error) {
-      setJobMessage(error instanceof Error ? error.message : t.imageExportFailed);
+      setJobMessage(isAbortError(error) ? t.exportCanceled : getExportErrorMessage(error, t));
+    } finally {
+      setIsExporting(false);
     }
   }
 
@@ -929,19 +1163,15 @@ function ExportPanel({
       </label>
       <button
         className="primary-button full-width"
-        disabled={!asset}
+        disabled={!asset || isExporting}
         type="button"
-        onClick={() => void handlePrepareExport()}
+        aria-label={t.exportCurrentAsset}
+        onClick={() => void handleExport()}
       >
         <Download size={18} aria-hidden="true" />
         {t.prepareExport}
       </button>
       {jobMessage ? <p className="job-message">{jobMessage}</p> : null}
-      {exportResult ? (
-        <a className="download-link" href={exportResult.url} download={exportResult.filename}>
-          {t.download} {exportResult.filename}
-        </a>
-      ) : null}
       <p className="muted-copy">{t.imageExportHelper}</p>
     </div>
   );
@@ -1023,7 +1253,7 @@ async function exportEditedImage({
   if (state.watermarkText.trim()) {
     context.save();
     context.globalAlpha = 0.78;
-    context.fillStyle = "#ffffff";
+    context.fillStyle = "#f8fbff";
     context.font = `${Math.max(16, Math.round(canvas.width * 0.04))}px system-ui, sans-serif`;
     context.textAlign = "right";
     context.textBaseline = "bottom";
@@ -1034,10 +1264,79 @@ async function exportEditedImage({
   const blob = await canvasToBlob(canvas, plan.mimeType, plan.quality / 100, t);
 
   return {
+    blob,
     url: URL.createObjectURL(blob),
     filename: plan.suggestedFilename,
     size: blob.size,
   };
+}
+
+async function saveImageExport(result: ImageExportResult, format: ImageExportFormat) {
+  const savePicker = (window as SaveFilePickerWindow).showSaveFilePicker;
+
+  if (savePicker && window.isSecureContext) {
+    try {
+      const handle = await savePicker({
+        suggestedName: result.filename,
+        types: [
+          {
+            description: getExportDescription(format),
+            accept: {
+              [getExportMimeType(format)]: [getExportExtension(format)],
+            },
+          },
+        ],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(result.blob);
+      await writable.close();
+      return;
+    } catch (error) {
+      if (isAbortError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  triggerBrowserDownload(result);
+}
+
+function triggerBrowserDownload(result: ImageExportResult) {
+  const link = document.createElement("a");
+  link.href = result.url;
+  link.download = result.filename;
+  link.rel = "noopener";
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+function getExportMimeType(format: ImageExportFormat) {
+  if (format === "jpeg") {
+    return "image/jpeg";
+  }
+
+  return `image/${format}`;
+}
+
+function getExportExtension(format: ImageExportFormat) {
+  return format === "jpeg" ? ".jpg" : `.${format}`;
+}
+
+function getExportDescription(format: ImageExportFormat) {
+  if (format === "jpeg") {
+    return "JPEG image";
+  }
+
+  return `${format.toUpperCase()} image`;
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function getExportErrorMessage(error: unknown, t: Copy) {
+  return error instanceof Error ? error.message : t.imageExportFailed;
 }
 
 function loadImage(src: string, t: Copy): Promise<HTMLImageElement> {

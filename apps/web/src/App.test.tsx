@@ -37,6 +37,23 @@ describe("media workspace shell", () => {
         callback(new Blob(["edited image"], { type: type ?? "image/png" }));
       });
 
+    Object.defineProperty(window, "showSaveFilePicker", {
+      configurable: true,
+      value: vi.fn(() =>
+        Promise.resolve({
+          createWritable: () =>
+            Promise.resolve({
+              write: vi.fn(),
+              close: vi.fn(),
+            }),
+        }),
+      ),
+    });
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+
     class MockImage {
       naturalWidth = 1200;
       naturalHeight = 800;
@@ -60,14 +77,21 @@ describe("media workspace shell", () => {
   it("renders the local-first guided studio with import, edit, and export steps", () => {
     render(<App />);
 
-    expect(screen.getAllByRole("button", { name: /add media/i }).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: /create privately/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /add media/i })).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: /start your creation/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /import media/i })).toBeInTheDocument();
+    expect(screen.getByText(/magicmedia/i)).toBeInTheDocument();
+    expect(screen.getByText(/local only/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^upload$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /explore templates/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /export current asset/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^edit$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /^export$/i })).not.toBeInTheDocument();
     const flow = screen.getByRole("list", { name: /creation flow/i });
     expect(within(flow).getByText("Import")).toBeInTheDocument();
     expect(within(flow).getByText("Edit")).toBeInTheDocument();
     expect(within(flow).getByText("Export")).toBeInTheDocument();
     expect(screen.getByLabelText(/language/i)).toBeInTheDocument();
-    expect(screen.getByText(/no media leaves this browser/i)).toBeInTheDocument();
   });
 
   it("detects Chinese browser language and allows manual switching to English", async () => {
@@ -79,11 +103,14 @@ describe("media workspace shell", () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: /私密创作/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /添加媒体/i })).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: /开始你的创作/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /导入媒体/i })).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText(/语言/i), "en");
 
-    expect(screen.getByRole("heading", { name: /create privately/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /add media/i })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: /import media/i })).toBeInTheDocument();
   });
 
   it("imports user-selected files into the media library without uploading them", async () => {
@@ -100,6 +127,9 @@ describe("media workspace shell", () => {
     expect(screen.getAllByText("clip.mp4").length).toBeGreaterThan(0);
     expect(screen.getByText(/2 assets/i)).toBeInTheDocument();
     expect(screen.getByText(/local only/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^edit$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^export$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /export current asset/i })).toBeInTheDocument();
   });
 
   it("edits a selected image and prepares a local download", async () => {
@@ -118,12 +148,10 @@ describe("media workspace shell", () => {
     await user.clear(screen.getByLabelText(/brightness/i));
     await user.type(screen.getByLabelText(/brightness/i), "18");
     await user.type(screen.getByLabelText(/watermark text/i), "Draft");
-    await user.click(screen.getByRole("button", { name: /prepare export/i }));
+    await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
-    expect(await screen.findByText(/download ready/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /download cover-photo-edited.png/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/export saved/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /download cover-photo-edited.png/i })).toBeNull();
     expect(toBlobSpy).toHaveBeenCalledWith(expect.any(Function), "image/png", 0.86);
   });
 });

@@ -11,8 +11,8 @@
 
 - Target user: Personal creators who want quick, private, low-friction image and short-video edits.
 - Product posture: A focused editing workspace, not a landing page and not a full professional suite.
-- Product audience fit: C-end creators should feel guided through a clear media flow instead of dropped into a dense professional dashboard.
-- Visual density: Progressive-disclosure consumer studio UI. Keep the main path spacious and clear, then reveal precise controls only after an asset is selected.
+- Product audience fit: C-end creators should feel they are in a real media workstation, with the Stitch layout making the preview canvas, media library, and inspector obvious from the first frame.
+- Visual density: Stitch-restored professional studio UI. Keep the main path clear through panel structure, but do not preserve a separate marketing or guided-intro layout above the workspace.
 - First-screen signal: The upload/media workspace is the first screen. Do not show a marketing hero before the tool.
 - Accessibility expectations: Keyboard-accessible upload, media switching, tool buttons, tabs, dialogs, sliders, and export actions; visible focus states; accessible names for icon buttons; no text trapped inside too-small controls.
 - Language expectations: The web app supports English and Simplified Chinese in v1. It should choose the initial language from `navigator.language` when possible and provide an in-app language switcher that does not require reload.
@@ -47,14 +47,20 @@
   - Video metadata-loading, invalid trim range, subtitle editing, and processing states.
   - Export disabled, ready, processing, completed, canceled, and failed states.
 - Interaction model:
-  - Use a clear guided flow rather than a traditional dense workstation: Import, Edit, Export.
-  - The primary action at each step should be visually obvious and reachable without scanning multiple panels.
+  - Desktop uses the Stitch workstation structure directly: media library, preview canvas, and inspector/export rail visible together.
+  - The visible top bar is utility chrome only: left MagicMedia wordmark plus a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. Do not show explanatory title/subtitle copy in the top bar.
+  - Empty workspace follows the Stitch empty-state screen: the main preview canvas becomes a large dashed upload dropzone with one Import Media action, no template exploration action, short capability notes, and localized copy.
+  - After media exists, upload/import has one visible entry point in the media library panel. Do not duplicate upload actions in the top toolbar.
+  - Export has one visible action in the export panel. The export action should prepare the local result and immediately start the browser save/download flow when possible.
+  - Compare mode lives in the preview viewport toolbar only. Do not duplicate compare in the top toolbar.
+  - The inspector/editor/export rail is hidden while there is no uploaded media and appears only after a media asset exists.
+  - The Import, Edit, Export flow may remain in semantic or mobile navigation, but it must not appear as a large visible header block on desktop.
   - Advanced controls should be grouped into short sections with visible labels and helper copy.
-  - Mobile should show the same flow as stacked steps instead of a cramped desktop panel.
+  - Mobile should show the same flow as stacked tabs instead of a cramped desktop panel.
 - Localization:
   - All user-facing UI strings in the first MVP screen should come from an English/Chinese message dictionary.
   - Initial language should be detected from the browser language with English fallback.
-  - Manual language switching should be available from the top toolbar.
+  - Manual language switching should be available from the top toolbar as a compact icon-plus-select control.
   - Export filenames may remain ASCII-safe for now, but visible labels and status messages should localize.
 - Data/API/mock behavior:
   - Data source is browser-local `File` objects, object URLs, derived metadata, and in-memory/session draft state.
@@ -71,32 +77,33 @@
 
 ## Component Map
 
-| Component                | Purpose                                                                        | Reuse scope               |
-| ------------------------ | ------------------------------------------------------------------------------ | ------------------------- |
-| `AppShell`               | Owns full-height workspace layout and responsive panel regions                 | App-wide                  |
-| `TopToolbar`             | Global upload, undo/redo where applicable, compare, export, and status actions | Workspace                 |
-| `UploadDropzone`         | Drag/drop and file-picker entry                                                | Workspace and empty state |
-| `MediaLibraryPanel`      | Shows media list, filters, metadata, selected item, previous/next navigation   | Workspace                 |
-| `MediaAssetCard`         | Compact thumbnail, type, name, size, dimensions/duration, error badge          | Media library             |
-| `PreviewStage`           | Hosts selected image/video preview and edit overlay                            | Workspace                 |
-| `ImagePreviewCanvas`     | Image display, crop preview, comparison, annotation/watermark rendering        | Image workflow            |
-| `VideoPreviewPlayer`     | Video playback, current time, subtitle preview, trim markers                   | Video workflow            |
-| `EditorPanel`            | Switches between image/video tool groups based on selected asset type          | Workspace                 |
-| `ImageToolTabs`          | Crop, transform, adjust, annotate, watermark, background removal               | Image workflow            |
-| `VideoToolTabs`          | Trim, speed, subtitles, export options                                         | Video workflow            |
-| `CropPresetControl`      | Social crop presets and custom ratio controls                                  | Image workflow            |
-| `AdjustmentControls`     | Brightness, contrast, saturation sliders                                       | Image workflow            |
-| `AnnotationToolbar`      | Text, brush, rectangle, arrow, selection controls                              | Image workflow            |
-| `WatermarkControls`      | Text/image watermark placement and opacity controls                            | Image workflow            |
-| `BackgroundRemovalPanel` | Starts local background removal and shows model/job progress                   | Image workflow            |
-| `TrimRangeControl`       | Start/end inputs and visual trim range                                         | Video workflow            |
-| `SpeedControl`           | Speed preset and custom speed input                                            | Video workflow            |
-| `SubtitleCueList`        | Manual subtitle cue creation, validation, editing, deletion                    | Video workflow            |
-| `ExportPanel`            | Output format, quality, resolution/size where feasible, export action          | Workspace                 |
-| `ProcessingJobToast`     | Progress, cancel, retry, and failure reason for long-running jobs              | App-wide                  |
-| `EmptyState`             | First-run upload prompt and filtered-empty guidance                            | Workspace                 |
-| `ErrorState`             | Unsupported format, metadata failure, processing failure, export failure       | App-wide                  |
-| `KeyboardShortcutLayer`  | Previous/next, play/pause, undo/redo, reset, export shortcuts                  | Workspace                 |
+| Component                | Purpose                                                                                               | Reuse scope               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------- |
+| `AppShell`               | Owns full-height workspace layout and responsive panel regions                                        | App-wide                  |
+| `TopToolbar`             | Brand, local-only advantage tag, undo/redo where applicable, asset navigation, and language switching | Workspace                 |
+| `UploadDropzone`         | Drag/drop and file-picker entry                                                                       | Workspace and empty state |
+| `MediaLibraryPanel`      | Shows media list, filters, metadata, selected item, previous/next navigation                          | Workspace                 |
+| `MediaAssetCard`         | Compact thumbnail, type, name, size, dimensions/duration, error badge                                 | Media library             |
+| `PreviewStage`           | Hosts selected image/video preview and edit overlay                                                   | Workspace                 |
+| `ImagePreviewCanvas`     | Image display, crop preview, comparison, annotation/watermark rendering                               | Image workflow            |
+| `PreviewViewportToolbar` | Zoom out/in, fullscreen/theater toggle, and before/after compare mode                                 | Workspace                 |
+| `VideoPreviewPlayer`     | Video playback, current time, subtitle preview, trim markers                                          | Video workflow            |
+| `EditorPanel`            | Switches between image/video tool groups based on selected asset type                                 | Workspace                 |
+| `ImageToolTabs`          | Crop, transform, adjust, annotate, watermark, background removal                                      | Image workflow            |
+| `VideoToolTabs`          | Trim, speed, subtitles, export options                                                                | Video workflow            |
+| `CropPresetControl`      | Social crop presets and custom ratio controls                                                         | Image workflow            |
+| `AdjustmentControls`     | Brightness, contrast, saturation sliders                                                              | Image workflow            |
+| `AnnotationToolbar`      | Text, brush, rectangle, arrow, selection controls                                                     | Image workflow            |
+| `WatermarkControls`      | Text/image watermark placement and opacity controls                                                   | Image workflow            |
+| `BackgroundRemovalPanel` | Starts local background removal and shows model/job progress                                          | Image workflow            |
+| `TrimRangeControl`       | Start/end inputs and visual trim range                                                                | Video workflow            |
+| `SpeedControl`           | Speed preset and custom speed input                                                                   | Video workflow            |
+| `SubtitleCueList`        | Manual subtitle cue creation, validation, editing, deletion                                           | Video workflow            |
+| `ExportPanel`            | Output format, quality, resolution/size where feasible, and the single export/save action             | Workspace                 |
+| `ProcessingJobToast`     | Progress, cancel, retry, and failure reason for long-running jobs                                     | App-wide                  |
+| `EmptyState`             | First-run upload prompt and filtered-empty guidance                                                   | Workspace                 |
+| `ErrorState`             | Unsupported format, metadata failure, processing failure, export failure                              | App-wide                  |
+| `KeyboardShortcutLayer`  | Previous/next, play/pause, undo/redo, reset, export shortcuts                                         | Workspace                 |
 
 ## Frontend Architecture
 
@@ -105,9 +112,10 @@
   - `/`: Media Workspace.
   - No additional v1 route unless a later source-of-truth update adds settings or help screens.
 - Shared layout:
-  - Desktop: consumer studio layout with a top app bar, guided step strip, media tray, large preview stage, and one current task panel.
-  - Tablet: media tray becomes horizontal or collapsible; task panel moves below or beside preview based on width.
-  - Mobile: stacked guided steps with Preview first after import, then Edit and Export controls; avoid forcing a dense four-panel dashboard into one viewport.
+  - Desktop: Stitch-restored professional studio layout with a compact top app bar, fixed-width media library, fluid preview stage, and fixed-width editor/export rail. No standalone intro/hero region or explanatory title/subtitle copy may sit above the workspace.
+  - Empty desktop state: fixed-width media library plus a full remaining preview/upload stage. The inspector/export rail is not rendered until there is uploaded media.
+  - Tablet: media library collapses into a compact rail or drawer; editor and export controls can stack below the preview if the viewport cannot preserve readable side panels.
+  - Mobile: tabbed workflow with Library, Preview, Edit, and Export views; Preview stays inspectable and tool controls behave like dark studio drawers rather than a cramped desktop layout.
 - Data fetching pattern:
   - No server fetching for user media in v1.
   - Local files enter through file input or drag/drop.
@@ -132,28 +140,34 @@
 ## Design System
 
 - UI library: shadcn/ui components built on Radix primitives and Tailwind CSS.
-- Icon library: lucide-react, imported icon-by-icon for tool buttons.
-- Style direction: Refined consumer creation studio. Professional and calm, but more approachable than an admin tool. Use clear step hierarchy, large preview, concise helper copy, and polished action states.
+- Icon library: lucide-react, imported icon-by-icon for tool buttons. Keep lucide for v1 because it is already approved in `TECH_STACK.md`; standardize size, stroke width, accessible labels, and tooltip/label support for unfamiliar actions.
+- Stitch reference: Google Stitch project `1201636135287513933`, titled MagicMedia Editor, is the current visual baseline for the workspace. The implementation should restore the exposed MagicMedia Studio structure as directly as possible using the available Stitch design system data.
+- Style direction: Professional Studio. The interface should feel like a precise local editing suite: dark, calm, technically capable, and focused on the media canvas. It should avoid a marketing hero, bubbly consumer styling, generic white cards, and decorative dashboard chrome.
+- Visual dials for the current redesign: design variance 5, motion intensity 3, visual density 7. This favors a dense but readable tool workspace with restrained motion and progressive disclosure.
 - Color tokens:
-  - Background: neutral near-white and neutral dark variants for preview comfort.
-  - Primary action: clear blue/cyan accent.
-  - Success: green.
-  - Warning: amber.
-  - Error: red.
-  - Selection/focus: blue/cyan ring with sufficient contrast.
-  - Avoid a one-note single-hue palette; the editor should feel practical and focused.
+  - Background: `#0f1419` for the app shell and `#0a0f14` or `#0A0A0A` for the lowest canvas layer.
+  - Panel surface: `#1E1E1E` for side panels, with `#171c22`, `#1b2026`, and `#262a30` for tonal hierarchy.
+  - Primary action and active state: Magic Blue/Cyan, using `#00a3ff`, `#98cbff`, and `#00D1FF` consistently as the single blue accent family.
+  - Text: `#dfe3ea` for primary text and `#bec7d4` for secondary text.
+  - Border and separators: `#3f4852` for low-emphasis structure and `#88919d` only where stronger separation is needed.
+  - Success: `#10B981`; error: `#EF4444` or the documented accessible error tokens.
+  - Avoid pure black, pure white surfaces, oversaturated neon glows, and sudden light-mode sections inside the dark workspace.
 - Typography:
-  - System UI font stack.
+  - Prefer Geist for display, panel titles, and tool group headings when available; fallback to system UI.
+  - Inter may remain the dense body/control workhorse because the Stitch system and current tech direction use it for legibility at small sizes.
+  - JetBrains Mono is used for metadata, dimensions, file sizes, timestamps, and numeric tool values where feasible.
   - No viewport-width-based font sizing.
   - Compact panel headings; reserve large type only for empty-state title.
-  - Letter spacing stays normal.
+  - Use slight negative tracking for display text and modest positive tracking only for compact utility labels.
 - Spacing:
   - 4px base rhythm.
-  - Compact controls at 32-40px height.
+  - Compact controls at 32-40px height, with 44px touch targets for key actions and mobile controls.
   - Stable panel padding: 12-16px.
+  - Panel library width should target 280-320px; editor/export rail should target 340-380px.
 - Radius:
-  - 6px default.
-  - 8px maximum for cards/modals unless a component requires otherwise.
+  - 8px default for panels, media assets, inputs, and buttons.
+  - 4px may be used for dense hover highlights inside panels.
+  - Larger radii should be reserved for modals or mobile drawers only when a component requires it.
 - Breakpoints:
   - Desktop: three-pane layout at 1024px and above.
   - Tablet: collapsible library below 1024px.
@@ -165,34 +179,45 @@
   - Preview stage uses responsive bounds and must not jump when controls change.
 - Interaction:
   - Prefer icon buttons with tooltips for common tools: crop, rotate, flip, undo, redo, reset, download, play, pause, previous, next.
+  - Undo/redo are global workspace controls in the top app bar when an image is selected, while the right rail keeps the detailed image tool form.
+  - Preview stage controls include zoom out, zoom in, fullscreen/theater, and compare.
+  - Compare mode shows original and edited image previews side by side instead of only toggling between states.
+  - Upload and export must each have only one visible primary entry point to avoid duplicate CTA intent.
   - Use sliders or number inputs for numeric values.
   - Use segmented controls/tabs for mode switches.
   - Use menus/selects for output format and quality options.
   - Use text labels beside unfamiliar icons for consumer-facing clarity.
   - Show visible status for export preparation and other asynchronous work.
+  - Use tactile active states and restrained transform/opacity transitions only. Do not add scroll hijacks, decorative marquees, custom cursors, or unmotivated motion to the editing workspace.
+  - Selection uses a ghost border in the blue accent family without heavy drop shadows.
 
 ## Desktop Workspace Layout
 
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│ TopToolbar: upload, previous/next, undo/redo, compare, export │
-├───────────────┬──────────────────────────────┬───────────────┤
-│ Media Library │ Preview Stage                │ Editor Panel  │
-│ filters/list  │ image canvas or video player │ tools/export  │
-│ metadata      │ processing overlays          │ job status    │
-└───────────────┴──────────────────────────────┴───────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│ TopToolbar: brand+local tag | previous/next+undo/redo | language │
+├────────────────┬─────────────────────────────────┬─────────────────┤
+│ Media Library  │ Preview Stage                   │ Inspector Rail  │
+│ filters/list   │ image canvas or video player    │ tools + export  │
+│ metadata       │ comparison and processing state  │ job status      │
+└────────────────┴─────────────────────────────────┴─────────────────┘
 ```
 
 - The preview stage is the visual center of the product.
+- The preview stage owns viewport tools for zoom, fullscreen/theater, and side-by-side comparison.
+- The desktop layout follows a fixed-fluid-fixed model: stable media library, flexible canvas, stable inspector/export rail.
 - The media library and editor panel should be dense but not cramped.
+- The upload/empty state should live inside the actual workspace, not as a marketing landing page or oversized guided intro above it.
+- The privacy/local-only promise should be visible as a concise tag beside the wordmark without becoming a decorative badge wall or competing with primary edit/export actions.
 - Do not place cards inside cards. Use panels, separators, tabs, drawers, and repeated media cards only where appropriate.
 
 ## Responsive Behavior
 
 - Desktop:
-  - Left library width: stable, roughly 260-320px.
-  - Right editor width: stable, roughly 320-380px.
+  - Left library width: stable, roughly 280-320px.
+  - Right inspector/export rail width: stable, roughly 340-380px.
   - Center preview fills remaining space.
+  - The full shell should use `min-height: 100dvh` and avoid layout jumps when tools expand.
 - Tablet:
   - Library can collapse to a drawer or compact rail.
   - Editor panel can remain side-by-side if width allows; otherwise move below preview.
