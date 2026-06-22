@@ -2,8 +2,19 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, vi } from "vitest";
 
-const { runImageBackgroundRemovalMock } = vi.hoisted(() => ({
-  runImageBackgroundRemovalMock: vi.fn(),
+const { exportEditedVideoMock, runImageBackgroundRemovalMock, saveVideoExportMock } = vi.hoisted(
+  () => ({
+    exportEditedVideoMock: vi.fn(),
+    runImageBackgroundRemovalMock: vi.fn(),
+    saveVideoExportMock: vi.fn(),
+  }),
+);
+
+vi.mock("./utils/video-export", () => ({
+  exportEditedVideo: exportEditedVideoMock,
+  getVideoExportErrorMessage: (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback,
+  saveVideoExport: saveVideoExportMock,
 }));
 
 vi.mock("./utils/background-removal", () => ({
@@ -19,7 +30,10 @@ describe("media workspace shell", () => {
   let toBlobSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    exportEditedVideoMock.mockReset();
     runImageBackgroundRemovalMock.mockReset();
+    saveVideoExportMock.mockReset();
+    saveVideoExportMock.mockResolvedValue(undefined);
 
     Object.defineProperty(window.navigator, "language", {
       configurable: true,
@@ -218,6 +232,20 @@ describe("media workspace shell", () => {
 
   it("edits a selected video with trim, speed, subtitles, and format controls", async () => {
     const user = userEvent.setup();
+    exportEditedVideoMock.mockImplementation(({ onProgress }) => {
+      onProgress?.({
+        message: "Encoding video",
+        progress: 72,
+        status: "processing",
+      });
+
+      return Promise.resolve({
+        blob: new Blob(["video"], { type: "video/webm" }),
+        filename: "clip-edited.webm",
+        size: 5,
+        url: "blob:video-export",
+      });
+    });
     render(<App />);
 
     await user.upload(
@@ -242,5 +270,19 @@ describe("media workspace shell", () => {
     await user.selectOptions(screen.getByLabelText(/video format/i), "webm");
 
     expect(screen.getByLabelText(/video format/i)).toHaveValue("webm");
+
+    await user.click(screen.getByRole("button", { name: /export current asset/i }));
+
+    expect(await screen.findByText(/export saved/i)).toBeInTheDocument();
+    expect(exportEditedVideoMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: expect.objectContaining({
+          exportFormat: "webm",
+          speed: 1.5,
+          trimEnd: 8.4,
+          trimStart: 1.2,
+        }),
+      }),
+    );
   });
 });

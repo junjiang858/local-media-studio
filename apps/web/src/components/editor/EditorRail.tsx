@@ -116,7 +116,13 @@ export function EditorRail({
 
       <section className="panel export-panel">
         <PanelHeader eyebrow={t.output} icon="download" title={t.export} />
-        <ExportPanel imageState={imageState} selectedAsset={selectedAsset} t={t} />
+        <ExportPanel
+          imageState={imageState}
+          onApplyVideoAction={onApplyVideoAction}
+          selectedAsset={selectedAsset}
+          t={t}
+          videoState={videoState}
+        />
       </section>
     </aside>
   );

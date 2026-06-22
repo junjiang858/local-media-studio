@@ -131,6 +131,7 @@ export const zh = {
   exportSaved: "导出已保存。",
   exportCanceled: "已取消导出。",
   videoExportNext: "视频导出会在下一个本地 Worker 切片实现。",
+  videoExportHelper: "视频导出会用 ffmpeg.wasm 在本地运行，大文件可能需要一些时间。",
   imageExportFailed: "图片导出失败。",
   canvasUnavailable: "当前浏览器不支持 Canvas 导出。",
   imageLoadFailed: "无法加载图片预览用于导出。",

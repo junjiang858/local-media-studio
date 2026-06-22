@@ -1,4 +1,8 @@
-import type { ImageCropAspect, ImageExportFormat } from "@local-media-studio/media-core";
+import type {
+  ImageCropAspect,
+  ImageExportFormat,
+  VideoExportFormat,
+} from "@local-media-studio/media-core";
 import type { Copy } from "../i18n";
 import type { StudioIconName } from "../icons/studio-icons";
 
@@ -18,6 +22,7 @@ export const cropPresets: CropPreset[] = [
 ];
 
 export const imageExportFormats: ImageExportFormat[] = ["png", "jpeg", "webp"];
+export const videoExportFormats: VideoExportFormat[] = ["mp4", "webm"];
 
 export const defaultImageExportFormat: ImageExportFormat = "png";
 export const defaultImageQuality = 86;
