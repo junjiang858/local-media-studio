@@ -9,7 +9,15 @@ const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 
 export type ImageCropAspect = "free" | "1:1" | "4:5" | "9:16" | "16:9";
 export type ImageAdjustment = "brightness" | "contrast" | "saturation";
-export type ImageExportFormat = "png" | "jpeg" | "webp";
+export type ImageExportFormat = "png" | "jpeg" | "webp" | "avif" | "bmp" | "gif" | "tiff";
+export type ImageExportMimeType =
+  | "image/png"
+  | "image/jpeg"
+  | "image/webp"
+  | "image/avif"
+  | "image/bmp"
+  | "image/gif"
+  | "image/tiff";
 export type VideoExportFormat = "mp4" | "webm";
 export type WatermarkPosition =
   | "top-left"
@@ -108,7 +116,7 @@ export type ImageExportPlan = {
   crop: { x: number; y: number; width: number; height: number };
   outputWidth: number;
   outputHeight: number;
-  mimeType: `image/${ImageExportFormat}`;
+  mimeType: ImageExportMimeType;
   quality: number;
   suggestedFilename: string;
 };
@@ -424,10 +432,34 @@ export function buildImageExportPlan({
     crop,
     outputWidth,
     outputHeight,
-    mimeType: `image/${format}`,
+    mimeType: getImageExportMimeType(format),
     quality: clamp(quality, 1, 100),
-    suggestedFilename: `${sanitizeBaseName(sourceName)}-edited.${format === "jpeg" ? "jpg" : format}`,
+    suggestedFilename: `${sanitizeBaseName(sourceName)}-edited${getImageExportExtension(format)}`,
   };
+}
+
+export function getImageExportMimeType(format: ImageExportFormat): ImageExportMimeType {
+  if (format === "jpeg") {
+    return "image/jpeg";
+  }
+
+  if (format === "tiff") {
+    return "image/tiff";
+  }
+
+  return `image/${format}` as ImageExportMimeType;
+}
+
+export function getImageExportExtension(format: ImageExportFormat): string {
+  if (format === "jpeg") {
+    return ".jpg";
+  }
+
+  if (format === "tiff") {
+    return ".tiff";
+  }
+
+  return `.${format}`;
 }
 
 function formatTimestamp(seconds: number): string {

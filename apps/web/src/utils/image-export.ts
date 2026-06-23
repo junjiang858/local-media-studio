@@ -1,5 +1,11 @@
 import type { CSSProperties } from "react";
-import { buildImageExportPlan } from "@local-media-studio/media-core";
+import { GIFEncoder, applyPalette, quantize } from "gifenc";
+import * as UTIF from "utif2";
+import {
+  buildImageExportPlan,
+  getImageExportExtension,
+  getImageExportMimeType,
+} from "@local-media-studio/media-core";
 import type {
   ImageAnnotation,
   ImageEditState,
@@ -14,6 +20,12 @@ export type ImageExportResult = {
   url: string;
   filename: string;
   size: number;
+};
+
+export type ImageExportAvailability = {
+  available: boolean;
+  format: ImageExportFormat;
+  reason?: string;
 };
 
 type SaveFilePickerOptions = {
@@ -34,6 +46,10 @@ type SaveFilePickerHandle = {
 type SaveFilePickerWindow = Window & {
   showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<SaveFilePickerHandle>;
 };
+
+const browserNativeImageFormats = new Set<ImageExportFormat>(["png", "jpeg", "webp", "avif"]);
+const customEncoderFormats = new Set<ImageExportFormat>(["bmp", "gif", "tiff"]);
+const nativeSupportCache = new Map<ImageExportFormat, boolean>();
 
 export async function exportEditedImage({
   asset,
@@ -104,7 +120,7 @@ export async function exportEditedImage({
     context.restore();
   }
 
-  const blob = await canvasToBlob(canvas, plan.mimeType, plan.quality / 100, t);
+  const blob = await encodeCanvasForImageFormat(canvas, format, plan.quality / 100, t);
 
   return {
     blob,
@@ -125,7 +141,7 @@ export async function saveImageExport(result: ImageExportResult, format: ImageEx
           {
             description: getExportDescription(format),
             accept: {
-              [getExportMimeType(format)]: [getExportExtension(format)],
+              [getImageExportMimeType(format)]: [getImageExportExtension(format)],
             },
           },
         ],
@@ -150,6 +166,43 @@ export function isAbortError(error: unknown) {
 
 export function getExportErrorMessage(error: unknown, t: Copy) {
   return error instanceof Error ? error.message : t.imageExportFailed;
+}
+
+export async function getImageExportAvailability(
+  formats: readonly ImageExportFormat[],
+  t: Copy,
+): Promise<Record<ImageExportFormat, ImageExportAvailability>> {
+  const entries = await Promise.all(
+    formats.map(async (format) => {
+      if (customEncoderFormats.has(format)) {
+        return [format, { available: true, format }] as const;
+      }
+
+      if (!browserNativeImageFormats.has(format)) {
+        return [
+          format,
+          {
+            available: false,
+            format,
+            reason: t.imageExportFormatUnsupported,
+          },
+        ] as const;
+      }
+
+      const available = await detectNativeCanvasFormat(format);
+
+      return [
+        format,
+        {
+          available,
+          format,
+          ...(available ? {} : { reason: t.imageExportFormatUnsupported }),
+        },
+      ] as const;
+    }),
+  );
+
+  return Object.fromEntries(entries) as Record<ImageExportFormat, ImageExportAvailability>;
 }
 
 export function getImagePreviewStyle(state: ImageEditState | null): CSSProperties {
@@ -269,6 +322,183 @@ function drawBrush(
   context.stroke();
 }
 
+async function encodeCanvasForImageFormat(
+  canvas: HTMLCanvasElement,
+  format: ImageExportFormat,
+  quality: number,
+  t: Copy,
+): Promise<Blob> {
+  if (format === "bmp") {
+    return encodeBmp(canvas, t);
+  }
+
+  if (format === "gif") {
+    return encodeGif(canvas, t);
+  }
+
+  if (format === "tiff") {
+    return encodeTiff(canvas, t);
+  }
+
+  const mimeType = getImageExportMimeType(format);
+  const blob = await canvasToBlob(canvas, mimeType, quality, t);
+
+  if (blob.type && blob.type !== mimeType) {
+    throw new Error(t.imageExportFormatUnsupported);
+  }
+
+  return blob;
+}
+
+async function detectNativeCanvasFormat(format: ImageExportFormat): Promise<boolean> {
+  const cachedSupport = nativeSupportCache.get(format);
+
+  if (typeof cachedSupport === "boolean") {
+    return cachedSupport;
+  }
+
+  if (format === "png") {
+    nativeSupportCache.set(format, true);
+    return true;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    nativeSupportCache.set(format, false);
+    return false;
+  }
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 1, 1);
+
+  try {
+    const mimeType = getImageExportMimeType(format);
+    const blob = await canvasToBlob(canvas, mimeType, 0.92, {
+      canvasExportFailed: "Canvas export failed",
+    } as Copy);
+    const supported = blob.type === mimeType;
+
+    nativeSupportCache.set(format, supported);
+    return supported;
+  } catch {
+    nativeSupportCache.set(format, false);
+    return false;
+  }
+}
+
+function encodeBmp(canvas: HTMLCanvasElement, t: Copy): Blob {
+  const { data, height, width } = getCanvasImageData(canvas, t);
+  const rowStride = Math.ceil((width * 3) / 4) * 4;
+  const pixelArraySize = rowStride * height;
+  const fileSize = 54 + pixelArraySize;
+  const buffer = new ArrayBuffer(fileSize);
+  const view = new DataView(buffer);
+  const bytes = new Uint8Array(buffer);
+
+  bytes[0] = 0x42;
+  bytes[1] = 0x4d;
+  view.setUint32(2, fileSize, true);
+  view.setUint32(10, 54, true);
+  view.setUint32(14, 40, true);
+  view.setInt32(18, width, true);
+  view.setInt32(22, height, true);
+  view.setUint16(26, 1, true);
+  view.setUint16(28, 24, true);
+  view.setUint32(34, pixelArraySize, true);
+  view.setInt32(38, 2835, true);
+  view.setInt32(42, 2835, true);
+
+  let offset = 54;
+  for (let y = height - 1; y >= 0; y -= 1) {
+    const rowStart = y * width * 4;
+    for (let x = 0; x < width; x += 1) {
+      const pixelIndex = rowStart + x * 4;
+      const alpha = readPixelChannel(data, pixelIndex + 3, 255) / 255;
+      const red = flattenAlpha(readPixelChannel(data, pixelIndex), alpha);
+      const green = flattenAlpha(readPixelChannel(data, pixelIndex + 1), alpha);
+      const blue = flattenAlpha(readPixelChannel(data, pixelIndex + 2), alpha);
+
+      bytes[offset] = blue;
+      bytes[offset + 1] = green;
+      bytes[offset + 2] = red;
+      offset += 3;
+    }
+
+    offset += rowStride - width * 3;
+  }
+
+  return new Blob([buffer], { type: "image/bmp" });
+}
+
+function encodeGif(canvas: HTMLCanvasElement, t: Copy): Blob {
+  const { data, height, width } = getCanvasImageData(canvas, t);
+  const flattenedData = flattenImageDataToWhite(data);
+  const palette = quantize(flattenedData, 256);
+  const indexedPixels = applyPalette(flattenedData, palette);
+  const gif = GIFEncoder();
+
+  gif.writeFrame(indexedPixels, width, height, { palette });
+  gif.finish();
+
+  const bytes = gif.bytes();
+  return new Blob([copyToExactArrayBuffer(bytes)], { type: "image/gif" });
+}
+
+function encodeTiff(canvas: HTMLCanvasElement, t: Copy): Blob {
+  const { data, height, width } = getCanvasImageData(canvas, t);
+  const rgba = new Uint8Array(data.byteLength);
+  rgba.set(data);
+  const encoded = UTIF.encodeImage(copyToExactArrayBuffer(rgba), width, height);
+
+  return new Blob([encoded], { type: "image/tiff" });
+}
+
+function getCanvasImageData(canvas: HTMLCanvasElement, t: Copy): ImageData {
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error(t.canvasUnavailable);
+  }
+
+  return context.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function flattenImageDataToWhite(data: Uint8ClampedArray) {
+  const flattened = new Uint8Array(data.byteLength);
+
+  for (let index = 0; index < data.length; index += 4) {
+    const alpha = readPixelChannel(data, index + 3, 255) / 255;
+    flattened[index] = flattenAlpha(readPixelChannel(data, index), alpha);
+    flattened[index + 1] = flattenAlpha(readPixelChannel(data, index + 1), alpha);
+    flattened[index + 2] = flattenAlpha(readPixelChannel(data, index + 2), alpha);
+    flattened[index + 3] = 255;
+  }
+
+  return flattened;
+}
+
+function flattenAlpha(channel: number, alpha: number) {
+  return Math.round(channel * alpha + 255 * (1 - alpha));
+}
+
+function readPixelChannel(
+  data: Uint8Array | Uint8ClampedArray,
+  index: number,
+  fallback = 0,
+): number {
+  return data[index] ?? fallback;
+}
+
+function copyToExactArrayBuffer(bytes: Uint8Array | Uint8ClampedArray): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
 function getWatermarkAnchor(position: WatermarkPosition, width: number, height: number) {
   const inset = Math.max(18, Math.round(Math.min(width, height) * 0.035));
 
@@ -324,18 +554,6 @@ function triggerBrowserDownload(result: ImageExportResult) {
   document.body.append(link);
   link.click();
   link.remove();
-}
-
-function getExportMimeType(format: ImageExportFormat) {
-  if (format === "jpeg") {
-    return "image/jpeg";
-  }
-
-  return `image/${format}`;
-}
-
-function getExportExtension(format: ImageExportFormat) {
-  return format === "jpeg" ? ".jpg" : `.${format}`;
 }
 
 function getExportDescription(format: ImageExportFormat) {

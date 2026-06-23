@@ -18,9 +18,11 @@ import { useJobStore } from "../../stores/job-store";
 import type { WorkspaceAsset } from "../../stores/media-store";
 import {
   exportEditedImage,
+  getImageExportAvailability,
   getExportErrorMessage,
   isAbortError,
   saveImageExport,
+  type ImageExportAvailability,
   type ImageExportResult,
 } from "../../utils/image-export";
 import {
@@ -50,6 +52,9 @@ export function ExportPanel({
   const [status, setStatus] = useState<ExportStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [result, setResult] = useState<ImageExportResult | VideoExportResult | null>(null);
+  const [imageAvailability, setImageAvailability] = useState<
+    Partial<Record<ImageExportFormat, ImageExportAvailability>>
+  >({});
   const jobs = useJobStore((state) => state.jobs);
   const queueJob = useJobStore((state) => state.queueJob);
   const updateJob = useJobStore((state) => state.updateJob);
@@ -64,6 +69,8 @@ export function ExportPanel({
   const videoJob = videoJobId ? (jobs[videoJobId] ?? null) : null;
   const activeFormat = selectedAsset?.kind === "video" ? videoState?.exportFormat : format;
   const exportFormats = selectedAsset?.kind === "video" ? videoExportFormats : imageExportFormats;
+  const activeImageAvailability =
+    selectedAsset?.kind === "image" ? imageAvailability[format] : null;
 
   useEffect(() => {
     return () => {
@@ -72,6 +79,36 @@ export function ExportPanel({
       }
     };
   }, [result]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    if (selectedAsset?.kind !== "image") {
+      return undefined;
+    }
+
+    void getImageExportAvailability(imageExportFormats, t).then((availability) => {
+      if (canceled) {
+        return;
+      }
+
+      setImageAvailability(availability);
+
+      if (!availability[format]?.available) {
+        const nextFormat = imageExportFormats.find((exportFormat) => {
+          return availability[exportFormat]?.available;
+        });
+
+        if (nextFormat) {
+          setFormat(nextFormat);
+        }
+      }
+    });
+
+    return () => {
+      canceled = true;
+    };
+  }, [format, selectedAsset?.kind, t]);
 
   async function handleExport() {
     if (!selectedAsset) {
@@ -86,6 +123,12 @@ export function ExportPanel({
     if (!imageState) {
       setStatus("failed");
       setMessage(t.imageExportFailed);
+      return;
+    }
+
+    if (activeImageAvailability && !activeImageAvailability.available) {
+      setStatus("failed");
+      setMessage(activeImageAvailability.reason ?? t.imageExportFormatUnsupported);
       return;
     }
 
@@ -189,11 +232,19 @@ export function ExportPanel({
           }}
           value={activeFormat}
         >
-          {exportFormats.map((exportFormat) => (
-            <option key={exportFormat} value={exportFormat}>
-              {exportFormat.toUpperCase()}
-            </option>
-          ))}
+          {exportFormats.map((exportFormat) => {
+            const availability =
+              selectedAsset?.kind === "image"
+                ? imageAvailability[exportFormat as ImageExportFormat]
+                : null;
+            const disabled = availability ? !availability.available : false;
+
+            return (
+              <option disabled={disabled} key={exportFormat} value={exportFormat}>
+                {`${exportFormat.toUpperCase()}${disabled ? ` - ${t.unsupportedFormat}` : ""}`}
+              </option>
+            );
+          })}
         </select>
       </div>
       {selectedAsset?.kind !== "video" ? (
@@ -210,7 +261,9 @@ export function ExportPanel({
         </div>
       ) : null}
       <p className="export-helper">
-        {selectedAsset?.kind === "video" ? t.videoExportHelper : t.imageExportHelper}
+        {selectedAsset?.kind === "video"
+          ? t.videoExportHelper
+          : (activeImageAvailability?.reason ?? t.imageExportHelper)}
       </p>
       <button
         className="primary-button full-width"

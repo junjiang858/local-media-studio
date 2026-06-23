@@ -135,6 +135,7 @@ export const en = {
   videoExportNext: "Video export is the next local worker slice.",
   videoExportHelper: "Video export runs locally with ffmpeg.wasm. Large clips may take time.",
   imageExportFailed: "Image export failed.",
+  imageExportFormatUnsupported: "This browser cannot export the selected image format.",
   canvasUnavailable: "Canvas export is not available in this browser.",
   imageLoadFailed: "Image preview could not be loaded for export.",
   canvasExportFailed: "Canvas export failed.",

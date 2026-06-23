@@ -21,7 +21,15 @@ export const cropPresets: CropPreset[] = [
   { aspect: "9:16", label: (t) => t.story, icon: "fitScreen", previewClass: "story" },
 ];
 
-export const imageExportFormats: ImageExportFormat[] = ["png", "jpeg", "webp"];
+export const imageExportFormats: ImageExportFormat[] = [
+  "png",
+  "jpeg",
+  "webp",
+  "avif",
+  "bmp",
+  "gif",
+  "tiff",
+];
 export const videoExportFormats: VideoExportFormat[] = ["mp4", "webm"];
 
 export const defaultImageExportFormat: ImageExportFormat = "png";

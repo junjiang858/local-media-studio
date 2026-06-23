@@ -10,6 +10,8 @@ import {
   formatDuration,
   formatFileSize,
   getCurrentImageEditState,
+  getImageExportExtension,
+  getImageExportMimeType,
   getNextAssetId,
   initialImageEditHistory,
   initialVideoEditState,
@@ -135,6 +137,18 @@ describe("media core helpers", () => {
     expect(plan.outputHeight).toBe(600);
     expect(plan.mimeType).toBe("image/jpeg");
     expect(plan.suggestedFilename).toBe("cover-photo-edited.jpg");
+  });
+
+  it("maps rich image export formats to MIME types and extensions", () => {
+    expect(getImageExportMimeType("png")).toBe("image/png");
+    expect(getImageExportMimeType("jpeg")).toBe("image/jpeg");
+    expect(getImageExportMimeType("webp")).toBe("image/webp");
+    expect(getImageExportMimeType("avif")).toBe("image/avif");
+    expect(getImageExportMimeType("bmp")).toBe("image/bmp");
+    expect(getImageExportMimeType("gif")).toBe("image/gif");
+    expect(getImageExportMimeType("tiff")).toBe("image/tiff");
+    expect(getImageExportExtension("jpeg")).toBe(".jpg");
+    expect(getImageExportExtension("tiff")).toBe(".tiff");
   });
 
   it("tracks worker job lifecycle with progress, failure, and cancellation states", () => {

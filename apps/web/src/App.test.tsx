@@ -64,7 +64,13 @@ describe("media workspace shell", () => {
       createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
       drawImage: vi.fn(),
       fill: vi.fn(),
+      fillRect: vi.fn(),
       fillText: vi.fn(),
+      getImageData: vi.fn(() => ({
+        data: new Uint8ClampedArray([255, 255, 255, 255]),
+        height: 1,
+        width: 1,
+      })),
       lineTo: vi.fn(),
       measureText: vi.fn(() => ({ width: 96 })),
       moveTo: vi.fn(),
