@@ -1,12 +1,13 @@
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type {
-  ImageAnnotation,
   ImageCropAspect,
+  ImageEditAction,
   ImageEditState,
 } from "@local-media-studio/media-core";
 import type { Copy } from "../../i18n";
 import type { WorkspaceAsset } from "../../stores/media-store";
 import { getImagePreviewStyle } from "../../utils/image-export";
+import { ImageLayerCanvas } from "./ImageLayerCanvas";
 
 export type PreviewBounds = {
   height: number;
@@ -17,12 +18,14 @@ export function ImagePreviewPane({
   asset,
   compareOriginal,
   imageState,
+  onApplyImageAction,
   previewBounds,
   t,
 }: {
   asset: WorkspaceAsset;
   compareOriginal: boolean;
   imageState: ImageEditState | null;
+  onApplyImageAction: (action: ImageEditAction) => void;
   previewBounds: PreviewBounds | null;
   t: Copy;
 }) {
@@ -30,22 +33,15 @@ export function ImagePreviewPane({
   const compareBounds = getCompareBounds(previewBounds);
   const editedPane = (
     <figure className="image-preview-pane">
-      <div
-        className={`image-preview-crop crop-${activeAspect}`}
-        style={getPreviewFrameStyle(asset, activeAspect, previewBounds)}
-      >
-        <img
-          alt={`${t.previewOf} ${asset.name}`}
-          src={asset.objectUrl}
-          style={getImagePreviewStyle(imageState)}
-        />
-        <AnnotationPreviewOverlay annotations={imageState?.annotations ?? []} />
-        {imageState?.watermarkText.trim() ? (
-          <figcaption className={`watermark-preview position-${imageState.watermarkPosition}`}>
-            {imageState.watermarkText.trim()}
-          </figcaption>
-        ) : null}
-      </div>
+      <ImagePreviewFrame
+        activeAspect={activeAspect}
+        alt={`${t.previewOf} ${asset.name}`}
+        asset={asset}
+        bounds={previewBounds}
+        imageState={imageState}
+        interactive={Boolean(imageState)}
+        onApplyImageAction={onApplyImageAction}
+      />
     </figure>
   );
 
@@ -57,109 +53,101 @@ export function ImagePreviewPane({
     <div className="compare-preview-grid">
       <figure className="image-preview-pane compare-pane">
         <span>{t.originalVersion}</span>
-        <div
-          className="image-preview-crop crop-free"
-          style={getPreviewFrameStyle(asset, "free", compareBounds)}
-        >
-          <img alt="" src={asset.objectUrl} />
-        </div>
+        <ImagePreviewFrame
+          activeAspect="free"
+          alt=""
+          asset={asset}
+          bounds={compareBounds}
+          imageState={null}
+          interactive={false}
+          onApplyImageAction={onApplyImageAction}
+        />
       </figure>
       <figure className="image-preview-pane compare-pane">
         <span>{t.editedVersion}</span>
-        <div
-          className={`image-preview-crop crop-${activeAspect}`}
-          style={getPreviewFrameStyle(asset, activeAspect, compareBounds)}
-        >
-          <img alt="" src={asset.objectUrl} style={getImagePreviewStyle(imageState)} />
-          <AnnotationPreviewOverlay annotations={imageState?.annotations ?? []} />
-          {imageState?.watermarkText.trim() ? (
-            <figcaption className={`watermark-preview position-${imageState.watermarkPosition}`}>
-              {imageState.watermarkText.trim()}
-            </figcaption>
-          ) : null}
-        </div>
+        <ImagePreviewFrame
+          activeAspect={activeAspect}
+          alt=""
+          asset={asset}
+          bounds={compareBounds}
+          imageState={imageState}
+          interactive={false}
+          onApplyImageAction={onApplyImageAction}
+        />
       </figure>
     </div>
   );
 }
 
-function AnnotationPreviewOverlay({ annotations }: { annotations: readonly ImageAnnotation[] }) {
-  if (annotations.length === 0) {
-    return null;
-  }
+function ImagePreviewFrame({
+  activeAspect,
+  alt,
+  asset,
+  bounds,
+  imageState,
+  interactive,
+  onApplyImageAction,
+}: {
+  activeAspect: ImageCropAspect;
+  alt: string;
+  asset: WorkspaceAsset;
+  bounds: PreviewBounds | null;
+  imageState: ImageEditState | null;
+  interactive: boolean;
+  onApplyImageAction: (action: ImageEditAction) => void;
+}) {
+  const cropRef = useRef<HTMLDivElement>(null);
+  const [layerSize, setLayerSize] = useState<PreviewBounds>({ height: 0, width: 0 });
+
+  useEffect(() => {
+    const crop = cropRef.current;
+
+    if (!crop) {
+      return;
+    }
+
+    const updateSize = () => {
+      const rect = crop.getBoundingClientRect();
+      setLayerSize((currentSize) => {
+        const nextSize = {
+          height: Math.round(rect.height),
+          width: Math.round(rect.width),
+        };
+
+        return currentSize.height === nextSize.height && currentSize.width === nextSize.width
+          ? currentSize
+          : nextSize;
+      });
+    };
+
+    updateSize();
+
+    if (typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(crop);
+
+    return () => observer.disconnect();
+  }, [activeAspect, asset.id, bounds?.height, bounds?.width]);
 
   return (
-    <svg aria-hidden="true" className="annotation-preview-overlay" viewBox="0 0 100 100">
-      <defs>
-        <marker
-          id="annotation-arrowhead"
-          markerHeight="5"
-          markerWidth="5"
-          orient="auto"
-          refX="4"
-          refY="2.5"
-        >
-          <path d="M0,0 L5,2.5 L0,5 Z" fill="currentColor" />
-        </marker>
-      </defs>
-      {annotations.map((annotation) => (
-        <AnnotationPreviewItem annotation={annotation} key={annotation.id} />
-      ))}
-    </svg>
-  );
-}
-
-function AnnotationPreviewItem({ annotation }: { annotation: ImageAnnotation }) {
-  const x = annotation.x * 100;
-  const y = annotation.y * 100;
-  const color = annotation.color;
-
-  if (annotation.type === "text") {
-    return (
-      <text fill={color} fontSize="4.2" fontWeight="760" x={x} y={y}>
-        {annotation.text}
-      </text>
-    );
-  }
-
-  if (annotation.type === "rectangle") {
-    return (
-      <rect
-        fill="none"
-        height={annotation.height * 100}
-        stroke={color}
-        strokeWidth="0.7"
-        width={annotation.width * 100}
-        x={x}
-        y={y}
-      />
-    );
-  }
-
-  if (annotation.type === "arrow") {
-    return (
-      <line
-        markerEnd="url(#annotation-arrowhead)"
-        stroke={color}
-        strokeLinecap="round"
-        strokeWidth="0.9"
-        x1={x}
-        x2={annotation.endX * 100}
-        y1={y}
-        y2={annotation.endY * 100}
-      />
-    );
-  }
-
-  return (
-    <polyline
-      fill="none"
-      points={annotation.points.map((point) => `${point.x * 100},${point.y * 100}`).join(" ")}
-      stroke={color}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="0.8"
-    />
+    <div
+      ref={cropRef}
+      className={`image-preview-crop crop-${activeAspect}`}
+      style={getPreviewFrameStyle(asset, activeAspect, bounds)}
+    >
+      <img alt={alt} src={asset.objectUrl} style={getImagePreviewStyle(imageState)} />
+      {imageState ? (
+        <ImageLayerCanvas
+          imageState={imageState}
+          interactive={interactive}
+          onApply={onApplyImageAction}
+          size={layerSize}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -183,7 +171,7 @@ function getPreviewFrameStyle(
 }
 
 function getAspectRatio(asset: WorkspaceAsset, aspect: ImageCropAspect) {
-  if (aspect === "free") {
+  if (aspect === "free" || aspect === "custom") {
     return asset.width && asset.height ? asset.width / asset.height : 4 / 3;
   }
 

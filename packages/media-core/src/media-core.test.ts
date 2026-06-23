@@ -111,7 +111,49 @@ describe("media core helpers", () => {
       },
     ]);
     expect(annotatedState.watermarkPosition).toBe("top-left");
+    expect(annotatedState.watermarkLayer).toMatchObject({ x: 0.05, y: 0.06 });
     expect(undoneState.watermarkPosition).toBe("bottom-right");
+  });
+
+  it("updates image layer geometry and custom crop export plans", () => {
+    const history = applyImageEditAction(
+      applyImageEditAction(
+        applyImageEditAction(initialImageEditHistory(), {
+          annotation: {
+            color: "#f8fbff",
+            height: 0.3,
+            id: "box-1",
+            type: "rectangle",
+            width: 0.4,
+            x: 0.2,
+            y: 0.2,
+          },
+          type: "add-annotation",
+        }),
+        {
+          annotationId: "box-1",
+          patch: { height: 0.22, width: 0.32, x: 0.31, y: 0.27 },
+          type: "update-annotation",
+        },
+      ),
+      {
+        rect: { height: 0.5, width: 0.6, x: 0.1, y: 0.2 },
+        type: "set-crop-rect",
+      },
+    );
+    const state = getCurrentImageEditState(history);
+    const plan = buildImageExportPlan({
+      sourceName: "cover photo.png",
+      sourceWidth: 1200,
+      sourceHeight: 800,
+      state,
+      format: "png",
+      quality: 86,
+    });
+
+    expect(state.cropAspect).toBe("custom");
+    expect(state.annotations[0]).toMatchObject({ height: 0.22, width: 0.32, x: 0.31, y: 0.27 });
+    expect(plan.crop).toEqual({ height: 400, width: 720, x: 120, y: 160 });
   });
 
   it("builds centered crop and resize plans for image export", () => {

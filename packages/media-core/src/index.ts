@@ -7,7 +7,7 @@ import {
 
 const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 
-export type ImageCropAspect = "free" | "1:1" | "4:5" | "9:16" | "16:9";
+export type ImageCropAspect = "free" | "custom" | "1:1" | "4:5" | "9:16" | "16:9";
 export type ImageAdjustment = "brightness" | "contrast" | "saturation";
 export type ImageExportFormat = "png" | "jpeg" | "webp" | "avif" | "bmp" | "gif" | "tiff";
 export type ImageExportMimeType =
@@ -29,6 +29,25 @@ export type WatermarkPosition =
 type ImageAnnotationBase = {
   color: string;
   id: string;
+  rotation?: number;
+  x: number;
+  y: number;
+};
+
+export type ImageCropRect = {
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+};
+
+export type ImageWatermarkLayer = {
+  color: string;
+  fontSize: number;
+  id: "watermark";
+  opacity: number;
+  rotation: number;
+  visible: boolean;
   x: number;
   y: number;
 };
@@ -62,6 +81,7 @@ export type ImageAnnotation =
   | ImageTextAnnotation;
 
 export type ImageEditState = {
+  cropRect: ImageCropRect | null;
   cropAspect: ImageCropAspect;
   rotation: 0 | 90 | 180 | 270;
   flipHorizontal: boolean;
@@ -69,6 +89,7 @@ export type ImageEditState = {
   resizeWidth: number | null;
   watermarkText: string;
   watermarkPosition: WatermarkPosition;
+  watermarkLayer: ImageWatermarkLayer;
   annotations: ImageAnnotation[];
   adjustments: Record<ImageAdjustment, number>;
 };
@@ -86,9 +107,12 @@ export type ImageEditAction =
   | { type: "toggle-flip-horizontal" }
   | { type: "toggle-flip-vertical" }
   | { type: "set-resize-width"; width: number | null }
+  | { type: "set-crop-rect"; rect: ImageCropRect | null }
   | { type: "set-watermark"; text: string }
   | { type: "set-watermark-position"; position: WatermarkPosition }
+  | { type: "update-watermark-layer"; patch: Partial<ImageWatermarkLayer> }
   | { type: "add-annotation"; annotation: ImageAnnotation }
+  | { type: "update-annotation"; annotationId: string; patch: Partial<ImageAnnotation> }
   | { type: "remove-annotation"; annotationId: string }
   | { type: "set-adjustment"; adjustment: ImageAdjustment; value: number }
   | { type: "undo" }
@@ -128,6 +152,7 @@ export type WorkerJobProgressUpdate = {
 };
 
 const defaultImageEditState: ImageEditState = {
+  cropRect: null,
   cropAspect: "free",
   rotation: 0,
   flipHorizontal: false,
@@ -135,6 +160,16 @@ const defaultImageEditState: ImageEditState = {
   resizeWidth: null,
   watermarkText: "",
   watermarkPosition: "bottom-right",
+  watermarkLayer: {
+    color: "#f8fbff",
+    fontSize: 0.045,
+    id: "watermark",
+    opacity: 0.82,
+    rotation: 0,
+    visible: true,
+    x: 0.68,
+    y: 0.82,
+  },
   annotations: [],
   adjustments: {
     brightness: 0,
@@ -421,7 +456,7 @@ export function buildImageExportPlan({
   format: ImageExportFormat;
   quality: number;
 }): ImageExportPlan {
-  const crop = getCenteredCrop(sourceWidth, sourceHeight, state.cropAspect);
+  const crop = getImageCrop(sourceWidth, sourceHeight, state);
   const rotated = state.rotation === 90 || state.rotation === 270;
   const naturalWidth = rotated ? crop.height : crop.width;
   const naturalHeight = rotated ? crop.width : crop.height;
@@ -484,7 +519,11 @@ function reduceImageEditState(
 ): ImageEditState {
   switch (action.type) {
     case "set-crop-aspect":
-      return { ...cloneImageEditState(state), cropAspect: action.aspect };
+      return {
+        ...cloneImageEditState(state),
+        cropAspect: action.aspect,
+        cropRect: action.aspect === "custom" ? (state.cropRect ?? getDefaultCropRect()) : null,
+      };
     case "rotate-clockwise":
       return { ...cloneImageEditState(state), rotation: rotate(state.rotation, 90) };
     case "rotate-counterclockwise":
@@ -498,14 +537,44 @@ function reduceImageEditState(
         ...cloneImageEditState(state),
         resizeWidth: action.width ? Math.round(clamp(action.width, 16, 12000)) : null,
       };
+    case "set-crop-rect":
+      return {
+        ...cloneImageEditState(state),
+        cropAspect: action.rect ? "custom" : state.cropAspect,
+        cropRect: action.rect ? normalizeCropRect(action.rect) : null,
+      };
     case "set-watermark":
       return { ...cloneImageEditState(state), watermarkText: action.text.slice(0, 120) };
     case "set-watermark-position":
-      return { ...cloneImageEditState(state), watermarkPosition: action.position };
+      return {
+        ...cloneImageEditState(state),
+        watermarkLayer: {
+          ...cloneWatermarkLayer(state.watermarkLayer),
+          ...getWatermarkLayerPosition(action.position),
+        },
+        watermarkPosition: action.position,
+      };
+    case "update-watermark-layer":
+      return {
+        ...cloneImageEditState(state),
+        watermarkLayer: normalizeWatermarkLayer({
+          ...state.watermarkLayer,
+          ...action.patch,
+        }),
+      };
     case "add-annotation":
       return {
         ...cloneImageEditState(state),
         annotations: [...state.annotations, normalizeAnnotation(action.annotation)],
+      };
+    case "update-annotation":
+      return {
+        ...cloneImageEditState(state),
+        annotations: state.annotations.map((annotation) =>
+          annotation.id === action.annotationId
+            ? normalizeAnnotation({ ...annotation, ...action.patch } as ImageAnnotation)
+            : cloneAnnotation(annotation),
+        ),
       };
     case "remove-annotation":
       return {
@@ -530,6 +599,8 @@ function cloneImageEditState(state: ImageEditState): ImageEditState {
     ...state,
     adjustments: { ...state.adjustments },
     annotations: state.annotations.map(cloneAnnotation),
+    cropRect: state.cropRect ? { ...state.cropRect } : null,
+    watermarkLayer: cloneWatermarkLayer(state.watermarkLayer),
   };
 }
 
@@ -564,10 +635,17 @@ function cloneAnnotation(annotation: ImageAnnotation): ImageAnnotation {
   return { ...annotation };
 }
 
+function cloneWatermarkLayer(layer: ImageWatermarkLayer): ImageWatermarkLayer {
+  return { ...layer };
+}
+
 function normalizeAnnotation(annotation: ImageAnnotation): ImageAnnotation {
   const base = {
     color: annotation.color.slice(0, 32),
     id: annotation.id.slice(0, 80),
+    ...(typeof annotation.rotation === "number"
+      ? { rotation: clamp(annotation.rotation, -360, 360) }
+      : {}),
     x: clamp(annotation.x, 0, 1),
     y: clamp(annotation.y, 0, 1),
   };
@@ -608,6 +686,57 @@ function normalizeAnnotation(annotation: ImageAnnotation): ImageAnnotation {
   };
 }
 
+function normalizeCropRect(rect: ImageCropRect): ImageCropRect {
+  const x = clamp(rect.x, 0, 0.98);
+  const y = clamp(rect.y, 0, 0.98);
+  const width = clamp(rect.width, 0.02, 1 - x);
+  const height = clamp(rect.height, 0.02, 1 - y);
+
+  return { height, width, x, y };
+}
+
+function normalizeWatermarkLayer(layer: ImageWatermarkLayer): ImageWatermarkLayer {
+  return {
+    color: layer.color.slice(0, 32),
+    fontSize: clamp(layer.fontSize, 0.018, 0.16),
+    id: "watermark",
+    opacity: clamp(layer.opacity, 0.05, 1),
+    rotation: clamp(layer.rotation, -360, 360),
+    visible: layer.visible,
+    x: clamp(layer.x, 0, 1),
+    y: clamp(layer.y, 0, 1),
+  };
+}
+
+function getDefaultCropRect(): ImageCropRect {
+  return {
+    height: 0.78,
+    width: 0.78,
+    x: 0.11,
+    y: 0.11,
+  };
+}
+
+function getWatermarkLayerPosition(position: WatermarkPosition): Pick<ImageWatermarkLayer, "x" | "y"> {
+  if (position === "top-left") {
+    return { x: 0.05, y: 0.06 };
+  }
+
+  if (position === "top-right") {
+    return { x: 0.68, y: 0.06 };
+  }
+
+  if (position === "bottom-left") {
+    return { x: 0.05, y: 0.82 };
+  }
+
+  if (position === "center") {
+    return { x: 0.38, y: 0.46 };
+  }
+
+  return { x: 0.68, y: 0.82 };
+}
+
 function rotate(current: ImageEditState["rotation"], delta: 90 | -90): ImageEditState["rotation"] {
   return ((((current + delta) % 360) + 360) % 360) as ImageEditState["rotation"];
 }
@@ -645,8 +774,25 @@ function getCenteredCrop(
   };
 }
 
+function getImageCrop(
+  sourceWidth: number,
+  sourceHeight: number,
+  state: ImageEditState,
+): ImageExportPlan["crop"] {
+  if (state.cropAspect === "custom" && state.cropRect) {
+    return {
+      height: Math.max(1, Math.round(state.cropRect.height * sourceHeight)),
+      width: Math.max(1, Math.round(state.cropRect.width * sourceWidth)),
+      x: Math.round(state.cropRect.x * sourceWidth),
+      y: Math.round(state.cropRect.y * sourceHeight),
+    };
+  }
+
+  return getCenteredCrop(sourceWidth, sourceHeight, state.cropAspect);
+}
+
 function parseAspectRatio(aspect: ImageCropAspect): number | null {
-  if (aspect === "free") {
+  if (aspect === "free" || aspect === "custom") {
     return null;
   }
 

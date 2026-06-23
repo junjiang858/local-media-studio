@@ -4,7 +4,11 @@ import {
   formatFileSize,
   getActiveSubtitleCue,
 } from "@local-media-studio/media-core";
-import type { ImageEditState, VideoEditState } from "@local-media-studio/media-core";
+import type {
+  ImageEditAction,
+  ImageEditState,
+  VideoEditState,
+} from "@local-media-studio/media-core";
 import type { Copy } from "../../i18n";
 import { getKindLabel } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
@@ -17,6 +21,7 @@ export function SelectedPreview({
   compareOriginal,
   imageState,
   isFullscreen,
+  onApplyImageAction,
   onCompareToggle,
   onFullscreenToggle,
   onZoomChange,
@@ -28,6 +33,7 @@ export function SelectedPreview({
   compareOriginal: boolean;
   imageState: ImageEditState | null;
   isFullscreen: boolean;
+  onApplyImageAction: (action: ImageEditAction) => void;
   onCompareToggle: () => void;
   onFullscreenToggle: () => void;
   onZoomChange: (zoom: number) => void;
@@ -161,6 +167,7 @@ export function SelectedPreview({
               asset={asset}
               compareOriginal={compareOriginal}
               imageState={imageState}
+              onApplyImageAction={onApplyImageAction}
               previewBounds={previewBounds}
               t={t}
             />

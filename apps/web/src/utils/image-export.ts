@@ -10,7 +10,6 @@ import type {
   ImageAnnotation,
   ImageEditState,
   ImageExportFormat,
-  WatermarkPosition,
 } from "@local-media-studio/media-core";
 import type { Copy } from "../i18n";
 import type { WorkspaceAsset } from "../stores/media-store";
@@ -108,15 +107,18 @@ export async function exportEditedImage({
 
   drawAnnotations(context, state.annotations, canvas.width, canvas.height);
 
-  if (state.watermarkText.trim()) {
+  if (state.watermarkText.trim() && state.watermarkLayer.visible) {
+    const watermark = state.watermarkLayer;
+
     context.save();
-    context.globalAlpha = 0.78;
-    context.fillStyle = "#f8fbff";
-    context.font = `${Math.max(16, Math.round(canvas.width * 0.04))}px system-ui, sans-serif`;
-    const anchor = getWatermarkAnchor(state.watermarkPosition, canvas.width, canvas.height);
-    context.textAlign = anchor.textAlign;
-    context.textBaseline = anchor.textBaseline;
-    context.fillText(state.watermarkText.trim(), anchor.x, anchor.y);
+    context.globalAlpha = watermark.opacity;
+    context.fillStyle = watermark.color;
+    context.font = `${Math.max(16, Math.round(canvas.width * watermark.fontSize))}px system-ui, sans-serif`;
+    context.textAlign = "left";
+    context.textBaseline = "top";
+    context.translate(watermark.x * canvas.width, watermark.y * canvas.height);
+    context.rotate((watermark.rotation * Math.PI) / 180);
+    context.fillText(state.watermarkText.trim(), 0, 0);
     context.restore();
   }
 
@@ -497,53 +499,6 @@ function copyToExactArrayBuffer(bytes: Uint8Array | Uint8ClampedArray): ArrayBuf
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
   return copy.buffer;
-}
-
-function getWatermarkAnchor(position: WatermarkPosition, width: number, height: number) {
-  const inset = Math.max(18, Math.round(Math.min(width, height) * 0.035));
-
-  if (position === "top-left") {
-    return {
-      x: inset,
-      y: inset,
-      textAlign: "left" as CanvasTextAlign,
-      textBaseline: "top" as CanvasTextBaseline,
-    };
-  }
-
-  if (position === "top-right") {
-    return {
-      x: width - inset,
-      y: inset,
-      textAlign: "right" as CanvasTextAlign,
-      textBaseline: "top" as CanvasTextBaseline,
-    };
-  }
-
-  if (position === "bottom-left") {
-    return {
-      x: inset,
-      y: height - inset,
-      textAlign: "left" as CanvasTextAlign,
-      textBaseline: "bottom" as CanvasTextBaseline,
-    };
-  }
-
-  if (position === "center") {
-    return {
-      x: width / 2,
-      y: height / 2,
-      textAlign: "center" as CanvasTextAlign,
-      textBaseline: "middle" as CanvasTextBaseline,
-    };
-  }
-
-  return {
-    x: width - inset,
-    y: height - inset,
-    textAlign: "right" as CanvasTextAlign,
-    textBaseline: "bottom" as CanvasTextBaseline,
-  };
 }
 
 function triggerBrowserDownload(result: ImageExportResult) {

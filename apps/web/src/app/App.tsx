@@ -212,6 +212,7 @@ export default function App() {
           isFullscreen={isPreviewFullscreen}
           isVisible={currentMobileTab === "preview"}
           onAddMedia={openFilePicker}
+          onApplyImageAction={handleApplyImageAction}
           onCompareToggle={() => setCompareOriginal((value) => !value)}
           onFullscreenToggle={() => setIsPreviewFullscreen((value) => !value)}
           onZoomChange={setZoom}

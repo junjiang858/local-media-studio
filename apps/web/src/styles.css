@@ -1087,6 +1087,23 @@ svg {
   transform: translate(-50%, -50%);
 }
 
+.image-layer-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.image-layer-canvas.is-interactive {
+  cursor: default;
+  pointer-events: auto;
+}
+
+.image-layer-canvas canvas {
+  display: block;
+}
+
 .annotation-preview-overlay {
   position: absolute;
   inset: 0;
@@ -1431,6 +1448,10 @@ svg {
 .crop-preset-shape.landscape {
   width: 38px;
   height: 24px;
+}
+
+.crop-preset-shape.custom {
+  border-style: dashed;
 }
 
 .crop-preset-shape.story {

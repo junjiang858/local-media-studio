@@ -15,6 +15,7 @@ export type CropPreset = {
 
 export const cropPresets: CropPreset[] = [
   { aspect: "free", label: (t) => t.original, icon: "aspectRatio", previewClass: "free" },
+  { aspect: "custom", label: (t) => t.custom, icon: "crop", previewClass: "custom" },
   { aspect: "1:1", label: (t) => t.square, icon: "crop", previewClass: "square" },
   { aspect: "4:5", label: (t) => t.portrait, icon: "cropPortrait", previewClass: "portrait" },
   { aspect: "16:9", label: (t) => t.landscape, icon: "cropLandscape", previewClass: "landscape" },

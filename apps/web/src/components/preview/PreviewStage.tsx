@@ -1,4 +1,8 @@
-import type { ImageEditState, VideoEditState } from "@local-media-studio/media-core";
+import type {
+  ImageEditAction,
+  ImageEditState,
+  VideoEditState,
+} from "@local-media-studio/media-core";
 import type { Copy } from "../../i18n";
 import type { WorkspaceAsset } from "../../stores/media-store";
 import { EmptyPreview } from "./EmptyPreview";
@@ -10,6 +14,7 @@ export function PreviewStage({
   isFullscreen,
   isVisible,
   onAddMedia,
+  onApplyImageAction,
   onCompareToggle,
   onFullscreenToggle,
   onZoomChange,
@@ -23,6 +28,7 @@ export function PreviewStage({
   isFullscreen: boolean;
   isVisible: boolean;
   onAddMedia: () => void;
+  onApplyImageAction: (action: ImageEditAction) => void;
   onCompareToggle: () => void;
   onFullscreenToggle: () => void;
   onZoomChange: (zoom: number) => void;
@@ -43,6 +49,7 @@ export function PreviewStage({
           isFullscreen={isFullscreen}
           key={`${selectedAsset.id}-${imageState?.cropAspect ?? "video"}-${compareOriginal ? "compare" : "single"}`}
           onCompareToggle={onCompareToggle}
+          onApplyImageAction={onApplyImageAction}
           onFullscreenToggle={onFullscreenToggle}
           onZoomChange={onZoomChange}
           t={t}
