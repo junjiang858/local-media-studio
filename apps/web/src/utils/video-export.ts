@@ -55,10 +55,20 @@ export async function exportEditedVideo({
       throw new DOMException("Video export canceled", "AbortError");
     }
 
-    const result = await api.runVideoExport(
-      { jobId, source, state },
-      proxy((update) => onProgress?.(update)),
-    );
+    let result;
+
+    try {
+      result = await api.runVideoExport(
+        { jobId, source, state },
+        proxy((update) => onProgress?.(update)),
+      );
+    } catch (error) {
+      if (signal?.aborted) {
+        throw new DOMException("Video export canceled", "AbortError");
+      }
+
+      throw error;
+    }
 
     if (signal?.aborted) {
       throw new DOMException("Video export canceled", "AbortError");

@@ -5,7 +5,9 @@ export function buildVideoArgs(inputName: string, outputName: string, state: Vid
   const args: string[] = [];
   const inputFormat = getInputFormat(inputName);
   const needsTranscode =
-    state.speed !== 1 || inputFormat !== state.exportFormat || state.subtitles.length > 0;
+    state.speed !== 1 ||
+    state.subtitles.length > 0 ||
+    !canStreamCopyContainer(inputFormat, state.exportFormat);
 
   if (state.trimStart > 0) {
     args.push("-ss", String(state.trimStart));
@@ -121,6 +123,29 @@ function getTranscodeArgs(format: VideoEditState["exportFormat"]) {
   }
 
   return ["-c:v", "libx264", "-c:a", "aac"];
+}
+
+function canStreamCopyContainer(
+  inputFormat: VideoEditState["exportFormat"],
+  outputFormat: VideoEditState["exportFormat"],
+) {
+  if (inputFormat === outputFormat) {
+    return true;
+  }
+
+  if (inputFormat === "mp4" && (outputFormat === "mkv" || outputFormat === "mov")) {
+    return true;
+  }
+
+  if (inputFormat === "mov" && (outputFormat === "mp4" || outputFormat === "mkv")) {
+    return true;
+  }
+
+  if (inputFormat === "webm" && outputFormat === "mkv") {
+    return true;
+  }
+
+  return false;
 }
 
 function getInputFormat(inputName: string): VideoEditState["exportFormat"] {

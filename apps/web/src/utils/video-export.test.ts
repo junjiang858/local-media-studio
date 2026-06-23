@@ -54,6 +54,22 @@ describe("video export utility", () => {
     );
   });
 
+  it("remuxes compatible container-only exports without re-encoding", () => {
+    const state = updateVideoEditState(initialVideoEditState(12), {
+      format: "mkv",
+      type: "set-format",
+    });
+
+    const mp4Args = buildVideoArgs("input.mp4", "output.mkv", state);
+    const webmArgs = buildVideoArgs("input.webm", "output.mkv", state);
+
+    expect(mp4Args).toEqual(expect.arrayContaining(["-c:v", "copy", "-c:a", "copy", "output.mkv"]));
+    expect(mp4Args).not.toEqual(expect.arrayContaining(["-c:v", "libx264"]));
+    expect(webmArgs).toEqual(
+      expect.arrayContaining(["-c:v", "copy", "-c:a", "copy", "output.mkv"]),
+    );
+  });
+
   it("supports AVI container export with a compatible local transcode", () => {
     const source = new File(["video"], "clip.mp4", { type: "video/mp4" });
     const state = updateVideoEditState(initialVideoEditState(12), {
