@@ -28,6 +28,7 @@ import { PhotoLibrary } from "@material-symbols-svg/react/icons/photo-library";
 import { PlayArrow } from "@material-symbols-svg/react/icons/play-arrow";
 import { Redo } from "@material-symbols-svg/react/icons/redo";
 import { Settings } from "@material-symbols-svg/react/icons/settings";
+import { Shield, ShieldFill } from "@material-symbols-svg/react/icons/shield";
 import { Speed } from "@material-symbols-svg/react/icons/speed";
 import { Straighten } from "@material-symbols-svg/react/icons/straighten";
 import { StylusNote } from "@material-symbols-svg/react/icons/stylus-note";
@@ -74,6 +75,7 @@ const iconComponents = {
   play: PlayArrow,
   redo: Redo,
   settings: Settings,
+  shield: Shield,
   speed: Speed,
   straighten: Straighten,
   stylusNote: StylusNote,
@@ -95,6 +97,7 @@ const filledIconComponents: Partial<
 > = {
   checkCircle: CheckCircleFill,
   compare: CompareFill,
+  shield: ShieldFill,
 };
 
 export function StudioIcon({

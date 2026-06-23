@@ -23,7 +23,7 @@
 - Audience: Personal creators editing private images and short videos in the browser.
 - Product tone: Professional Studio: calm, precise, dark, canvas-first, and task-focused.
 - Reference signals: Google Stitch project `1201636135287513933` / MagicMedia Editor, the existing three-region studio shell, Material Symbols tool icons, and dark media workstation conventions.
-- Existing brand assets: MagicMedia wordmark in the top toolbar, Magic Blue/Cyan accent family, Material Symbols SVG React icon adapter, and the current localized English/Chinese message dictionaries.
+- Existing brand assets: OBSCURA wordmark in the top toolbar, a Canvas-drawn darkroom/aperture brand mark, Magic Blue/Cyan accent family, Material Symbols SVG React icon adapter, and the current localized English/Chinese message dictionaries.
 - Quiet constraints: User media stays local; import and export each have one primary visible entry point; desktop stays dense but readable; mobile uses stacked workflow tabs; UI copy must localize; browser controls must not hide long-running media job states.
 - One-sentence direction: Build a real local media workstation whose first frame makes upload, preview, editing, and export immediately inspectable without adding marketing chrome.
 
@@ -84,7 +84,7 @@ Rules:
   - Export disabled, ready, processing, completed, canceled, and failed states.
 - Interaction model:
   - Desktop uses the Stitch workstation structure directly: media library, preview canvas, and inspector/export rail visible together.
-  - The visible top bar is utility chrome only: left MagicMedia wordmark plus a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. Do not show explanatory title/subtitle copy in the top bar.
+  - The visible top bar is utility chrome only: left OBSCURA Canvas darkroom/aperture mark plus wordmark, a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. Do not show explanatory title/subtitle copy in the top bar.
   - Empty workspace follows the Stitch empty-state screen: the main preview canvas becomes a large dashed upload dropzone with one Import Media action, no template exploration action, short capability notes, and localized copy.
   - After media exists, upload/import has one visible entry point in the media library panel. Do not duplicate upload actions in the top toolbar.
   - Export has one visible action in the export panel. The export action should prepare the local result and immediately start the browser save/download flow when possible.

@@ -25,6 +25,21 @@ vi.mock("./utils/background-removal", () => ({
 
 import App from "./App";
 
+function expectLocalPrivacyBadge(label: RegExp) {
+  const badge = screen.getByText(label).closest(".local-advantage-tag");
+
+  expect(badge).toBeInTheDocument();
+  expect(badge?.querySelector(".material-symbols_shield")).toBeInTheDocument();
+}
+
+function expectBrandMark(label: RegExp) {
+  const brandMark = screen.getByRole("img", { name: label });
+
+  expect(brandMark).toBeInTheDocument();
+  expect(brandMark.tagName.toLowerCase()).toBe("canvas");
+  expect(brandMark).toHaveAttribute("data-brand-mark", "darkroom-aperture");
+}
+
 describe("media workspace shell", () => {
   let getContextSpy: ReturnType<typeof vi.spyOn>;
   let toBlobSpy: ReturnType<typeof vi.spyOn>;
@@ -41,13 +56,19 @@ describe("media workspace shell", () => {
     });
 
     getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
+      arc: vi.fn(),
       clearRect: vi.fn(),
       beginPath: vi.fn(),
+      clip: vi.fn(),
+      closePath: vi.fn(),
+      createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
       drawImage: vi.fn(),
+      fill: vi.fn(),
       fillText: vi.fn(),
       lineTo: vi.fn(),
       measureText: vi.fn(() => ({ width: 96 })),
       moveTo: vi.fn(),
+      quadraticCurveTo: vi.fn(),
       restore: vi.fn(),
       rotate: vi.fn(),
       save: vi.fn(),
@@ -116,8 +137,9 @@ describe("media workspace shell", () => {
     expect(screen.getAllByRole("button", { name: /add media/i })).toHaveLength(1);
     expect(screen.getByRole("heading", { name: /start your creation/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /import media/i })).toBeInTheDocument();
-    expect(screen.getByText(/magicmedia/i)).toBeInTheDocument();
-    expect(screen.getByText(/local only/i)).toBeInTheDocument();
+    expect(screen.getByText(/obscura/i)).toBeInTheDocument();
+    expectBrandMark(/obscura brand mark/i);
+    expectLocalPrivacyBadge(/local & private/i);
     expect(screen.queryByRole("button", { name: /^upload$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /explore templates/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /export current asset/i })).not.toBeInTheDocument();
@@ -141,6 +163,8 @@ describe("media workspace shell", () => {
     expect(screen.getAllByRole("button", { name: /添加媒体/i })).toHaveLength(1);
     expect(screen.getByRole("heading", { name: /开始你的创作/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /导入媒体/i })).toBeInTheDocument();
+    expectBrandMark(/obscura 品牌标识/i);
+    expectLocalPrivacyBadge(/本地 & 安全/i);
 
     await user.selectOptions(screen.getByLabelText(/语言/i), "en");
 
@@ -162,7 +186,7 @@ describe("media workspace shell", () => {
     expect(screen.getAllByText("clip.mp4").length).toBeGreaterThan(0);
     expect(screen.getByText(/2 assets/i)).toBeInTheDocument();
     expect(screen.queryByText(/privacy status/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/local only/i)).toBeInTheDocument();
+    expectLocalPrivacyBadge(/local & private/i);
     expect(screen.getByRole("heading", { name: /^edit$/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^export$/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /export current asset/i })).toBeInTheDocument();

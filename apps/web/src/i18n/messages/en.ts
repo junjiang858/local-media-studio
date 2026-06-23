@@ -1,5 +1,6 @@
 export const en = {
-  brand: "MagicMedia",
+  brand: "OBSCURA",
+  brandMarkLabel: "Obscura brand mark",
   brandTitle: "Image Editing Details",
   heroTitle: "Create privately. Export in seconds.",
   heroSubtitle:
@@ -14,7 +15,7 @@ export const en = {
   chinese: "中文",
   privacy: "No media leaves this browser.",
   localOnly: "local only",
-  localAdvantage: "Local only",
+  localAdvantage: "Local & private",
   workspaceSections: "Workspace sections",
   library: "Media",
   localStorage: "Local Storage",

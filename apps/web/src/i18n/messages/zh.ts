@@ -1,7 +1,8 @@
 import type { Copy } from "../types";
 
 export const zh = {
-  brand: "MagicMedia",
+  brand: "OBSCURA",
+  brandMarkLabel: "Obscura 品牌标识",
   brandTitle: "图片编辑详情",
   heroTitle: "私密创作，快速导出。",
   heroSubtitle: "导入本地图片或短视频，完成聚焦编辑，再下载干净成品。素材只留在你的浏览器。",
@@ -15,7 +16,7 @@ export const zh = {
   chinese: "中文",
   privacy: "媒体不会离开这个浏览器。",
   localOnly: "仅本地",
-  localAdvantage: "本地处理",
+  localAdvantage: "本地 & 安全",
   workspaceSections: "工作区分区",
   library: "媒体",
   localStorage: "本地存储",

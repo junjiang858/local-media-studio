@@ -2,6 +2,7 @@ import type { ImageEditAction } from "@local-media-studio/media-core";
 import type { Copy, Language } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import { BrandMarkCanvas } from "./BrandMarkCanvas";
 
 export function TopToolbar({
   canEditSelectedImage,
@@ -27,11 +28,12 @@ export function TopToolbar({
   return (
     <header className="top-toolbar">
       <div className="brand-lockup">
-        <div>
+        <BrandMarkCanvas label={t.brandMarkLabel} />
+        <div className="brand-wordmark-wrap">
           <p className="brand-wordmark">{t.brand}</p>
         </div>
         <span className="local-advantage-tag">
-          <StudioIcon filled name="checkCircle" size={17} />
+          <StudioIcon filled name="shield" size={17} />
           {t.localAdvantage}
         </span>
       </div>

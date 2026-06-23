@@ -191,7 +191,18 @@ svg {
 }
 
 .brand-lockup {
-  gap: 12px;
+  gap: 9px;
+  min-width: 0;
+}
+
+.brand-mark-canvas {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 12px rgba(65, 184, 255, 0.2));
+}
+
+.brand-wordmark-wrap {
   min-width: 0;
 }
 
@@ -201,10 +212,23 @@ svg {
 }
 
 .brand-wordmark {
-  color: var(--accent-strong);
-  font-size: 20px;
-  font-weight: 840;
+  background: linear-gradient(112deg, #f3fbff 0%, #b7ecff 28%, #52c4ff 58%, #4bd18d 100%);
+  background-clip: text;
+  color: transparent;
+  font-family:
+    "Avenir Next", "Geist", "Geist Variable", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0;
   line-height: 1;
+  text-shadow:
+    0 0 16px rgba(65, 184, 255, 0.18),
+    0 1px 0 rgba(243, 251, 255, 0.24);
+  text-transform: none;
+  white-space: nowrap;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-subtitle {
@@ -225,13 +249,14 @@ svg {
   gap: 6px;
   min-height: 30px;
   padding: 0 10px;
-  border: 1px solid rgba(75, 209, 141, 0.32);
+  border: 1px solid rgba(75, 209, 141, 0.42);
   border-radius: var(--radius-tight);
-  background: rgba(75, 209, 141, 0.11);
+  background: linear-gradient(135deg, rgba(75, 209, 141, 0.16), rgba(65, 184, 255, 0.08));
   color: #baf4d4;
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 720;
+  box-shadow: inset 0 0 0 1px rgba(186, 244, 212, 0.04);
   white-space: nowrap;
 }
 
