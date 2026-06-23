@@ -51,7 +51,6 @@ export function ImageEditorPanel({
   const [imageAvailability, setImageAvailability] = useState<
     Partial<Record<ImageExportFormat, ImageExportAvailability>>
   >({});
-  const [qualityDraft, setQualityDraft] = useState("");
   const isRemovingBackground =
     backgroundRemovalJob?.status === "queued" ||
     backgroundRemovalJob?.status === "loading" ||
@@ -73,12 +72,6 @@ export function ImageEditorPanel({
   }, [t]);
 
   useEffect(() => {
-    if (exportSettings) {
-      setQualityDraft(String(exportSettings.quality));
-    }
-  }, [exportSettings?.quality, exportSettings]);
-
-  useEffect(() => {
     if (!exportSettings || !activeImageAvailability || activeImageAvailability.available) {
       return;
     }
@@ -93,8 +86,6 @@ export function ImageEditorPanel({
   }, [activeImageAvailability, exportSettings, imageAvailability, onExportSettingsChange]);
 
   function handleQualityDraftChange(value: string) {
-    setQualityDraft(value);
-
     if (!value.trim()) {
       return;
     }
@@ -373,16 +364,16 @@ export function ImageEditorPanel({
               <label htmlFor="image-quality">{t.quality}</label>
               <input
                 id="image-quality"
+                defaultValue={exportSettings.quality}
                 max={100}
                 min={1}
                 onChange={(event) => handleQualityDraftChange(event.currentTarget.value)}
-                onBlur={() => {
-                  if (!qualityDraft.trim()) {
-                    setQualityDraft(String(exportSettings.quality));
+                onBlur={(event) => {
+                  if (!event.currentTarget.value.trim()) {
+                    event.currentTarget.value = String(exportSettings.quality);
                   }
                 }}
                 type="number"
-                value={qualityDraft}
               />
             </div>
           ) : null}
