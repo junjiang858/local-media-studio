@@ -83,6 +83,7 @@ export function SelectedPreview({
   const videoPreviewAbortRef = useRef<AbortController | null>(null);
   const lastImagePreviewRequestRef = useRef(imagePreviewRequestKey);
   const lastVideoPreviewRequestRef = useRef(videoPreviewRequestKey);
+  const stalePreviewToastRef = useRef<string | null>(null);
   const dragRef = useRef({
     isDragging: false,
     panX: 0,
@@ -165,6 +166,26 @@ export function SelectedPreview({
     activeDerivedImagePreview && activeDerivedImagePreview.height > 0
       ? activeDerivedImagePreview.width / activeDerivedImagePreview.height
       : undefined;
+
+  useEffect(() => {
+    if (!staleGeneratedPreview) {
+      stalePreviewToastRef.current = null;
+      return;
+    }
+
+    if (!currentPreviewFingerprint || previewStatus === "busy") {
+      return;
+    }
+
+    const toastKey = `${asset.id}:${staleGeneratedPreview.fingerprint}:${currentPreviewFingerprint}`;
+
+    if (stalePreviewToastRef.current === toastKey) {
+      return;
+    }
+
+    stalePreviewToastRef.current = toastKey;
+    showStudioInfo(t.previewStale);
+  }, [asset.id, currentPreviewFingerprint, previewStatus, staleGeneratedPreview, t.previewStale]);
 
   const handleGenerateImagePreview = useCallback(async () => {
     if (
@@ -529,13 +550,9 @@ export function SelectedPreview({
             onPlayToggle={handlePlayToggle}
             onResetTime={handleResetVideoTime}
             onScrub={handleVideoScrub}
-            previewMessage={
-              staleGeneratedPreview && previewStatus !== "busy" ? t.previewStale : previewMessage
-            }
+            previewMessage={previewMessage}
             previewProgress={previewProgress}
-            previewStatus={
-              staleGeneratedPreview && previewStatus !== "busy" ? "stale" : previewStatus
-            }
+            previewStatus={previewStatus}
             t={t}
             videoState={videoState}
           />

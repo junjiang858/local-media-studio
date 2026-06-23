@@ -505,7 +505,8 @@ describe("media workspace shell", () => {
     await user.selectOptions(screen.getByLabelText(/playback speed/i), "1.5");
 
     expect(screen.getByText(/source preview/i)).toBeInTheDocument();
-    expect(screen.getByText(/preview stale/i)).toBeInTheDocument();
+    await waitFor(() => expect(toastInfoMock).toHaveBeenCalledWith("Preview stale."));
+    expect(screen.queryByText(/preview stale/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
