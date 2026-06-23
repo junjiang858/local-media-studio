@@ -10,6 +10,7 @@ import type {
   ImageAnnotation,
   ImageEditState,
   ImageExportFormat,
+  ImageFilterPreset,
 } from "@local-media-studio/media-core";
 import type { Copy } from "../i18n";
 import type { WorkspaceAsset } from "../stores/media-store";
@@ -223,11 +224,52 @@ export function getImagePreviewStyle(state: ImageEditState | null): CSSPropertie
 }
 
 export function getCanvasFilter(state: ImageEditState): string {
+  const preset = getFilterPresetProfile(state.filterPreset, state.filterStrength / 100);
+  const brightness = Math.max(0, 100 + state.adjustments.brightness + preset.brightness);
+  const contrast = Math.max(0, 100 + state.adjustments.contrast + preset.contrast);
+  const saturation = Math.max(0, 100 + state.adjustments.saturation + preset.saturation);
+
   return [
-    `brightness(${100 + state.adjustments.brightness}%)`,
-    `contrast(${100 + state.adjustments.contrast}%)`,
-    `saturate(${100 + state.adjustments.saturation}%)`,
+    `brightness(${brightness}%)`,
+    `contrast(${contrast}%)`,
+    `saturate(${saturation}%)`,
+    `sepia(${preset.sepia}%)`,
+    `grayscale(${preset.grayscale}%)`,
+    `hue-rotate(${preset.hueRotate}deg)`,
   ].join(" ");
+}
+
+function getFilterPresetProfile(preset: ImageFilterPreset, strength: number) {
+  const amount = Math.min(1, Math.max(0, strength));
+  const profiles: Record<
+    ImageFilterPreset,
+    {
+      brightness: number;
+      contrast: number;
+      grayscale: number;
+      hueRotate: number;
+      saturation: number;
+      sepia: number;
+    }
+  > = {
+    cool: { brightness: 2, contrast: 4, grayscale: 0, hueRotate: -10, saturation: 8, sepia: 0 },
+    fade: { brightness: 8, contrast: -12, grayscale: 0, hueRotate: 0, saturation: -24, sepia: 8 },
+    film: { brightness: -4, contrast: 16, grayscale: 0, hueRotate: -4, saturation: -12, sepia: 18 },
+    mono: { brightness: 0, contrast: 8, grayscale: 100, hueRotate: 0, saturation: -100, sepia: 0 },
+    none: { brightness: 0, contrast: 0, grayscale: 0, hueRotate: 0, saturation: 0, sepia: 0 },
+    vivid: { brightness: 2, contrast: 12, grayscale: 0, hueRotate: 0, saturation: 26, sepia: 0 },
+    warm: { brightness: 4, contrast: 4, grayscale: 0, hueRotate: 6, saturation: 10, sepia: 18 },
+  };
+  const profile = profiles[preset];
+
+  return {
+    brightness: Math.round(profile.brightness * amount),
+    contrast: Math.round(profile.contrast * amount),
+    grayscale: Math.round(profile.grayscale * amount),
+    hueRotate: Math.round(profile.hueRotate * amount),
+    saturation: Math.round(profile.saturation * amount),
+    sepia: Math.round(profile.sepia * amount),
+  };
 }
 
 function drawAnnotations(

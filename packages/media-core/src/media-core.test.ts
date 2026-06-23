@@ -156,6 +156,25 @@ describe("media core helpers", () => {
     expect(plan.crop).toEqual({ height: 400, width: 720, x: 120, y: 160 });
   });
 
+  it("resets beautify controls without clearing transform or layer edits", () => {
+    const history = applyImageEditAction(
+      applyImageEditAction(
+        applyImageEditAction(
+          applyImageEditAction(initialImageEditHistory(), { type: "rotate-clockwise" }),
+          { adjustment: "contrast", type: "set-adjustment", value: 24 },
+        ),
+        { preset: "film", type: "set-filter-preset" },
+      ),
+      { type: "reset-beautify" },
+    );
+    const state = getCurrentImageEditState(history);
+
+    expect(state.rotation).toBe(90);
+    expect(state.adjustments).toEqual({ brightness: 0, contrast: 0, saturation: 0 });
+    expect(state.filterPreset).toBe("none");
+    expect(state.filterStrength).toBe(100);
+  });
+
   it("builds centered crop and resize plans for image export", () => {
     const history = applyImageEditAction(
       applyImageEditAction(initialImageEditHistory(), {

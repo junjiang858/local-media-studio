@@ -9,6 +9,7 @@ import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import { AdjustmentControl } from "./AdjustmentControl";
 import { CropPresetGrid } from "./CropPresetGrid";
+import { FilterPresetGrid } from "./FilterPresetGrid";
 import { ProgressiveToolRow } from "./ProgressiveToolRow";
 
 const annotationColor = "#f8fbff";
@@ -108,6 +109,12 @@ export function ImageEditorPanel({
             <StudioIcon name="tune" size={18} />
             <h3>{t.adjustments}</h3>
           </div>
+          <FilterPresetGrid
+            activePreset={imageState.filterPreset}
+            onApply={onApply}
+            strength={imageState.filterStrength}
+            t={t}
+          />
           <AdjustmentControl
             adjustment="brightness"
             label={t.brightness}
@@ -126,6 +133,14 @@ export function ImageEditorPanel({
             onApply={onApply}
             value={imageState.adjustments.saturation}
           />
+          <button
+            className="tool-button full-width"
+            onClick={() => onApply({ type: "reset-beautify" })}
+            type="button"
+          >
+            <StudioIcon name="undo" size={18} />
+            <span>{t.resetBeautify}</span>
+          </button>
           <ProgressiveToolRow
             detail={t.autoEnhanceDetail}
             icon="formatPaint"

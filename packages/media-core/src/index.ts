@@ -9,6 +9,7 @@ const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 
 export type ImageCropAspect = "free" | "custom" | "1:1" | "4:5" | "9:16" | "16:9";
 export type ImageAdjustment = "brightness" | "contrast" | "saturation";
+export type ImageFilterPreset = "none" | "vivid" | "warm" | "cool" | "mono" | "film" | "fade";
 export type ImageExportFormat = "png" | "jpeg" | "webp" | "avif" | "bmp" | "gif" | "tiff";
 export type ImageExportMimeType =
   | "image/png"
@@ -83,6 +84,8 @@ export type ImageAnnotation =
 export type ImageEditState = {
   cropRect: ImageCropRect | null;
   cropAspect: ImageCropAspect;
+  filterPreset: ImageFilterPreset;
+  filterStrength: number;
   rotation: 0 | 90 | 180 | 270;
   flipHorizontal: boolean;
   flipVertical: boolean;
@@ -108,6 +111,8 @@ export type ImageEditAction =
   | { type: "toggle-flip-vertical" }
   | { type: "set-resize-width"; width: number | null }
   | { type: "set-crop-rect"; rect: ImageCropRect | null }
+  | { type: "set-filter-preset"; preset: ImageFilterPreset }
+  | { type: "set-filter-strength"; strength: number }
   | { type: "set-watermark"; text: string }
   | { type: "set-watermark-position"; position: WatermarkPosition }
   | { type: "update-watermark-layer"; patch: Partial<ImageWatermarkLayer> }
@@ -115,6 +120,7 @@ export type ImageEditAction =
   | { type: "update-annotation"; annotationId: string; patch: Partial<ImageAnnotation> }
   | { type: "remove-annotation"; annotationId: string }
   | { type: "set-adjustment"; adjustment: ImageAdjustment; value: number }
+  | { type: "reset-beautify" }
   | { type: "undo" }
   | { type: "redo" }
   | { type: "reset" };
@@ -154,6 +160,8 @@ export type WorkerJobProgressUpdate = {
 const defaultImageEditState: ImageEditState = {
   cropRect: null,
   cropAspect: "free",
+  filterPreset: "none",
+  filterStrength: 100,
   rotation: 0,
   flipHorizontal: false,
   flipVertical: false,
@@ -543,6 +551,16 @@ function reduceImageEditState(
         cropAspect: action.rect ? "custom" : state.cropAspect,
         cropRect: action.rect ? normalizeCropRect(action.rect) : null,
       };
+    case "set-filter-preset":
+      return {
+        ...cloneImageEditState(state),
+        filterPreset: action.preset,
+      };
+    case "set-filter-strength":
+      return {
+        ...cloneImageEditState(state),
+        filterStrength: Math.round(clamp(action.strength, 0, 100)),
+      };
     case "set-watermark":
       return { ...cloneImageEditState(state), watermarkText: action.text.slice(0, 120) };
     case "set-watermark-position":
@@ -590,6 +608,13 @@ function reduceImageEditState(
           ...state.adjustments,
           [action.adjustment]: clamp(action.value, -100, 100),
         },
+      };
+    case "reset-beautify":
+      return {
+        ...cloneImageEditState(state),
+        adjustments: { ...defaultImageEditState.adjustments },
+        filterPreset: defaultImageEditState.filterPreset,
+        filterStrength: defaultImageEditState.filterStrength,
       };
   }
 }

@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { initialImageEditHistory, getCurrentImageEditState } from "@local-media-studio/media-core";
+import {
+  applyImageEditAction,
+  initialImageEditHistory,
+  getCurrentImageEditState,
+} from "@local-media-studio/media-core";
 import { en } from "../i18n/messages/en";
 import type { WorkspaceAsset } from "../stores/media-store";
-import { exportEditedImage, getImageExportAvailability } from "./image-export";
+import { exportEditedImage, getCanvasFilter, getImageExportAvailability } from "./image-export";
 
 describe("image export helpers", () => {
   let getContextSpy: ReturnType<typeof vi.spyOn>;
@@ -93,6 +97,24 @@ describe("image export helpers", () => {
     expect(availability.bmp.available).toBe(true);
     expect(availability.gif.available).toBe(true);
     expect(availability.tiff.available).toBe(true);
+  });
+
+  it("combines beautify sliders and filter presets for preview/export rendering", () => {
+    const history = applyImageEditAction(
+      applyImageEditAction(
+        applyImageEditAction(initialImageEditHistory(), {
+          adjustment: "brightness",
+          type: "set-adjustment",
+          value: 10,
+        }),
+        { preset: "vivid", type: "set-filter-preset" },
+      ),
+      { strength: 50, type: "set-filter-strength" },
+    );
+
+    expect(getCanvasFilter(getCurrentImageEditState(history))).toBe(
+      "brightness(111%) contrast(106%) saturate(113%) sepia(0%) grayscale(0%) hue-rotate(0deg)",
+    );
   });
 });
 

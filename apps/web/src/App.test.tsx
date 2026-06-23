@@ -211,7 +211,7 @@ describe("media workspace shell", () => {
     await user.click(screen.getByRole("button", { name: /flip horizontal/i }));
     await user.clear(screen.getByLabelText(/output width/i));
     await user.type(screen.getByLabelText(/output width/i), "600");
-    await user.click(screen.getByRole("tab", { name: /adjustments/i }));
+    await user.click(screen.getByRole("tab", { name: /beautify/i }));
     await user.clear(screen.getByLabelText(/brightness/i));
     await user.type(screen.getByLabelText(/brightness/i), "18");
     await user.click(screen.getByRole("tab", { name: /layers/i }));
