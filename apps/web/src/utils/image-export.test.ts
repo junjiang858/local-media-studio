@@ -20,10 +20,7 @@ describe("image export helpers", () => {
       fillText: vi.fn(),
       getImageData: vi.fn(() => ({
         data: new Uint8ClampedArray([
-          255, 0, 0, 255,
-          0, 255, 0, 255,
-          0, 0, 255, 255,
-          255, 255, 255, 255,
+          255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255,
         ]),
         height: 2,
         width: 2,
@@ -90,7 +87,10 @@ describe("image export helpers", () => {
   });
 
   it("reports image export format availability with native and custom encoders", async () => {
-    const availability = await getImageExportAvailability(["png", "avif", "bmp", "gif", "tiff"], en);
+    const availability = await getImageExportAvailability(
+      ["png", "avif", "bmp", "gif", "tiff"],
+      en,
+    );
 
     expect(availability.png.available).toBe(true);
     expect(availability.avif.available).toBe(true);

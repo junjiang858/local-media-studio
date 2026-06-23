@@ -27,10 +27,7 @@ import {
 } from "../../utils/video-export";
 import { ImagePreviewPane, type PreviewBounds } from "./ImagePreviewPane";
 import { PreviewToolbar } from "./PreviewToolbar";
-import {
-  VideoPreviewWorkbench,
-  type VideoPreviewStatus,
-} from "./VideoPreviewWorkbench";
+import { VideoPreviewWorkbench, type VideoPreviewStatus } from "./VideoPreviewWorkbench";
 
 export function SelectedPreview({
   asset,

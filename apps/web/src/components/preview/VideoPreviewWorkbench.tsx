@@ -71,7 +71,12 @@ export function VideoPreviewWorkbench({
         >
           <StudioIcon name={isPlaying ? "pause" : "play"} size={20} />
         </button>
-        <button aria-label={t.resetTime} className="icon-button" onClick={onResetTime} type="button">
+        <button
+          aria-label={t.resetTime}
+          className="icon-button"
+          onClick={onResetTime}
+          type="button"
+        >
           <StudioIcon name="restartAlt" size={19} />
         </button>
         <input
@@ -104,7 +109,9 @@ export function VideoPreviewWorkbench({
           type="button"
         >
           <StudioIcon name="checkCircle" size={17} />
-          <span>{previewStatus === "busy" ? t.generatingVideoPreview : t.generateVideoPreview}</span>
+          <span>
+            {previewStatus === "busy" ? t.generatingVideoPreview : t.generateVideoPreview}
+          </span>
         </button>
         {previewStatus === "busy" ? (
           <button className="secondary-button" onClick={onCancelPreview} type="button">

@@ -40,11 +40,11 @@ The app still has backend-like processing boundaries inside the browser: ffmpeg.
 | User media must not be uploaded to a backend or third-party API in v1 | Frontend upload layer, Worker job layer, tool policy, browser privacy tests | Block the operation and show a privacy/scope error                      |
 | Only user-selected files can enter the workspace                      | UploadDropzone/file input handlers                                          | Reject implicit file access and show unsupported input state            |
 | Unsupported media formats/codecs must fail visibly                    | Metadata extraction and preview/export validation                           | Mark asset as unsupported and explain the limitation                    |
-| Optional image formats must be capability-gated                       | Export format registry and encoder adapters                                 | Disable unsupported formats with a readable reason                     |
+| Optional image formats must be capability-gated                       | Export format registry and encoder adapters                                 | Disable unsupported formats with a readable reason                      |
 | Export requires a selected asset and valid settings                   | Export panel validation and Worker job builder                              | Disable export and show field-level error                               |
 | Video trim ranges must be valid                                       | Video edit state validation                                                 | Disable export until start/end are valid                                |
 | Subtitle cues must have valid timing and text                         | Subtitle cue validation                                                     | Show cue-level error and prevent export                                 |
-| Derived video preview must preserve the source file                   | Video apply/export workflow                                                  | Add or preview a generated local blob without mutating the original      |
+| Derived video preview must preserve the source file                   | Video apply/export workflow                                                 | Add or preview a generated local blob without mutating the original     |
 | Long-running jobs must expose status                                  | Worker job orchestration                                                    | Show loading/progress, cancellation if feasible, retry/reset on failure |
 | Raw media persistence is forbidden unless docs change                 | Data/storage boundary and security tests                                    | Block persistence path and update source docs before any change         |
 
@@ -60,30 +60,30 @@ No HTTP API contracts exist in v1.
 
 These are internal browser contracts, not network APIs.
 
-| Contract                    | Input                                                        | Output                                                           | Errors                                                                       |
-| --------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `extractMediaMetadata`      | `File`, generated asset id                                   | dimensions, duration, MIME type, file size, preview URL metadata | unsupported type, unreadable file, metadata timeout                          |
-| `generateVideoThumbnails`   | video `File` or object URL, sample count/time points         | thumbnail blobs/object URLs and timestamps                       | codec unsupported, decode failed, memory limit                               |
-| `runImageBackgroundRemoval` | image blob/object URL, job id, options                       | foreground image blob/mask/result URL                            | model load failed, inference failed, canceled, memory limit                  |
-| `detectImageExportCapabilities` | browser canvas support and registered encoder adapters     | format availability map, MIME type, extension, disabled reason    | capability probe failed, encoder unavailable                                  |
-| `buildImageExport`          | source image, ImageEditState, export settings                | output blob and suggested filename                               | invalid image state, canvas export failed, unsupported format, encoder failed |
-| `adaptImageInputFormat`     | image `File` and target preview format                       | decoded preview blob/object URL and metadata                     | HEIC/TIFF decode failed, license-gated adapter disabled, memory limit        |
-| `runVideoDerivedPreview`    | source video, VideoEditState, operation kind                 | derived preview blob/object URL, filename, metadata              | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit |
-| `runVideoExport`            | source video or derived preview, VideoEditState, subtitle cues, export settings | output blob and suggested filename                | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit |
-| `serializeWebVTT`           | subtitle cue list                                            | WebVTT text/blob                                                 | invalid cue timing, empty cue text where required                            |
+| Contract                        | Input                                                                           | Output                                                           | Errors                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `extractMediaMetadata`          | `File`, generated asset id                                                      | dimensions, duration, MIME type, file size, preview URL metadata | unsupported type, unreadable file, metadata timeout                           |
+| `generateVideoThumbnails`       | video `File` or object URL, sample count/time points                            | thumbnail blobs/object URLs and timestamps                       | codec unsupported, decode failed, memory limit                                |
+| `runImageBackgroundRemoval`     | image blob/object URL, job id, options                                          | foreground image blob/mask/result URL                            | model load failed, inference failed, canceled, memory limit                   |
+| `detectImageExportCapabilities` | browser canvas support and registered encoder adapters                          | format availability map, MIME type, extension, disabled reason   | capability probe failed, encoder unavailable                                  |
+| `buildImageExport`              | source image, ImageEditState, export settings                                   | output blob and suggested filename                               | invalid image state, canvas export failed, unsupported format, encoder failed |
+| `adaptImageInputFormat`         | image `File` and target preview format                                          | decoded preview blob/object URL and metadata                     | HEIC/TIFF decode failed, license-gated adapter disabled, memory limit         |
+| `runVideoDerivedPreview`        | source video, VideoEditState, operation kind                                    | derived preview blob/object URL, filename, metadata              | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit  |
+| `runVideoExport`                | source video or derived preview, VideoEditState, subtitle cues, export settings | output blob and suggested filename                               | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit  |
+| `serializeWebVTT`               | subtitle cue list                                                               | WebVTT text/blob                                                 | invalid cue timing, empty cue text where required                             |
 
 ## Data Flow
 
-| Flow               | Reads                                       | Writes                                                      | Notes                                                               |
-| ------------------ | ------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| Media import       | Browser-selected `File` objects             | In-memory MediaAsset list and object URLs                   | No remote upload. Object URLs must be revoked.                      |
-| Image editing      | MediaAsset and ImageEditState               | In-memory ImageEditState, layer state, crop rectangle, and preview render | Use operation state, not destructive mutation of the original file. |
-| Image format export | Selected image, edit state, format registry | Temporary generated blob/object URL and user download        | Browser-native formats are feature-detected; GIF/TIFF/BMP use local encoders. |
-| Background removal | Selected image and job settings             | Runtime job state and generated result blob/object URL      | Model assets may load from app/CDN path; user image remains local.  |
-| Video editing      | MediaAsset and VideoEditState               | In-memory VideoEditState, thumbnail metadata, subtitle cues, derived preview blob | Single-asset only; no multi-track timeline in v1.                   |
-| Video derived preview | Source video, trim/speed/format/subtitle settings | Temporary local derived blob/object URL and optional library asset | Original source remains untouched; derived URLs must be revoked. |
-| Export             | Selected asset, derived preview when present, edit state, export settings | Runtime ExportJob and user-downloaded blob                  | Export result is temporary unless user downloads it.                |
-| Draft recovery     | Lightweight edit metadata                   | Browser storage draft metadata when implemented             | Raw media bytes are not silently persisted.                         |
+| Flow                  | Reads                                                                     | Writes                                                                            | Notes                                                                         |
+| --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Media import          | Browser-selected `File` objects                                           | In-memory MediaAsset list and object URLs                                         | No remote upload. Object URLs must be revoked.                                |
+| Image editing         | MediaAsset and ImageEditState                                             | In-memory ImageEditState, layer state, crop rectangle, and preview render         | Use operation state, not destructive mutation of the original file.           |
+| Image format export   | Selected image, edit state, format registry                               | Temporary generated blob/object URL and user download                             | Browser-native formats are feature-detected; GIF/TIFF/BMP use local encoders. |
+| Background removal    | Selected image and job settings                                           | Runtime job state and generated result blob/object URL                            | Model assets may load from app/CDN path; user image remains local.            |
+| Video editing         | MediaAsset and VideoEditState                                             | In-memory VideoEditState, thumbnail metadata, subtitle cues, derived preview blob | Single-asset only; no multi-track timeline in v1.                             |
+| Video derived preview | Source video, trim/speed/format/subtitle settings                         | Temporary local derived blob/object URL and optional library asset                | Original source remains untouched; derived URLs must be revoked.              |
+| Export                | Selected asset, derived preview when present, edit state, export settings | Runtime ExportJob and user-downloaded blob                                        | Export result is temporary unless user downloads it.                          |
+| Draft recovery        | Lightweight edit metadata                                                 | Browser storage draft metadata when implemented                                   | Raw media bytes are not silently persisted.                                   |
 
 ## Auth And Permissions
 
@@ -120,14 +120,14 @@ These are internal browser contracts, not network APIs.
 
 ## Security Boundary
 
-| Risk                    | Rule                                                                          | Verification                                                    |
-| ----------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Accidental media upload | No app code or dependency integration may upload user media in v1             | Browser network inspection and tests around upload/export flows |
-| Raw media in logs       | Logs must not include raw media, subtitles, local paths, or generated content | Console/log review during browser tests                         |
-| Long-running UI lockup  | Heavy processing should run through Worker APIs                               | Browser interaction stays responsive during jobs                |
+| Risk                     | Rule                                                                          | Verification                                                    |
+| ------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Accidental media upload  | No app code or dependency integration may upload user media in v1             | Browser network inspection and tests around upload/export flows |
+| Raw media in logs        | Logs must not include raw media, subtitles, local paths, or generated content | Console/log review during browser tests                         |
+| Long-running UI lockup   | Heavy processing should run through Worker APIs                               | Browser interaction stays responsive during jobs                |
 | Unsupported encoder path | Optional encoders must fail with readable errors instead of empty downloads   | Unit tests and browser export smoke checks                      |
-| Unsafe persistence      | Raw media must not be silently stored long-term                               | Storage inspection and code review                              |
-| Dependency/license risk | Background-removal AGPL/license caveat must remain documented                 | Pre-release dependency/license review                           |
+| Unsafe persistence       | Raw media must not be silently stored long-term                               | Storage inspection and code review                              |
+| Dependency/license risk  | Background-removal AGPL/license caveat must remain documented                 | Pre-release dependency/license review                           |
 
 ## Change Rule
 

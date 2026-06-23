@@ -778,7 +778,9 @@ function getDefaultCropRect(): ImageCropRect {
   };
 }
 
-function getWatermarkLayerPosition(position: WatermarkPosition): Pick<ImageWatermarkLayer, "x" | "y"> {
+function getWatermarkLayerPosition(
+  position: WatermarkPosition,
+): Pick<ImageWatermarkLayer, "x" | "y"> {
   if (position === "top-left") {
     return { x: 0.05, y: 0.06 };
   }

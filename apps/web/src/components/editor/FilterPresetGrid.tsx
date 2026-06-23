@@ -1,8 +1,5 @@
 import type { CSSProperties } from "react";
-import type {
-  ImageEditAction,
-  ImageFilterPreset,
-} from "@local-media-studio/media-core";
+import type { ImageEditAction, ImageFilterPreset } from "@local-media-studio/media-core";
 import { imageFilterPresets } from "../../config/media";
 import type { Copy } from "../../i18n";
 

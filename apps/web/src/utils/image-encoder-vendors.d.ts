@@ -4,7 +4,11 @@ declare module "gifenc" {
   export function quantize(
     rgba: Uint8Array | Uint8ClampedArray,
     maxColors: number,
-    options?: { clearAlpha?: boolean; format?: "rgb565" | "rgb444" | "rgba4444"; oneBitAlpha?: boolean | number },
+    options?: {
+      clearAlpha?: boolean;
+      format?: "rgb565" | "rgb444" | "rgba4444";
+      oneBitAlpha?: boolean | number;
+    },
   ): GifPalette;
 
   export function applyPalette(

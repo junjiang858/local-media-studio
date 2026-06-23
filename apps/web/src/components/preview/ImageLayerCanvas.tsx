@@ -342,7 +342,11 @@ function AnnotationLayerItem({
         fontStyle="bold"
         onClick={(event) => onSelect(event, annotation.id)}
         onDragEnd={(event) =>
-          onMoveAnnotation(annotation, event.target.x() / size.width, event.target.y() / size.height)
+          onMoveAnnotation(
+            annotation,
+            event.target.x() / size.width,
+            event.target.y() / size.height,
+          )
         }
         onTap={(event) => onSelect(event, annotation.id)}
         ref={(node) => setNodeRef(annotation.id, node)}
@@ -363,7 +367,11 @@ function AnnotationLayerItem({
         height={annotation.height * size.height}
         onClick={(event) => onSelect(event, annotation.id)}
         onDragEnd={(event) =>
-          onMoveAnnotation(annotation, event.target.x() / size.width, event.target.y() / size.height)
+          onMoveAnnotation(
+            annotation,
+            event.target.x() / size.width,
+            event.target.y() / size.height,
+          )
         }
         onTap={(event) => onSelect(event, annotation.id)}
         onTransformEnd={(event) => onTransformRectangle(annotation, event.target as Konva.Rect)}
@@ -383,7 +391,11 @@ function AnnotationLayerItem({
         draggable={interactive}
         onClick={(event) => onSelect(event, annotation.id)}
         onDragEnd={(event) =>
-          onMoveAnnotation(annotation, event.target.x() / size.width, event.target.y() / size.height)
+          onMoveAnnotation(
+            annotation,
+            event.target.x() / size.width,
+            event.target.y() / size.height,
+          )
         }
         onTap={(event) => onSelect(event, annotation.id)}
         ref={(node) => setNodeRef(annotation.id, node)}
