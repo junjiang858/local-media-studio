@@ -327,4 +327,55 @@ describe("media workspace shell", () => {
       }),
     );
   });
+
+  it("shows cancel, failure, and retry states for video preview jobs", async () => {
+    const user = userEvent.setup();
+
+    exportEditedVideoMock
+      .mockImplementationOnce(({ onProgress, signal }) => {
+        onProgress?.({
+          message: "Loading FFmpeg",
+          progress: 4,
+          status: "loading",
+        });
+
+        return new Promise((_resolve, reject) => {
+          signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Video export canceled", "AbortError")),
+            { once: true },
+          );
+        });
+      })
+      .mockRejectedValueOnce(new Error("Unsupported codec"))
+      .mockResolvedValueOnce({
+        blob: new Blob(["video"], { type: "video/mp4" }),
+        filename: "clip-edited.mp4",
+        size: 5,
+        url: "blob:video-export",
+      });
+
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText(/choose media files/i),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    );
+
+    await user.click(screen.getAllByRole("button", { name: /generate preview/i })[0]!);
+    expect(await screen.findByRole("button", { name: /cancel/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
+
+    expect(await screen.findByText(/preview canceled/i)).toBeInTheDocument();
+
+    await user.click(screen.getAllByRole("button", { name: /generate preview/i })[0]!);
+
+    expect(await screen.findByText(/unsupported codec/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /retry preview/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /retry preview/i }));
+
+    expect(await screen.findByText(/preview ready/i)).toBeInTheDocument();
+  });
 });

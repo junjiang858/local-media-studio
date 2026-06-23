@@ -10,6 +10,7 @@ import { getVideoExportFormatFromMimeType, type ImageExportSettings } from "../.
 import type { Copy } from "../../i18n";
 import { StudioIcon, type StudioIconName } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import type { VideoThumbnail } from "../../utils/video-thumbnails";
 import { ExportPanel } from "../export/ExportPanel";
 import { PanelHeader } from "../studio/PanelHeader";
 import { ImageEditorPanel } from "./ImageEditorPanel";
@@ -29,6 +30,7 @@ export function EditorRail({
   selectedAsset,
   t,
   videoState,
+  videoThumbnails,
 }: {
   backgroundRemovalJob: WorkerJob | null;
   imageExportSettings: ImageExportSettings | null;
@@ -43,6 +45,7 @@ export function EditorRail({
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
+  videoThumbnails: VideoThumbnail[];
 }) {
   const [activeTab, setActiveTab] = useState("transform");
   const tabListRef = useRef<HTMLDivElement>(null);
@@ -122,6 +125,7 @@ export function EditorRail({
             sourceFormat={getVideoExportFormatFromMimeType(selectedAsset.mimeType)}
             t={t}
             videoState={videoState}
+            videoThumbnails={videoThumbnails}
           />
         ) : (
           <p className="empty-panel-copy">{t.selectAssetToEdit}</p>

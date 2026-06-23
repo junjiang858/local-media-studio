@@ -64,6 +64,9 @@ importers:
 
   apps/web:
     dependencies:
+      "@ffmpeg/core":
+        specifier: 0.12.9
+        version: 0.12.9
       "@ffmpeg/ffmpeg":
         specifier: ^0.12.15
         version: 0.12.15
@@ -752,6 +755,13 @@ packages:
     peerDependenciesMeta:
       "@noble/hashes":
         optional: true
+
+  "@ffmpeg/core@0.12.9":
+    resolution:
+      {
+        integrity: sha512-nvkst/Y9OZtTkKhK53zUrIwmu5Ot+4NvXFOcl/CLQxrJwv22s4+tEMRaB24aa3UlTJoFi0H9+6vzqcBHoDGkZA==,
+      }
+    engines: { node: ">=16.x" }
 
   "@ffmpeg/ffmpeg@0.12.15":
     resolution:
@@ -3947,6 +3957,8 @@ snapshots:
       levn: 0.4.1
 
   "@exodus/bytes@1.15.1": {}
+
+  "@ffmpeg/core@0.12.9": {}
 
   "@ffmpeg/ffmpeg@0.12.15":
     dependencies:

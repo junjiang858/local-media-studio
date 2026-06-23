@@ -1634,8 +1634,28 @@ svg {
   touch-action: none;
 }
 
+.video-thumbnail-strip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(44px, 1fr);
+  gap: 1px;
+  pointer-events: none;
+}
+
+.video-thumbnail-frame {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  object-fit: cover;
+  opacity: 0.72;
+  filter: saturate(0.92) contrast(1.06);
+}
+
 .video-trim-selection {
   position: absolute;
+  z-index: 1;
   top: 8px;
   bottom: 8px;
   left: var(--trim-start, 0%);
@@ -1648,6 +1668,7 @@ svg {
 
 .video-trim-handle {
   position: absolute;
+  z-index: 2;
   top: 5px;
   bottom: 5px;
   width: 12px;
@@ -1672,6 +1693,7 @@ svg {
 
 .subtitle-timeline-track {
   min-height: 46px;
+  touch-action: none;
 }
 
 .subtitle-timeline-empty {
@@ -1688,16 +1710,43 @@ svg {
   top: 8px;
   bottom: 8px;
   display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) 8px;
+  align-items: stretch;
+  justify-items: center;
   place-items: center;
   min-width: 18px;
+  padding: 0;
   overflow: hidden;
   border: 1px solid rgba(248, 251, 255, 0.24);
   border-radius: var(--radius-tight);
   background: rgba(247, 189, 85, 0.78);
   color: #0d1219;
+  cursor: grab;
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 800;
+  touch-action: none;
+}
+
+.subtitle-timeline-cue.is-dragging {
+  border-color: rgba(255, 233, 178, 0.86);
+  background: #f7bd55;
+  cursor: grabbing;
+  box-shadow: 0 0 0 3px rgba(247, 189, 85, 0.18);
+}
+
+.subtitle-cue-resize-handle {
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.subtitle-cue-resize-handle.start {
+  border-right: 1px solid rgba(13, 18, 25, 0.28);
+}
+
+.subtitle-cue-resize-handle.end {
+  border-left: 1px solid rgba(13, 18, 25, 0.28);
 }
 
 .crop-preset-grid {

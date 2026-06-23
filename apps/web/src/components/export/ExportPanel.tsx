@@ -229,7 +229,13 @@ export function ExportPanel({
         type="button"
       >
         <StudioIcon name="download" size={20} />
-        <span>{status === "busy" ? t.prepareExport : t.exportCurrentAsset}</span>
+        <span>
+          {status === "busy"
+            ? t.prepareExport
+            : status === "failed"
+              ? t.retryExport
+              : t.exportCurrentAsset}
+        </span>
       </button>
       {message || videoJob ? (
         <div className={`job-message ${videoJob?.status ?? status}`}>

@@ -2,6 +2,7 @@ import type { VideoEditAction, VideoEditState, VideoExportFormat } from "@obscur
 import { videoExportFormats } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
+import type { VideoThumbnail } from "../../utils/video-thumbnails";
 import { SubtitleTimeline } from "./SubtitleTimeline";
 import { VideoTrimTimeline } from "./VideoTrimTimeline";
 
@@ -15,6 +16,7 @@ export function VideoEditorPanel({
   sourceFormat,
   t,
   videoState,
+  videoThumbnails,
 }: {
   activeTab: string;
   duration: number | null;
@@ -23,6 +25,7 @@ export function VideoEditorPanel({
   sourceFormat: VideoExportFormat;
   t: Copy;
   videoState: VideoEditState;
+  videoThumbnails: VideoThumbnail[];
 }) {
   return (
     <section aria-label={t.imageEditControls} className="editor-panel-content">
@@ -39,6 +42,7 @@ export function VideoEditorPanel({
             onGeneratePreview={onGeneratePreview}
             t={t}
             videoState={videoState}
+            videoThumbnails={videoThumbnails}
           />
           <div className="tool-grid two-col">
             <div className="form-field">
@@ -128,7 +132,7 @@ export function VideoEditorPanel({
             <h3>{t.manualSubtitles}</h3>
           </div>
           <p className="export-helper">{t.subtitleDetail}</p>
-          <SubtitleTimeline duration={duration} t={t} videoState={videoState} />
+          <SubtitleTimeline duration={duration} onApply={onApply} t={t} videoState={videoState} />
           <button
             className="primary-button full-width"
             onClick={() => onApply({ cue: createSubtitleCue(videoState, t), type: "add-subtitle" })}

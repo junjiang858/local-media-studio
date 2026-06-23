@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { formatDuration, type VideoEditAction, type VideoEditState } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
+import type { VideoThumbnail } from "../../utils/video-thumbnails";
 
 type TrimHandle = "start" | "end";
 
@@ -11,12 +12,14 @@ export function VideoTrimTimeline({
   onGeneratePreview,
   t,
   videoState,
+  videoThumbnails,
 }: {
   duration: number | null;
   onApply: (action: VideoEditAction) => void;
   onGeneratePreview: () => void;
   t: Copy;
   videoState: VideoEditState;
+  videoThumbnails: VideoThumbnail[];
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeHandle, setActiveHandle] = useState<TrimHandle | null>(null);
@@ -33,7 +36,9 @@ export function VideoTrimTimeline({
   function beginDrag(handle: TrimHandle, event: PointerEvent<HTMLElement>) {
     event.preventDefault();
     event.stopPropagation();
-    trackRef.current?.setPointerCapture(event.pointerId);
+    if (typeof trackRef.current?.setPointerCapture === "function") {
+      trackRef.current.setPointerCapture(event.pointerId);
+    }
     setActiveHandle(handle);
     updateTrim(handle, event.clientX);
   }
@@ -94,7 +99,10 @@ export function VideoTrimTimeline({
           }
         }}
         onPointerUp={(event) => {
-          if (trackRef.current?.hasPointerCapture(event.pointerId)) {
+          if (
+            typeof trackRef.current?.hasPointerCapture === "function" &&
+            trackRef.current.hasPointerCapture(event.pointerId)
+          ) {
             trackRef.current.releasePointerCapture(event.pointerId);
           }
           setActiveHandle(null);
@@ -103,6 +111,21 @@ export function VideoTrimTimeline({
         style={trackStyle}
         tabIndex={0}
       >
+        {videoThumbnails.length ? (
+          <div aria-hidden="true" className="video-thumbnail-strip">
+            {videoThumbnails.map((thumbnail) => (
+              <img
+                alt=""
+                className="video-thumbnail-frame"
+                data-testid="video-thumbnail-frame"
+                draggable={false}
+                key={thumbnail.id}
+                src={thumbnail.url}
+                title={formatDuration(thumbnail.time)}
+              />
+            ))}
+          </div>
+        ) : null}
         <div className="video-trim-selection" />
         <button
           aria-label={t.trimStartHandle}

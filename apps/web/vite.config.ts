@@ -7,6 +7,9 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1200,
   },
+  optimizeDeps: {
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

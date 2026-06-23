@@ -110,7 +110,11 @@ export function VideoPreviewWorkbench({
         >
           <StudioIcon name="checkCircle" size={17} />
           <span>
-            {previewStatus === "busy" ? t.generatingVideoPreview : t.generateVideoPreview}
+            {previewStatus === "busy"
+              ? t.generatingVideoPreview
+              : previewStatus === "failed"
+                ? t.retryVideoPreview
+                : t.generateVideoPreview}
           </span>
         </button>
         {previewStatus === "busy" ? (
