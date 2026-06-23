@@ -93,7 +93,7 @@ export async function exportEditedVideo({
 export async function saveVideoExport(result: VideoExportResult) {
   const savePicker = (window as SaveFilePickerWindow).showSaveFilePicker;
   const extension = `.${result.filename.split(".").at(-1) ?? "mp4"}`;
-  const mimeType = result.blob.type || (extension === ".webm" ? "video/webm" : "video/mp4");
+  const mimeType = result.blob.type || getVideoMimeTypeFromExtension(extension);
 
   if (savePicker && window.isSecureContext) {
     try {
@@ -181,11 +181,33 @@ function getTranscodeArgs(format: VideoEditState["exportFormat"]) {
     return ["-c:v", "libvpx-vp9", "-c:a", "libopus"];
   }
 
+  if (format === "avi") {
+    return ["-c:v", "mpeg4", "-c:a", "mp3"];
+  }
+
   return ["-c:v", "libx264", "-c:a", "aac"];
 }
 
 function getInputFormat(inputName: string): VideoEditState["exportFormat"] {
-  return inputName.toLowerCase().endsWith(".webm") ? "webm" : "mp4";
+  const lowerInputName = inputName.toLowerCase();
+
+  if (lowerInputName.endsWith(".webm")) {
+    return "webm";
+  }
+
+  if (lowerInputName.endsWith(".mov")) {
+    return "mov";
+  }
+
+  if (lowerInputName.endsWith(".mkv")) {
+    return "mkv";
+  }
+
+  if (lowerInputName.endsWith(".avi")) {
+    return "avi";
+  }
+
+  return "mp4";
 }
 
 function getInputExtension(source: File) {
@@ -199,7 +221,43 @@ function getInputExtension(source: File) {
 }
 
 function getVideoMimeType(format: VideoEditState["exportFormat"]) {
-  return format === "webm" ? "video/webm" : "video/mp4";
+  if (format === "webm") {
+    return "video/webm";
+  }
+
+  if (format === "mov") {
+    return "video/quicktime";
+  }
+
+  if (format === "mkv") {
+    return "video/x-matroska";
+  }
+
+  if (format === "avi") {
+    return "video/x-msvideo";
+  }
+
+  return "video/mp4";
+}
+
+function getVideoMimeTypeFromExtension(extension: string) {
+  if (extension === ".webm") {
+    return "video/webm";
+  }
+
+  if (extension === ".mov") {
+    return "video/quicktime";
+  }
+
+  if (extension === ".mkv") {
+    return "video/x-matroska";
+  }
+
+  if (extension === ".avi") {
+    return "video/x-msvideo";
+  }
+
+  return "video/mp4";
 }
 
 function sanitizeBaseName(fileName: string): string {

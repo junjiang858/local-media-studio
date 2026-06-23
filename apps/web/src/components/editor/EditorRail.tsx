@@ -6,6 +6,7 @@ import type {
   VideoEditState,
 } from "@local-media-studio/media-core";
 import type { WorkerJob } from "@local-media-studio/shared";
+import { getVideoExportFormatFromMimeType, type ImageExportSettings } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon, type StudioIconName } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
@@ -16,10 +17,12 @@ import { VideoEditorPanel } from "./VideoEditorPanel";
 
 export function EditorRail({
   backgroundRemovalJob,
+  imageExportSettings,
   imageState,
   isVisible,
   onApplyImageAction,
   onApplyVideoAction,
+  onImageExportSettingsChange,
   onGenerateVideoPreview,
   onRemoveBackground,
   selectedAsset,
@@ -27,10 +30,12 @@ export function EditorRail({
   videoState,
 }: {
   backgroundRemovalJob: WorkerJob | null;
+  imageExportSettings: ImageExportSettings | null;
   imageState: ImageEditState | null;
   isVisible: boolean;
   onApplyImageAction: (action: ImageEditAction) => void;
   onApplyVideoAction: (action: VideoEditAction) => void;
+  onImageExportSettingsChange: (patch: Partial<ImageExportSettings>) => void;
   onGenerateVideoPreview: () => void;
   onRemoveBackground: () => void;
   selectedAsset: WorkspaceAsset | null;
@@ -98,8 +103,10 @@ export function EditorRail({
           <ImageEditorPanel
             activeTab={visibleActiveTab ?? "transform"}
             backgroundRemovalJob={backgroundRemovalJob}
+            exportSettings={imageExportSettings}
             imageState={imageState}
             onApply={onApplyImageAction}
+            onExportSettingsChange={onImageExportSettingsChange}
             onRemoveBackground={onRemoveBackground}
             t={t}
           />
@@ -109,6 +116,7 @@ export function EditorRail({
             duration={selectedAsset.duration ?? null}
             onApply={onApplyVideoAction}
             onGeneratePreview={onGenerateVideoPreview}
+            sourceFormat={getVideoExportFormatFromMimeType(selectedAsset.mimeType)}
             t={t}
             videoState={videoState}
           />
@@ -120,8 +128,8 @@ export function EditorRail({
       <section className="panel export-panel">
         <PanelHeader eyebrow={t.output} icon="download" title={t.export} />
         <ExportPanel
+          imageExportSettings={imageExportSettings}
           imageState={imageState}
-          onApplyVideoAction={onApplyVideoAction}
           selectedAsset={selectedAsset}
           t={t}
           videoState={videoState}
@@ -155,6 +163,7 @@ function getEditorTabs(asset: WorkspaceAsset | null, t: Copy): EditorTab[] {
     { icon: "cropRotate", id: "transform", label: t.transformTab },
     { icon: "tune", id: "adjustments", label: t.adjustmentsTab },
     { icon: "textFields", id: "layers", label: t.layersTab },
+    { icon: "formatPaint", id: "format", label: t.formatTab },
     { icon: "backgroundReplace", id: "background", label: t.backgroundTab },
   ];
 }

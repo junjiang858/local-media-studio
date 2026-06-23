@@ -1355,6 +1355,31 @@ svg {
   overflow: visible;
 }
 
+.export-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(135, 151, 170, 0.18);
+  border-radius: var(--radius-tight);
+  background: rgba(13, 17, 23, 0.42);
+}
+
+.export-summary span {
+  color: var(--muted-low);
+  font-size: 11px;
+  font-weight: 740;
+  text-transform: uppercase;
+}
+
+.export-summary strong {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-align: right;
+}
+
 .editor-tab-shell {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

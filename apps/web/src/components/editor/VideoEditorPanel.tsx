@@ -3,19 +3,20 @@ import type {
   VideoEditState,
   VideoExportFormat,
 } from "@local-media-studio/media-core";
+import { videoExportFormats } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import { SubtitleTimeline } from "./SubtitleTimeline";
 import { VideoTrimTimeline } from "./VideoTrimTimeline";
 
 const speedOptions = [0.5, 1, 1.25, 1.5, 2] as const;
-const formatOptions: VideoExportFormat[] = ["mp4", "webm"];
 
 export function VideoEditorPanel({
   activeTab,
   duration,
   onApply,
   onGeneratePreview,
+  sourceFormat,
   t,
   videoState,
 }: {
@@ -23,6 +24,7 @@ export function VideoEditorPanel({
   duration: number | null;
   onApply: (action: VideoEditAction) => void;
   onGeneratePreview: () => void;
+  sourceFormat: VideoExportFormat;
   t: Copy;
   videoState: VideoEditState;
 }) {
@@ -237,7 +239,7 @@ export function VideoEditorPanel({
               }
               value={videoState.exportFormat}
             >
-              {formatOptions.map((format) => (
+              {videoExportFormats.map((format) => (
                 <option key={format} value={format}>
                   {format.toUpperCase()}
                 </option>
@@ -251,7 +253,7 @@ export function VideoEditorPanel({
             </button>
             <button
               className="secondary-button"
-              onClick={() => onApply({ type: "reset-format" })}
+              onClick={() => onApply({ format: sourceFormat, type: "reset-format" })}
               type="button"
             >
               <StudioIcon name="restartAlt" size={17} />

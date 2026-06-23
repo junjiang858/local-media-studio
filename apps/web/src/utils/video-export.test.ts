@@ -112,4 +112,28 @@ describe("video export utility", () => {
       expect.arrayContaining(["-c:v", "libvpx-vp9", "-c:a", "libopus", "output.webm"]),
     );
   });
+
+  it("supports AVI container export with a compatible local transcode", async () => {
+    const source = new File(["video"], "clip.mp4", { type: "video/mp4" });
+    const state = updateVideoEditState(initialVideoEditState(12), {
+      format: "avi",
+      type: "set-format",
+    });
+
+    fetchFileMock.mockResolvedValue(new Uint8Array([1, 2, 3]));
+    ffmpegInstance.load.mockResolvedValue(true);
+    ffmpegInstance.exec.mockResolvedValue(0);
+    ffmpegInstance.readFile.mockResolvedValue(new Uint8Array([4, 5, 6]));
+
+    const result = await exportEditedVideo({
+      source,
+      state,
+    });
+
+    expect(ffmpegInstance.exec).toHaveBeenCalledWith(
+      expect.arrayContaining(["-c:v", "mpeg4", "-c:a", "mp3", "output.avi"]),
+    );
+    expect(result.filename).toBe("clip-edited.avi");
+    expect(result.blob.type).toBe("video/x-msvideo");
+  });
 });

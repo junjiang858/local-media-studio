@@ -1,12 +1,20 @@
+import { useEffect, useState } from "react";
 import type {
   ImageAnnotation,
   ImageEditAction,
   ImageEditState,
+  ImageExportFormat,
   WatermarkPosition,
 } from "@local-media-studio/media-core";
 import type { WorkerJob } from "@local-media-studio/shared";
+import {
+  imageExportFormats,
+  supportsImageQuality,
+  type ImageExportSettings,
+} from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
+import { getImageExportAvailability, type ImageExportAvailability } from "../../utils/image-export";
 import { AdjustmentControl } from "./AdjustmentControl";
 import { CropPresetGrid } from "./CropPresetGrid";
 import { FilterPresetGrid } from "./FilterPresetGrid";
@@ -24,22 +32,83 @@ const watermarkPositionOptions: Array<{ label: keyof Copy; value: WatermarkPosit
 export function ImageEditorPanel({
   activeTab,
   backgroundRemovalJob,
+  exportSettings,
   imageState,
   onApply,
+  onExportSettingsChange,
   onRemoveBackground,
   t,
 }: {
   activeTab: string;
   backgroundRemovalJob: WorkerJob | null;
+  exportSettings: ImageExportSettings | null;
   imageState: ImageEditState;
   onApply: (action: ImageEditAction) => void;
+  onExportSettingsChange: (patch: Partial<ImageExportSettings>) => void;
   onRemoveBackground: () => void;
   t: Copy;
 }) {
+  const [imageAvailability, setImageAvailability] = useState<
+    Partial<Record<ImageExportFormat, ImageExportAvailability>>
+  >({});
+  const [qualityDraft, setQualityDraft] = useState("");
   const isRemovingBackground =
     backgroundRemovalJob?.status === "queued" ||
     backgroundRemovalJob?.status === "loading" ||
     backgroundRemovalJob?.status === "processing";
+  const activeImageAvailability = exportSettings ? imageAvailability[exportSettings.format] : null;
+
+  useEffect(() => {
+    let canceled = false;
+
+    void getImageExportAvailability(imageExportFormats, t).then((availability) => {
+      if (!canceled) {
+        setImageAvailability(availability);
+      }
+    });
+
+    return () => {
+      canceled = true;
+    };
+  }, [t]);
+
+  useEffect(() => {
+    if (exportSettings) {
+      setQualityDraft(String(exportSettings.quality));
+    }
+  }, [exportSettings?.quality, exportSettings]);
+
+  useEffect(() => {
+    if (!exportSettings || !activeImageAvailability || activeImageAvailability.available) {
+      return;
+    }
+
+    const fallbackFormat = imageExportFormats.find(
+      (format) => imageAvailability[format]?.available,
+    );
+
+    if (fallbackFormat && fallbackFormat !== exportSettings.format) {
+      onExportSettingsChange({ format: fallbackFormat });
+    }
+  }, [activeImageAvailability, exportSettings, imageAvailability, onExportSettingsChange]);
+
+  function handleQualityDraftChange(value: string) {
+    setQualityDraft(value);
+
+    if (!value.trim()) {
+      return;
+    }
+
+    const parsedQuality = Number(value);
+
+    if (!Number.isFinite(parsedQuality)) {
+      return;
+    }
+
+    onExportSettingsChange({
+      quality: Math.min(100, Math.max(1, parsedQuality)),
+    });
+  }
 
   return (
     <section aria-label={t.imageEditControls} className="editor-panel-content">
@@ -267,6 +336,62 @@ export function ImageEditorPanel({
             <StudioIcon name="restartAlt" size={18} />
             <span>{t.resetLayers}</span>
           </button>
+        </div>
+      ) : null}
+
+      {activeTab === "format" && exportSettings ? (
+        <div className="tool-section">
+          <div className="tool-section-heading">
+            <StudioIcon name="formatPaint" size={18} />
+            <h3>{t.formatConversion}</h3>
+          </div>
+          <div className="form-field">
+            <label htmlFor="image-format">{t.imageFormat}</label>
+            <select
+              id="image-format"
+              onChange={(event) =>
+                onExportSettingsChange({
+                  format: event.currentTarget.value as ImageExportFormat,
+                })
+              }
+              value={exportSettings.format}
+            >
+              {imageExportFormats.map((format) => {
+                const availability = imageAvailability[format];
+                const disabled = availability ? !availability.available : false;
+
+                return (
+                  <option disabled={disabled} key={format} value={format}>
+                    {`${format.toUpperCase()}${disabled ? ` - ${t.unsupportedFormat}` : ""}`}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          {supportsImageQuality(exportSettings.format) ? (
+            <div className="form-field">
+              <label htmlFor="image-quality">{t.quality}</label>
+              <input
+                id="image-quality"
+                max={100}
+                min={1}
+                onChange={(event) => handleQualityDraftChange(event.currentTarget.value)}
+                onBlur={() => {
+                  if (!qualityDraft.trim()) {
+                    setQualityDraft(String(exportSettings.quality));
+                  }
+                }}
+                type="number"
+                value={qualityDraft}
+              />
+            </div>
+          ) : null}
+          <p className="export-helper">
+            {activeImageAvailability?.reason ??
+              (supportsImageQuality(exportSettings.format)
+                ? t.imageQualityHelper
+                : t.imageFormatHelper)}
+          </p>
         </div>
       ) : null}
 

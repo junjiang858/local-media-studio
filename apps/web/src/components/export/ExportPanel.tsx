@@ -2,15 +2,12 @@ import { useEffect, useState } from "react";
 import type {
   ImageEditState,
   ImageExportFormat,
-  VideoEditAction,
   VideoEditState,
-  VideoExportFormat,
 } from "@local-media-studio/media-core";
 import {
-  defaultImageExportFormat,
-  defaultImageQuality,
   imageExportFormats,
-  videoExportFormats,
+  supportsImageQuality,
+  type ImageExportSettings,
 } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
@@ -35,20 +32,18 @@ import {
 type ExportStatus = "idle" | "busy" | "ready" | "saved" | "canceled" | "failed";
 
 export function ExportPanel({
+  imageExportSettings,
   imageState,
-  onApplyVideoAction,
   selectedAsset,
   t,
   videoState,
 }: {
+  imageExportSettings: ImageExportSettings | null;
   imageState: ImageEditState | null;
-  onApplyVideoAction: (action: VideoEditAction) => void;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
 }) {
-  const [format, setFormat] = useState<ImageExportFormat>(defaultImageExportFormat);
-  const [quality, setQuality] = useState(defaultImageQuality);
   const [status, setStatus] = useState<ExportStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [result, setResult] = useState<ImageExportResult | VideoExportResult | null>(null);
@@ -60,17 +55,26 @@ export function ExportPanel({
   const updateJob = useJobStore((state) => state.updateJob);
   const completeJob = useJobStore((state) => state.completeJob);
   const failJob = useJobStore((state) => state.failJob);
+  const activeImageAvailability =
+    selectedAsset?.kind === "image" && imageExportSettings
+      ? imageAvailability[imageExportSettings.format]
+      : null;
+  const imageFormatUnavailable = activeImageAvailability
+    ? !activeImageAvailability.available
+    : false;
   const canExportImage =
-    selectedAsset?.kind === "image" && selectedAsset.status === "ready" && Boolean(imageState);
+    selectedAsset?.kind === "image" &&
+    selectedAsset.status === "ready" &&
+    Boolean(imageState) &&
+    Boolean(imageExportSettings) &&
+    !imageFormatUnavailable;
   const canExportVideo =
     selectedAsset?.kind === "video" && selectedAsset.status === "ready" && Boolean(videoState);
   const canExport = canExportImage || canExportVideo;
   const videoJobId = selectedAsset?.kind === "video" ? `video-export:${selectedAsset.id}` : null;
   const videoJob = videoJobId ? (jobs[videoJobId] ?? null) : null;
-  const activeFormat = selectedAsset?.kind === "video" ? videoState?.exportFormat : format;
-  const exportFormats = selectedAsset?.kind === "video" ? videoExportFormats : imageExportFormats;
-  const activeImageAvailability =
-    selectedAsset?.kind === "image" ? imageAvailability[format] : null;
+  const activeFormat =
+    selectedAsset?.kind === "video" ? videoState?.exportFormat : imageExportSettings?.format;
 
   useEffect(() => {
     return () => {
@@ -93,22 +97,12 @@ export function ExportPanel({
       }
 
       setImageAvailability(availability);
-
-      if (!availability[format]?.available) {
-        const nextFormat = imageExportFormats.find((exportFormat) => {
-          return availability[exportFormat]?.available;
-        });
-
-        if (nextFormat) {
-          setFormat(nextFormat);
-        }
-      }
     });
 
     return () => {
       canceled = true;
     };
-  }, [format, selectedAsset?.kind, t]);
+  }, [selectedAsset?.kind, t]);
 
   async function handleExport() {
     if (!selectedAsset) {
@@ -120,7 +114,7 @@ export function ExportPanel({
       return;
     }
 
-    if (!imageState) {
+    if (!imageState || !imageExportSettings) {
       setStatus("failed");
       setMessage(t.imageExportFailed);
       return;
@@ -138,8 +132,8 @@ export function ExportPanel({
     try {
       const nextResult = await exportEditedImage({
         asset: selectedAsset,
-        format,
-        quality,
+        format: imageExportSettings.format,
+        quality: imageExportSettings.quality,
         state: imageState,
         t,
       });
@@ -151,7 +145,7 @@ export function ExportPanel({
       setResult(nextResult);
       setStatus("ready");
       setMessage(t.downloadReady);
-      await saveImageExport(nextResult, format);
+      await saveImageExport(nextResult, imageExportSettings.format);
       setStatus("saved");
       setMessage(t.exportSaved);
     } catch (error) {
@@ -215,51 +209,18 @@ export function ExportPanel({
 
   return (
     <div className="export-panel-content">
-      <div className="form-field">
-        <label htmlFor="export-format">{t.format}</label>
-        <select
-          id="export-format"
-          onChange={(event) => {
-            if (selectedAsset?.kind === "video") {
-              onApplyVideoAction({
-                format: event.currentTarget.value as VideoExportFormat,
-                type: "set-format",
-              });
-              return;
-            }
-
-            setFormat(event.currentTarget.value as ImageExportFormat);
-          }}
-          value={activeFormat}
-        >
-          {exportFormats.map((exportFormat) => {
-            const availability =
-              selectedAsset?.kind === "image"
-                ? imageAvailability[exportFormat as ImageExportFormat]
-                : null;
-            const disabled = availability ? !availability.available : false;
-
-            return (
-              <option disabled={disabled} key={exportFormat} value={exportFormat}>
-                {`${exportFormat.toUpperCase()}${disabled ? ` - ${t.unsupportedFormat}` : ""}`}
-              </option>
-            );
-          })}
-        </select>
+      <div className="export-summary">
+        <span>{t.format}</span>
+        <strong>{activeFormat ? activeFormat.toUpperCase() : "--"}</strong>
+        {selectedAsset?.kind === "image" &&
+        imageExportSettings &&
+        supportsImageQuality(imageExportSettings.format) ? (
+          <>
+            <span>{t.quality}</span>
+            <strong>{imageExportSettings.quality}</strong>
+          </>
+        ) : null}
       </div>
-      {selectedAsset?.kind !== "video" ? (
-        <div className="form-field">
-          <label htmlFor="export-quality">{t.quality}</label>
-          <input
-            id="export-quality"
-            max={100}
-            min={1}
-            onChange={(event) => setQuality(Number(event.currentTarget.value))}
-            type="number"
-            value={quality}
-          />
-        </div>
-      ) : null}
       <p className="export-helper">
         {selectedAsset?.kind === "video"
           ? t.videoExportHelper

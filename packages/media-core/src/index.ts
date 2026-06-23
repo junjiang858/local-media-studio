@@ -19,7 +19,7 @@ export type ImageExportMimeType =
   | "image/bmp"
   | "image/gif"
   | "image/tiff";
-export type VideoExportFormat = "mp4" | "webm";
+export type VideoExportFormat = "mp4" | "webm" | "mov" | "mkv" | "avi";
 export type WatermarkPosition =
   | "top-left"
   | "top-right"
@@ -144,9 +144,9 @@ export type VideoEditAction =
   | { type: "remove-subtitle"; cueId: string }
   | { type: "reset-trim"; duration?: number | null }
   | { type: "reset-speed" }
-  | { type: "reset-format" }
+  | { type: "reset-format"; format?: VideoExportFormat }
   | { type: "reset-subtitles" }
-  | { type: "reset"; duration?: number | null };
+  | { type: "reset"; duration?: number | null; format?: VideoExportFormat };
 
 export type ImageExportPlan = {
   crop: { x: number; y: number; width: number; height: number };
@@ -328,9 +328,12 @@ export function getCurrentImageEditState(history: ImageEditHistory): ImageEditSt
   return cloneImageEditState(history.present);
 }
 
-export function initialVideoEditState(duration?: number | null): VideoEditState {
+export function initialVideoEditState(
+  duration?: number | null,
+  format: VideoExportFormat = "mp4",
+): VideoEditState {
   return {
-    exportFormat: "mp4",
+    exportFormat: format,
     speed: 1,
     subtitles: [],
     trimEnd: typeof duration === "number" && duration > 0 ? Math.round(duration * 100) / 100 : null,
@@ -343,7 +346,7 @@ export function updateVideoEditState(
   action: VideoEditAction,
 ): VideoEditState {
   if (action.type === "reset") {
-    return initialVideoEditState(action.duration);
+    return initialVideoEditState(action.duration, action.format ?? state.exportFormat);
   }
 
   if (action.type === "reset-trim") {
@@ -367,7 +370,7 @@ export function updateVideoEditState(
   if (action.type === "reset-format") {
     return {
       ...cloneVideoEditState(state),
-      exportFormat: "mp4",
+      exportFormat: action.format ?? "mp4",
     };
   }
 

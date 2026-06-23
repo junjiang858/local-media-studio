@@ -13,6 +13,7 @@ import type { PreviewBackground } from "../components/preview/types";
 import { MobileTabs } from "../components/studio/MobileTabs";
 import { TopToolbar } from "../components/studio/TopToolbar";
 import { emptyWorkspaceTabs, populatedWorkspaceTabs } from "../config/workspace";
+import { getDefaultImageExportSettings } from "../config/media";
 import { detectInitialLanguage, messages, type Language } from "../i18n";
 import { useJobStore } from "../stores/job-store";
 import { getVisibleAssets, useMediaStore, type WorkspaceAsset } from "../stores/media-store";
@@ -37,12 +38,14 @@ export default function App() {
   const assets = useMediaStore((state) => state.assets);
   const selectedAssetId = useMediaStore((state) => state.selectedAssetId);
   const filter = useMediaStore((state) => state.filter);
+  const imageExportSettings = useMediaStore((state) => state.imageExportSettings);
   const imageHistories = useMediaStore((state) => state.imageHistories);
   const videoEdits = useMediaStore((state) => state.videoEdits);
   const addFiles = useMediaStore((state) => state.addFiles);
   const selectAsset = useMediaStore((state) => state.selectAsset);
   const selectAdjacent = useMediaStore((state) => state.selectAdjacent);
   const setFilter = useMediaStore((state) => state.setFilter);
+  const updateImageExportSettings = useMediaStore((state) => state.updateImageExportSettings);
   const applyImageAction = useMediaStore((state) => state.applyImageAction);
   const applyVideoAction = useMediaStore((state) => state.applyVideoAction);
   const updateAssetMetadata = useMediaStore((state) => state.updateAssetMetadata);
@@ -61,6 +64,11 @@ export default function App() {
   const selectedImageState =
     selectedAsset?.kind === "image"
       ? getCurrentImageEditState(imageHistories[selectedAsset.id] ?? initialImageEditHistory())
+      : null;
+  const selectedImageExportSettings =
+    selectedAsset?.kind === "image"
+      ? (imageExportSettings[selectedAsset.id] ??
+        getDefaultImageExportSettings(selectedAsset.mimeType))
       : null;
   const selectedVideoState =
     selectedAsset?.kind === "video"
@@ -231,10 +239,16 @@ export default function App() {
         {assets.length ? (
           <EditorRail
             backgroundRemovalJob={backgroundRemovalJob}
+            imageExportSettings={selectedImageExportSettings}
             imageState={selectedImageState}
             isVisible={currentMobileTab === "edit" || currentMobileTab === "export"}
             onApplyImageAction={handleApplyImageAction}
             onApplyVideoAction={handleApplyVideoAction}
+            onImageExportSettingsChange={(patch) => {
+              if (selectedAsset?.kind === "image") {
+                updateImageExportSettings(selectedAsset.id, patch);
+              }
+            }}
             onGenerateVideoPreview={() => setVideoPreviewRequestKey((key) => key + 1)}
             onRemoveBackground={() => void handleRemoveBackground()}
             selectedAsset={selectedAsset}

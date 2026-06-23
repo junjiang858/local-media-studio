@@ -14,6 +14,11 @@ import type {
   VideoEditState,
 } from "@local-media-studio/media-core";
 import type { MediaAsset, MediaKind } from "@local-media-studio/shared";
+import {
+  getDefaultImageExportSettings,
+  getVideoExportFormatFromMimeType,
+  type ImageExportSettings,
+} from "../config/media";
 
 export type MediaFilter = "all" | MediaKind;
 export type WorkspaceAsset = MediaAsset & { file: File };
@@ -23,12 +28,14 @@ type MediaStore = {
   assets: WorkspaceAsset[];
   selectedAssetId: string | null;
   filter: MediaFilter;
+  imageExportSettings: Record<string, ImageExportSettings>;
   imageHistories: Record<string, ImageEditHistory>;
   videoEdits: Record<string, VideoEditState>;
   addFiles: (files: File[]) => void;
   selectAsset: (assetId: string) => void;
   selectAdjacent: (direction: 1 | -1) => void;
   setFilter: (filter: MediaFilter) => void;
+  updateImageExportSettings: (assetId: string, patch: Partial<ImageExportSettings>) => void;
   applyImageAction: (assetId: string, action: ImageEditAction) => void;
   applyVideoAction: (assetId: string, action: VideoEditAction) => void;
   updateAssetMetadata: (assetId: string, metadata: MediaMetadataUpdate) => void;
@@ -39,6 +46,7 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
   assets: [],
   selectedAssetId: null,
   filter: "all",
+  imageExportSettings: {},
   imageHistories: {},
   videoEdits: {},
   addFiles: (files) => {
@@ -48,14 +56,23 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
         .filter((asset) => asset.kind === "image")
         .map((asset) => [asset.id, initialImageEditHistory()]),
     );
+    const newImageExportSettings = Object.fromEntries(
+      acceptedAssets
+        .filter((asset) => asset.kind === "image")
+        .map((asset) => [asset.id, getDefaultImageExportSettings(asset.mimeType)]),
+    );
     const newVideoEdits = Object.fromEntries(
       acceptedAssets
         .filter((asset) => asset.kind === "video")
-        .map((asset) => [asset.id, initialVideoEditState(asset.duration)]),
+        .map((asset) => [
+          asset.id,
+          initialVideoEditState(asset.duration, getVideoExportFormatFromMimeType(asset.mimeType)),
+        ]),
     );
 
     set((state) => ({
       assets: [...state.assets, ...acceptedAssets],
+      imageExportSettings: { ...state.imageExportSettings, ...newImageExportSettings },
       imageHistories: { ...state.imageHistories, ...newImageHistories },
       videoEdits: { ...state.videoEdits, ...newVideoEdits },
       selectedAssetId: acceptedAssets[0]?.id ?? state.selectedAssetId,
@@ -83,6 +100,23 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
       selectedAssetId: selectedStillVisible
         ? state.selectedAssetId
         : (visibleAssets[0]?.id ?? null),
+    });
+  },
+  updateImageExportSettings: (assetId, patch) => {
+    set((state) => {
+      const asset = state.assets.find((item) => item.id === assetId);
+      const currentSettings =
+        state.imageExportSettings[assetId] ?? getDefaultImageExportSettings(asset?.mimeType);
+
+      return {
+        imageExportSettings: {
+          ...state.imageExportSettings,
+          [assetId]: {
+            ...currentSettings,
+            ...patch,
+          },
+        },
+      };
     });
   },
   applyImageAction: (assetId, action) => {
@@ -148,15 +182,18 @@ export const useMediaStore = create<MediaStore>((set, get) => ({
     const remainingAssets = state.assets.filter((asset) => asset.id !== state.selectedAssetId);
     const visibleAssets = getVisibleAssets(remainingAssets, state.filter);
     const remainingHistories = { ...state.imageHistories };
+    const remainingImageExportSettings = { ...state.imageExportSettings };
     const remainingVideoEdits = { ...state.videoEdits };
 
     if (state.selectedAssetId) {
       delete remainingHistories[state.selectedAssetId];
+      delete remainingImageExportSettings[state.selectedAssetId];
       delete remainingVideoEdits[state.selectedAssetId];
     }
 
     set({
       assets: remainingAssets,
+      imageExportSettings: remainingImageExportSettings,
       imageHistories: remainingHistories,
       videoEdits: remainingVideoEdits,
       selectedAssetId: visibleAssets[0]?.id ?? null,

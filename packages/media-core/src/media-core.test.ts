@@ -372,6 +372,22 @@ describe("media core helpers", () => {
     ]);
   });
 
+  it("initializes and resets video format from the source format", () => {
+    const initialState = initialVideoEditState(12, "webm");
+    const changedState = updateVideoEditState(initialState, {
+      format: "mov",
+      type: "set-format",
+    });
+    const resetState = updateVideoEditState(changedState, {
+      format: "webm",
+      type: "reset-format",
+    });
+
+    expect(initialState.exportFormat).toBe("webm");
+    expect(changedState.exportFormat).toBe("mov");
+    expect(resetState.exportFormat).toBe("webm");
+  });
+
   it("resets individual video edit groups to original defaults", () => {
     const editedState = updateVideoEditState(
       updateVideoEditState(

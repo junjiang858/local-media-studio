@@ -219,11 +219,16 @@ describe("media workspace shell", () => {
     await user.selectOptions(screen.getByLabelText(/watermark position/i), "top-left");
     await user.click(screen.getByRole("button", { name: /add text/i }));
     expect(screen.getAllByText(/text note/i).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("tab", { name: /^format$/i }));
+    await user.selectOptions(screen.getByLabelText(/image format/i), "webp");
+    await user.clear(screen.getByLabelText(/quality/i));
+    await user.type(screen.getByLabelText(/quality/i), "70");
+    expect(screen.queryByLabelText(/^format$/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
     expect(await screen.findByText(/export saved/i)).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /download cover-photo-edited.png/i })).toBeNull();
-    expect(toBlobSpy).toHaveBeenCalledWith(expect.any(Function), "image/png", 0.86);
+    expect(screen.queryByRole("link", { name: /download cover-photo-edited.webp/i })).toBeNull();
+    expect(toBlobSpy).toHaveBeenCalledWith(expect.any(Function), "image/webp", 0.7);
   });
 
   it("runs background removal locally and adds the transparent result as a new asset", async () => {
@@ -300,6 +305,7 @@ describe("media workspace shell", () => {
     await user.selectOptions(screen.getByLabelText(/video format/i), "webm");
 
     expect(screen.getByLabelText(/video format/i)).toHaveValue("webm");
+    expect(screen.queryByLabelText(/^format$/i)).not.toBeInTheDocument();
 
     await user.click(screen.getAllByRole("button", { name: /generate preview/i }).at(-1)!);
 

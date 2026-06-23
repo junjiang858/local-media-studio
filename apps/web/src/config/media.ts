@@ -38,7 +38,8 @@ export const imageExportFormats: ImageExportFormat[] = [
   "gif",
   "tiff",
 ];
-export const videoExportFormats: VideoExportFormat[] = ["mp4", "webm"];
+export const videoExportFormats: VideoExportFormat[] = ["mp4", "webm", "mov", "mkv", "avi"];
+export const lossyImageExportFormats = new Set<ImageExportFormat>(["jpeg", "webp", "avif"]);
 
 export const imageFilterPresets: FilterPreset[] = [
   { id: "none", label: (t) => t.filterNone, swatchClass: "none" },
@@ -52,3 +53,67 @@ export const imageFilterPresets: FilterPreset[] = [
 
 export const defaultImageExportFormat: ImageExportFormat = "png";
 export const defaultImageQuality = 86;
+
+export type ImageExportSettings = {
+  format: ImageExportFormat;
+  quality: number;
+};
+
+export function getDefaultImageExportSettings(mimeType?: string): ImageExportSettings {
+  return {
+    format: getImageExportFormatFromMimeType(mimeType),
+    quality: defaultImageQuality,
+  };
+}
+
+export function getImageExportFormatFromMimeType(mimeType?: string): ImageExportFormat {
+  if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+    return "jpeg";
+  }
+
+  if (mimeType === "image/webp") {
+    return "webp";
+  }
+
+  if (mimeType === "image/avif") {
+    return "avif";
+  }
+
+  if (mimeType === "image/bmp") {
+    return "bmp";
+  }
+
+  if (mimeType === "image/gif") {
+    return "gif";
+  }
+
+  if (mimeType === "image/tiff") {
+    return "tiff";
+  }
+
+  return defaultImageExportFormat;
+}
+
+export function supportsImageQuality(format: ImageExportFormat) {
+  return lossyImageExportFormats.has(format);
+}
+
+export function getVideoExportFormatFromMimeType(mimeType?: string): VideoExportFormat {
+  if (mimeType === "video/webm") {
+    return "webm";
+  }
+
+  if (mimeType === "video/quicktime" || mimeType === "video/mov") {
+    return "mov";
+  }
+
+  if (mimeType === "video/x-matroska" || mimeType === "video/matroska") {
+    return "mkv";
+  }
+
+  if (mimeType === "video/x-msvideo" || mimeType === "video/avi") {
+    return "avi";
+  }
+
+  return "mp4";
+}
