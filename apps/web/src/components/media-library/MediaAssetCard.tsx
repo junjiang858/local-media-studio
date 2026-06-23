@@ -10,12 +10,14 @@ export function MediaAssetCard({
   onRemoveSelected,
   onSelect,
   t,
+  videoPosterUrl,
 }: {
   asset: WorkspaceAsset;
   isSelected: boolean;
   onRemoveSelected: () => void;
   onSelect: (assetId: string) => void;
   t: Copy;
+  videoPosterUrl?: string | undefined;
 }) {
   const metadata = `${getKindLabel(asset.kind, t)} ${formatFileSize(asset.size)}`;
 
@@ -30,6 +32,13 @@ export function MediaAssetCard({
         <span className="asset-thumb" data-kind={asset.kind}>
           {asset.kind === "image" && asset.status === "ready" ? (
             <img alt="" src={asset.objectUrl} />
+          ) : asset.kind === "video" && asset.status === "ready" && videoPosterUrl ? (
+            <>
+              <img alt="" data-testid="video-poster-thumbnail" src={videoPosterUrl} />
+              <span className="asset-video-play" data-testid="video-poster-play">
+                <StudioIcon name="play" size={18} />
+              </span>
+            </>
           ) : (
             <StudioIcon name={asset.kind === "video" ? "videoFile" : "warning"} size={28} />
           )}
@@ -42,7 +51,13 @@ export function MediaAssetCard({
           {asset.status === "unsupported" ? (
             <StudioIcon name="warning" size={17} />
           ) : (
-            <StudioIcon filled={isSelected} name={isSelected ? "checkCircle" : "image"} size={17} />
+            <span data-testid={`asset-kind-${asset.kind}`}>
+              <StudioIcon
+                filled={isSelected}
+                name={asset.kind === "video" ? "movie" : "image"}
+                size={17}
+              />
+            </span>
           )}
         </span>
       </button>

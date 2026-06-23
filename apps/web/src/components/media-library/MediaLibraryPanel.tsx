@@ -18,6 +18,7 @@ export function MediaLibraryPanel({
   selectedAssetId,
   t,
   totalAssets,
+  videoPosters,
 }: {
   activeFilter: MediaFilter;
   assets: WorkspaceAsset[];
@@ -29,6 +30,7 @@ export function MediaLibraryPanel({
   selectedAssetId: string | null;
   t: Copy;
   totalAssets: number;
+  videoPosters: Record<string, string>;
 }) {
   return (
     <aside className={`panel media-panel ${isVisible ? "is-mobile-visible" : ""}`}>
@@ -72,6 +74,7 @@ export function MediaLibraryPanel({
               onRemoveSelected={onRemoveSelected}
               onSelect={onSelectAsset}
               t={t}
+              videoPosterUrl={videoPosters[asset.id]}
             />
           ))}
         </ul>

@@ -168,6 +168,7 @@ export const en = {
   videoPreviewReady: "Preview ready.",
   videoPreviewFailed: "Preview failed.",
   videoPreviewCanceled: "Preview canceled.",
+  previewStale: "Preview stale.",
   quality: "Quality",
   prepareExport: "Export",
   exportCurrentAsset: "Export current asset",

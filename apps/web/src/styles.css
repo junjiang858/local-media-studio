@@ -603,6 +603,7 @@ svg {
 }
 
 .asset-thumb {
+  position: relative;
   display: grid;
   place-items: center;
   width: 54px;
@@ -618,6 +619,25 @@ svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.asset-video-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, transparent, rgba(3, 7, 12, 0.45));
+  color: #f5fbff;
+  pointer-events: none;
+}
+
+.asset-video-play svg {
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border: 1px solid rgba(245, 251, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(2, 8, 14, 0.55);
 }
 
 .asset-card-copy {
@@ -2025,6 +2045,11 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 .job-message.failed {
   border-color: rgba(255, 107, 116, 0.36);
   color: #ffc3c8;
+}
+
+.job-message.stale {
+  border-color: rgba(245, 158, 11, 0.36);
+  color: #ffe4a8;
 }
 
 .preview-job-message {

@@ -1,14 +1,26 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, vi } from "vitest";
 
-const { exportEditedVideoMock, runImageBackgroundRemovalMock, saveVideoExportMock } = vi.hoisted(
-  () => ({
-    exportEditedVideoMock: vi.fn(),
-    runImageBackgroundRemovalMock: vi.fn(),
-    saveVideoExportMock: vi.fn(),
-  }),
-);
+const {
+  exportEditedVideoMock,
+  generateVideoPosterMock,
+  generateVideoThumbnailsMock,
+  runImageBackgroundRemovalMock,
+  saveVideoExportMock,
+  toastErrorMock,
+  toastInfoMock,
+  toastSuccessMock,
+} = vi.hoisted(() => ({
+  exportEditedVideoMock: vi.fn(),
+  generateVideoPosterMock: vi.fn(),
+  generateVideoThumbnailsMock: vi.fn(),
+  runImageBackgroundRemovalMock: vi.fn(),
+  saveVideoExportMock: vi.fn(),
+  toastErrorMock: vi.fn(),
+  toastInfoMock: vi.fn(),
+  toastSuccessMock: vi.fn(),
+}));
 
 vi.mock("./utils/video-export", () => ({
   exportEditedVideo: exportEditedVideoMock,
@@ -21,6 +33,22 @@ vi.mock("./utils/background-removal", () => ({
   getBackgroundRemovalErrorMessage: (error: unknown, fallback: string) =>
     error instanceof Error ? error.message : fallback,
   runImageBackgroundRemoval: runImageBackgroundRemovalMock,
+}));
+
+vi.mock("./utils/video-thumbnails", () => ({
+  generateVideoPoster: generateVideoPosterMock,
+  generateVideoThumbnails: generateVideoThumbnailsMock,
+}));
+
+vi.mock("sonner", () => ({
+  Toaster: ({ duration, position }: { duration?: number; position?: string }) => (
+    <div data-duration={duration} data-position={position} data-testid="studio-toaster" />
+  ),
+  toast: {
+    error: toastErrorMock,
+    info: toastInfoMock,
+    success: toastSuccessMock,
+  },
 }));
 
 import App from "./App";
@@ -46,9 +74,20 @@ describe("media workspace shell", () => {
 
   beforeEach(() => {
     exportEditedVideoMock.mockReset();
+    generateVideoPosterMock.mockReset();
+    generateVideoPosterMock.mockResolvedValue({
+      id: "poster-0",
+      time: 0,
+      url: "blob:video-poster",
+    });
+    generateVideoThumbnailsMock.mockReset();
+    generateVideoThumbnailsMock.mockResolvedValue([]);
     runImageBackgroundRemovalMock.mockReset();
     saveVideoExportMock.mockReset();
     saveVideoExportMock.mockResolvedValue(undefined);
+    toastErrorMock.mockReset();
+    toastInfoMock.mockReset();
+    toastSuccessMock.mockReset();
 
     Object.defineProperty(window.navigator, "language", {
       configurable: true,
@@ -155,6 +194,8 @@ describe("media workspace shell", () => {
     expect(screen.getByText(/4k support/i)).toBeInTheDocument();
     expect(screen.getByText(/raw photos/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/language/i)).toBeInTheDocument();
+    expect(screen.getByTestId("studio-toaster")).toHaveAttribute("data-position", "bottom-right");
+    expect(screen.getByTestId("studio-toaster")).toHaveAttribute("data-duration", "3000");
   });
 
   it("detects Chinese browser language and allows manual switching to English", async () => {
@@ -198,6 +239,27 @@ describe("media workspace shell", () => {
     expect(screen.getByRole("button", { name: /export current asset/i })).toBeInTheDocument();
   });
 
+  it("shows first-frame video posters and distinct media type icons in the library", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.upload(screen.getByLabelText(/choose media files/i), [
+      new File(["image"], "cover.png", { type: "image/png" }),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    ]);
+
+    expect(generateVideoPosterMock).toHaveBeenCalledWith(
+      expect.objectContaining({ sourceUrl: expect.stringMatching(/^blob:/) }),
+    );
+    expect((await screen.findAllByTestId("video-poster-thumbnail"))[0]).toHaveAttribute(
+      "src",
+      "blob:video-poster",
+    );
+    expect(screen.getAllByTestId("video-poster-play").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("asset-kind-image").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("asset-kind-video").length).toBeGreaterThan(0);
+  });
+
   it("edits a selected image and prepares a local download", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -225,7 +287,7 @@ describe("media workspace shell", () => {
     await user.type(screen.getByLabelText(/quality/i), "70");
     expect(screen.queryByLabelText(/^format$/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /generate format preview/i }));
-    expect(await screen.findByText(/image preview ready/i)).toBeInTheDocument();
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith("Image preview ready."));
     await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
     expect(await screen.findByText(/export saved/i)).toBeInTheDocument();
@@ -309,9 +371,11 @@ describe("media workspace shell", () => {
     expect(screen.getByLabelText(/video format/i)).toHaveValue("webm");
     expect(screen.queryByLabelText(/^format$/i)).not.toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: /generate preview/i }).at(-1)!);
+    expect(screen.getAllByRole("button", { name: /^generate preview$/i })).toHaveLength(1);
+    await user.click(screen.getByRole("button", { name: /^generate preview$/i }));
 
-    expect(await screen.findByText(/preview ready/i)).toBeInTheDocument();
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith("Preview ready."));
+    expect(screen.getByText(/derived preview/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
@@ -362,20 +426,92 @@ describe("media workspace shell", () => {
       new File(["video"], "clip.mp4", { type: "video/mp4" }),
     );
 
-    await user.click(screen.getAllByRole("button", { name: /generate preview/i })[0]!);
+    expect(screen.getAllByRole("button", { name: /^generate preview$/i })).toHaveLength(1);
+    await user.click(screen.getByRole("button", { name: /^generate preview$/i }));
     expect(await screen.findByRole("button", { name: /cancel/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /cancel/i }));
 
-    expect(await screen.findByText(/preview canceled/i)).toBeInTheDocument();
+    await waitFor(() => expect(toastInfoMock).toHaveBeenCalledWith("Preview canceled."));
 
-    await user.click(screen.getAllByRole("button", { name: /generate preview/i })[0]!);
+    await user.click(screen.getByRole("button", { name: /^generate preview$/i }));
 
     expect(await screen.findByText(/unsupported codec/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /retry preview/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /retry preview/i }));
 
-    expect(await screen.findByText(/preview ready/i)).toBeInTheDocument();
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith("Preview ready."));
+  });
+
+  it("reuses a fresh generated video preview for export", async () => {
+    const user = userEvent.setup();
+    const generatedPreview = {
+      blob: new Blob(["preview"], { type: "video/webm" }),
+      filename: "clip-edited.webm",
+      size: 7,
+      url: "blob:video-preview",
+    };
+
+    exportEditedVideoMock.mockResolvedValue(generatedPreview);
+
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText(/choose media files/i),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    );
+    await user.click(screen.getByRole("tab", { name: /format/i }));
+    await user.selectOptions(screen.getByLabelText(/video format/i), "webm");
+    await user.click(screen.getByRole("button", { name: /^generate preview$/i }));
+
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith("Preview ready."));
+
+    await user.click(screen.getByRole("button", { name: /export current asset/i }));
+
+    expect(saveVideoExportMock).toHaveBeenCalledWith(expect.objectContaining(generatedPreview));
+    expect(exportEditedVideoMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks a generated video preview stale when export-affecting settings change", async () => {
+    const user = userEvent.setup();
+
+    exportEditedVideoMock
+      .mockResolvedValueOnce({
+        blob: new Blob(["preview"], { type: "video/mp4" }),
+        filename: "clip-edited.mp4",
+        size: 7,
+        url: "blob:video-preview",
+      })
+      .mockResolvedValueOnce({
+        blob: new Blob(["export"], { type: "video/mp4" }),
+        filename: "clip-edited.mp4",
+        size: 9,
+        url: "blob:video-export",
+      });
+
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText(/choose media files/i),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    );
+    await user.click(screen.getByRole("button", { name: /^generate preview$/i }));
+
+    await waitFor(() => expect(toastSuccessMock).toHaveBeenCalledWith("Preview ready."));
+    expect(screen.getByText(/derived preview/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: /speed/i }));
+    await user.selectOptions(screen.getByLabelText(/playback speed/i), "1.5");
+
+    expect(screen.getByText(/source preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/preview stale/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /export current asset/i }));
+
+    expect(exportEditedVideoMock).toHaveBeenCalledTimes(2);
+    expect(saveVideoExportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ url: "blob:video-export" }),
+    );
   });
 });

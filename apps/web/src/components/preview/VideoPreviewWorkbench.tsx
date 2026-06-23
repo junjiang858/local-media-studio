@@ -4,7 +4,7 @@ import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
 
-export type VideoPreviewStatus = "idle" | "busy" | "ready" | "canceled" | "failed";
+export type VideoPreviewStatus = "idle" | "busy" | "ready" | "canceled" | "failed" | "stale";
 
 export function VideoPreviewWorkbench({
   asset,
@@ -102,32 +102,28 @@ export function VideoPreviewWorkbench({
         >
           <StudioIcon name="loop" size={19} />
         </button>
-        <button
-          className="secondary-button"
-          disabled={previewStatus === "busy"}
-          onClick={onGeneratePreview}
-          type="button"
-        >
-          <StudioIcon name="checkCircle" size={17} />
-          <span>
-            {previewStatus === "busy"
-              ? t.generatingVideoPreview
-              : previewStatus === "failed"
-                ? t.retryVideoPreview
-                : t.generateVideoPreview}
-          </span>
-        </button>
         {previewStatus === "busy" ? (
           <button className="secondary-button" onClick={onCancelPreview} type="button">
             <StudioIcon name="close" size={17} />
             <span>{t.cancelVideoPreview}</span>
           </button>
         ) : null}
+        {previewStatus === "failed" ? (
+          <button className="secondary-button" onClick={onGeneratePreview} type="button">
+            <StudioIcon name="checkCircle" size={17} />
+            <span>{t.retryVideoPreview}</span>
+          </button>
+        ) : null}
       </div>
 
       {previewMessage ? (
         <div className={`job-message ${previewStatus}`}>
-          <StudioIcon name={previewStatus === "failed" ? "warning" : "checkCircle"} size={17} />
+          <StudioIcon
+            name={
+              previewStatus === "failed" || previewStatus === "stale" ? "warning" : "checkCircle"
+            }
+            size={17}
+          />
           <span>{previewMessage}</span>
         </div>
       ) : null}

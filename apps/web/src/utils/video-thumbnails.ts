@@ -4,6 +4,40 @@ export type VideoThumbnail = {
   url: string;
 };
 
+export async function generateVideoPoster({
+  sourceUrl,
+}: {
+  sourceUrl: string;
+}): Promise<VideoThumbnail> {
+  const video = document.createElement("video");
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.src = sourceUrl;
+
+  await waitForMetadata(video);
+  await seekVideo(video, 0);
+
+  const canvas = createThumbnailCanvas();
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Video poster canvas is not available.");
+  }
+
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const blob = await canvasToBlob(canvas);
+
+  video.removeAttribute("src");
+  video.load();
+
+  return {
+    id: "poster-0",
+    time: 0,
+    url: URL.createObjectURL(blob),
+  };
+}
+
 export async function generateVideoThumbnails({
   count = 8,
   duration,
@@ -22,9 +56,7 @@ export async function generateVideoThumbnails({
   await waitForMetadata(video);
   const safeDuration = Math.max(0.1, duration ?? video.duration ?? 0.1);
   const frameCount = Math.max(1, Math.min(count, Math.ceil(safeDuration * 4)));
-  const canvas = document.createElement("canvas");
-  canvas.width = 160;
-  canvas.height = 90;
+  const canvas = createThumbnailCanvas();
   const context = canvas.getContext("2d");
 
   if (!context) {
@@ -49,6 +81,13 @@ export async function generateVideoThumbnails({
   video.removeAttribute("src");
   video.load();
   return thumbnails;
+}
+
+function createThumbnailCanvas() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 160;
+  canvas.height = 90;
+  return canvas;
 }
 
 function waitForMetadata(video: HTMLVideoElement) {

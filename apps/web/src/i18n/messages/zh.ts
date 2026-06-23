@@ -167,6 +167,7 @@ export const zh = {
   videoPreviewReady: "预览已生成。",
   videoPreviewFailed: "预览生成失败。",
   videoPreviewCanceled: "预览已取消。",
+  previewStale: "预览已过期。",
   quality: "质量",
   prepareExport: "导出",
   exportCurrentAsset: "导出当前素材",

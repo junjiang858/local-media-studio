@@ -11,7 +11,9 @@ import { MediaLibraryPanel } from "../components/media-library/MediaLibraryPanel
 import { PreviewStage } from "../components/preview/PreviewStage";
 import type { PreviewBackground } from "../components/preview/types";
 import { MobileTabs } from "../components/studio/MobileTabs";
+import { StudioToaster } from "../components/studio/StudioToaster";
 import { TopToolbar } from "../components/studio/TopToolbar";
+import { showStudioError, showStudioSuccess } from "../components/studio/studio-toast";
 import { emptyWorkspaceTabs, populatedWorkspaceTabs } from "../config/workspace";
 import { getDefaultImageExportSettings } from "../config/media";
 import { detectInitialLanguage, messages, type Language } from "../i18n";
@@ -21,8 +23,18 @@ import {
   getBackgroundRemovalErrorMessage,
   runImageBackgroundRemoval,
 } from "../utils/background-removal";
+import {
+  getImagePreviewFingerprint,
+  getVideoPreviewFingerprint,
+  revokeGeneratedPreview,
+  type GeneratedPreview,
+} from "../utils/generated-preview";
 import { readAssetMetadata } from "../utils/media-metadata";
-import { generateVideoThumbnails, type VideoThumbnail } from "../utils/video-thumbnails";
+import {
+  generateVideoPoster,
+  generateVideoThumbnails,
+  type VideoThumbnail,
+} from "../utils/video-thumbnails";
 import type { MobileTab } from "./types";
 
 export default function App() {
@@ -34,11 +46,15 @@ export default function App() {
   const [imagePreviewRequestKey, setImagePreviewRequestKey] = useState(0);
   const [previewBackground, setPreviewBackground] = useState<PreviewBackground>("transparent");
   const [videoPreviewRequestKey, setVideoPreviewRequestKey] = useState(0);
+  const [generatedPreviews, setGeneratedPreviews] = useState<Record<string, GeneratedPreview>>({});
   const [videoThumbnailsByAsset, setVideoThumbnailsByAsset] = useState<
     Record<string, VideoThumbnail[]>
   >({});
+  const [videoPostersByAsset, setVideoPostersByAsset] = useState<Record<string, string>>({});
   const [zoom, setZoom] = useState(100);
+  const generatedPreviewsRef = useRef(generatedPreviews);
   const videoThumbnailsRef = useRef(videoThumbnailsByAsset);
+  const videoPostersRef = useRef(videoPostersByAsset);
   const t = messages[language];
 
   const assets = useMediaStore((state) => state.assets);
@@ -82,6 +98,27 @@ export default function App() {
       : null;
   const selectedVideoThumbnails =
     selectedAsset?.kind === "video" ? (videoThumbnailsByAsset[selectedAsset.id] ?? []) : [];
+  const selectedPreviewFingerprint = useMemo(() => {
+    if (selectedAsset?.kind === "image" && selectedImageState && selectedImageExportSettings) {
+      return getImagePreviewFingerprint({
+        assetId: selectedAsset.id,
+        settings: selectedImageExportSettings,
+        state: selectedImageState,
+      });
+    }
+
+    if (selectedAsset?.kind === "video" && selectedVideoState) {
+      return getVideoPreviewFingerprint({
+        assetId: selectedAsset.id,
+        state: selectedVideoState,
+      });
+    }
+
+    return null;
+  }, [selectedAsset, selectedImageExportSettings, selectedImageState, selectedVideoState]);
+  const selectedGeneratedPreview = selectedAsset
+    ? (generatedPreviews[selectedAsset.id] ?? null)
+    : null;
   const backgroundRemovalJob =
     selectedAsset?.kind === "image"
       ? (jobs[getBackgroundRemovalJobId(selectedAsset.id)] ?? null)
@@ -140,16 +177,71 @@ export default function App() {
   }, [applyImageAction, assets.length, selectAdjacent, selectedAsset]);
 
   useEffect(() => {
+    generatedPreviewsRef.current = generatedPreviews;
+  }, [generatedPreviews]);
+
+  useEffect(() => {
     videoThumbnailsRef.current = videoThumbnailsByAsset;
   }, [videoThumbnailsByAsset]);
+
+  useEffect(() => {
+    videoPostersRef.current = videoPostersByAsset;
+  }, [videoPostersByAsset]);
 
   useEffect(() => {
     return () => {
       for (const thumbnails of Object.values(videoThumbnailsRef.current)) {
         revokeVideoThumbnails(thumbnails);
       }
+
+      for (const posterUrl of Object.values(videoPostersRef.current)) {
+        URL.revokeObjectURL(posterUrl);
+      }
+
+      for (const preview of Object.values(generatedPreviewsRef.current)) {
+        revokeGeneratedPreview(preview);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const videoAssetsNeedingPosters = assets.filter(
+      (asset) =>
+        asset.kind === "video" && asset.status === "ready" && !videoPostersByAsset[asset.id],
+    );
+    const activeJobs = new Set<string>();
+
+    for (const asset of videoAssetsNeedingPosters) {
+      activeJobs.add(asset.id);
+
+      void generateVideoPoster({ sourceUrl: asset.objectUrl })
+        .then((poster) => {
+          if (!activeJobs.has(asset.id)) {
+            URL.revokeObjectURL(poster.url);
+            return;
+          }
+
+          setVideoPostersByAsset((currentPosters) => {
+            if (currentPosters[asset.id]) {
+              URL.revokeObjectURL(poster.url);
+              return currentPosters;
+            }
+
+            return {
+              ...currentPosters,
+              [asset.id]: poster.url,
+            };
+          });
+        })
+        .catch(() => {
+          // The media card falls back to the video icon if poster extraction is unavailable.
+        });
+    }
+
+    return () => {
+      activeJobs.clear();
+    };
+  }, [assets, videoPostersByAsset]);
 
   useEffect(() => {
     if (
@@ -232,6 +324,21 @@ export default function App() {
     applyVideoAction(selectedAsset.id, action);
   }
 
+  function handleGeneratedPreview(preview: GeneratedPreview) {
+    setGeneratedPreviews((currentPreviews) => {
+      const currentPreview = currentPreviews[preview.assetId];
+
+      if (currentPreview && currentPreview.url !== preview.url) {
+        revokeGeneratedPreview(currentPreview);
+      }
+
+      return {
+        ...currentPreviews,
+        [preview.assetId]: preview,
+      };
+    });
+  }
+
   async function handleRemoveBackground() {
     if (selectedAsset?.kind !== "image") {
       return;
@@ -253,13 +360,16 @@ export default function App() {
       });
 
       completeJob(jobId, t.backgroundRemovalComplete);
+      showStudioSuccess(t.backgroundRemovalComplete);
       addFiles([result.file]);
     } catch (error) {
+      const errorMessage = getBackgroundRemovalErrorMessage(error, t.backgroundRemovalFailed);
       failJob(jobId, {
         code: "background-removal-failed",
-        message: getBackgroundRemovalErrorMessage(error, t.backgroundRemovalFailed),
+        message: errorMessage,
         recoverable: true,
       });
+      showStudioError(errorMessage);
     }
   }
 
@@ -277,6 +387,32 @@ export default function App() {
         delete remainingThumbnails[selectedAssetId];
         revokeVideoThumbnails(thumbnails);
         return remainingThumbnails;
+      });
+      setVideoPostersByAsset((currentPosters) => {
+        const posterUrl = currentPosters[selectedAssetId];
+
+        if (!posterUrl) {
+          return currentPosters;
+        }
+
+        const remainingPosters = { ...currentPosters };
+
+        delete remainingPosters[selectedAssetId];
+        URL.revokeObjectURL(posterUrl);
+        return remainingPosters;
+      });
+      setGeneratedPreviews((currentPreviews) => {
+        const generatedPreview = currentPreviews[selectedAssetId];
+
+        if (!generatedPreview) {
+          return currentPreviews;
+        }
+
+        const remainingPreviews = { ...currentPreviews };
+
+        delete remainingPreviews[selectedAssetId];
+        revokeGeneratedPreview(generatedPreview);
+        return remainingPreviews;
       });
     }
 
@@ -299,6 +435,8 @@ export default function App() {
         type="file"
         accept="image/*,video/*"
       />
+
+      <StudioToaster />
 
       <TopToolbar
         canEditSelectedImage={canEditSelectedImage}
@@ -337,10 +475,13 @@ export default function App() {
           selectedAssetId={selectedAssetId}
           t={t}
           totalAssets={assets.length}
+          videoPosters={videoPostersByAsset}
         />
 
         <PreviewStage
           compareOriginal={showCompareOriginal}
+          currentPreviewFingerprint={selectedPreviewFingerprint}
+          generatedPreview={selectedGeneratedPreview}
           imageExportSettings={selectedImageExportSettings}
           imagePreviewRequestKey={imagePreviewRequestKey}
           imageState={selectedImageState}
@@ -350,6 +491,7 @@ export default function App() {
           onApplyImageAction={handleApplyImageAction}
           onCompareToggle={() => setCompareOriginal((value) => !value)}
           onFullscreenToggle={() => setIsPreviewFullscreen((value) => !value)}
+          onGeneratedPreview={handleGeneratedPreview}
           onPreviewBackgroundChange={setPreviewBackground}
           onZoomChange={setZoom}
           previewBackground={previewBackground}
@@ -363,6 +505,8 @@ export default function App() {
         {assets.length ? (
           <EditorRail
             backgroundRemovalJob={backgroundRemovalJob}
+            currentPreviewFingerprint={selectedPreviewFingerprint}
+            generatedPreview={selectedGeneratedPreview}
             imageExportSettings={selectedImageExportSettings}
             imageState={selectedImageState}
             isVisible={currentMobileTab === "edit" || currentMobileTab === "export"}

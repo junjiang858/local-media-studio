@@ -10,6 +10,7 @@ import { getVideoExportFormatFromMimeType, type ImageExportSettings } from "../.
 import type { Copy } from "../../i18n";
 import { StudioIcon, type StudioIconName } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import type { GeneratedPreview } from "../../utils/generated-preview";
 import type { VideoThumbnail } from "../../utils/video-thumbnails";
 import { ExportPanel } from "../export/ExportPanel";
 import { PanelHeader } from "../studio/PanelHeader";
@@ -18,6 +19,8 @@ import { VideoEditorPanel } from "./VideoEditorPanel";
 
 export function EditorRail({
   backgroundRemovalJob,
+  currentPreviewFingerprint,
+  generatedPreview,
   imageExportSettings,
   imageState,
   isVisible,
@@ -33,6 +36,8 @@ export function EditorRail({
   videoThumbnails,
 }: {
   backgroundRemovalJob: WorkerJob | null;
+  currentPreviewFingerprint: string | null;
+  generatedPreview: GeneratedPreview | null;
   imageExportSettings: ImageExportSettings | null;
   imageState: ImageEditState | null;
   isVisible: boolean;
@@ -135,6 +140,8 @@ export function EditorRail({
       <section className="panel export-panel">
         <PanelHeader eyebrow={t.output} icon="download" title={t.export} />
         <ExportPanel
+          currentPreviewFingerprint={currentPreviewFingerprint}
+          generatedPreview={generatedPreview}
           imageExportSettings={imageExportSettings}
           imageState={imageState}
           selectedAsset={selectedAsset}

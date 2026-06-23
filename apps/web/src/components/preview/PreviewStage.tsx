@@ -2,12 +2,15 @@ import type { ImageEditAction, ImageEditState, VideoEditState } from "@obscura/m
 import type { ImageExportSettings } from "../../config/media";
 import type { Copy } from "../../i18n";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import type { GeneratedPreview } from "../../utils/generated-preview";
 import { EmptyPreview } from "./EmptyPreview";
 import { SelectedPreview } from "./SelectedPreview";
 import type { PreviewBackground } from "./types";
 
 export function PreviewStage({
   compareOriginal,
+  currentPreviewFingerprint,
+  generatedPreview,
   imageExportSettings,
   imagePreviewRequestKey,
   imageState,
@@ -17,6 +20,7 @@ export function PreviewStage({
   onApplyImageAction,
   onCompareToggle,
   onFullscreenToggle,
+  onGeneratedPreview,
   onPreviewBackgroundChange,
   onZoomChange,
   previewBackground,
@@ -27,6 +31,8 @@ export function PreviewStage({
   zoom,
 }: {
   compareOriginal: boolean;
+  currentPreviewFingerprint: string | null;
+  generatedPreview: GeneratedPreview | null;
   imageExportSettings: ImageExportSettings | null;
   imagePreviewRequestKey: number;
   imageState: ImageEditState | null;
@@ -36,6 +42,7 @@ export function PreviewStage({
   onApplyImageAction: (action: ImageEditAction) => void;
   onCompareToggle: () => void;
   onFullscreenToggle: () => void;
+  onGeneratedPreview: (preview: GeneratedPreview) => void;
   onPreviewBackgroundChange: (background: PreviewBackground) => void;
   onZoomChange: (zoom: number) => void;
   previewBackground: PreviewBackground;
@@ -53,6 +60,8 @@ export function PreviewStage({
         <SelectedPreview
           asset={selectedAsset}
           compareOriginal={compareOriginal}
+          currentPreviewFingerprint={currentPreviewFingerprint}
+          generatedPreview={generatedPreview}
           imageExportSettings={imageExportSettings}
           imagePreviewRequestKey={imagePreviewRequestKey}
           imageState={imageState}
@@ -61,6 +70,7 @@ export function PreviewStage({
           onCompareToggle={onCompareToggle}
           onApplyImageAction={onApplyImageAction}
           onFullscreenToggle={onFullscreenToggle}
+          onGeneratedPreview={onGeneratedPreview}
           onPreviewBackgroundChange={onPreviewBackgroundChange}
           onZoomChange={onZoomChange}
           previewBackground={previewBackground}

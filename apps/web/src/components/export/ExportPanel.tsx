@@ -9,6 +9,8 @@ import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import { useJobStore } from "../../stores/job-store";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import { showStudioError, showStudioInfo, showStudioSuccess } from "../studio/studio-toast";
+import type { GeneratedPreview } from "../../utils/generated-preview";
 import {
   exportEditedImage,
   getImageExportAvailability,
@@ -28,12 +30,16 @@ import {
 type ExportStatus = "idle" | "busy" | "ready" | "saved" | "canceled" | "failed";
 
 export function ExportPanel({
+  currentPreviewFingerprint,
+  generatedPreview,
   imageExportSettings,
   imageState,
   selectedAsset,
   t,
   videoState,
 }: {
+  currentPreviewFingerprint: string | null;
+  generatedPreview: GeneratedPreview | null;
   imageExportSettings: ImageExportSettings | null;
   imageState: ImageEditState | null;
   selectedAsset: WorkspaceAsset | null;
@@ -71,6 +77,14 @@ export function ExportPanel({
   const videoJob = videoJobId ? (jobs[videoJobId] ?? null) : null;
   const activeFormat =
     selectedAsset?.kind === "video" ? videoState?.exportFormat : imageExportSettings?.format;
+  const matchingGeneratedPreview =
+    generatedPreview &&
+    selectedAsset &&
+    generatedPreview.assetId === selectedAsset.id &&
+    generatedPreview.kind === selectedAsset.kind &&
+    generatedPreview.fingerprint === currentPreviewFingerprint
+      ? generatedPreview
+      : null;
 
   useEffect(() => {
     return () => {
@@ -113,12 +127,15 @@ export function ExportPanel({
     if (!imageState || !imageExportSettings) {
       setStatus("failed");
       setMessage(t.imageExportFailed);
+      showStudioError(t.imageExportFailed);
       return;
     }
 
     if (activeImageAvailability && !activeImageAvailability.available) {
       setStatus("failed");
-      setMessage(activeImageAvailability.reason ?? t.imageExportFormatUnsupported);
+      const unavailableMessage = activeImageAvailability.reason ?? t.imageExportFormatUnsupported;
+      setMessage(unavailableMessage);
+      showStudioError(unavailableMessage);
       return;
     }
 
@@ -126,33 +143,40 @@ export function ExportPanel({
     setMessage(t.preparingImageExport);
 
     try {
-      const nextResult = await exportEditedImage({
-        asset: selectedAsset,
-        format: imageExportSettings.format,
-        quality: imageExportSettings.quality,
-        state: imageState,
-        t,
-      });
+      const nextResult =
+        matchingGeneratedPreview?.kind === "image"
+          ? matchingGeneratedPreview
+          : await exportEditedImage({
+              asset: selectedAsset,
+              format: imageExportSettings.format,
+              quality: imageExportSettings.quality,
+              state: imageState,
+              t,
+            });
 
-      if (result) {
+      if (result && result.url !== nextResult.url) {
         URL.revokeObjectURL(result.url);
       }
 
-      setResult(nextResult);
+      setResult(matchingGeneratedPreview?.kind === "image" ? null : nextResult);
       setStatus("ready");
       setMessage(t.downloadReady);
       await saveImageExport(nextResult, imageExportSettings.format);
       setStatus("saved");
       setMessage(t.exportSaved);
+      showStudioSuccess(t.exportSaved);
     } catch (error) {
       if (isAbortError(error)) {
         setStatus("canceled");
         setMessage(t.exportCanceled);
+        showStudioInfo(t.exportCanceled);
         return;
       }
 
+      const errorMessage = getExportErrorMessage(error, t);
       setStatus("failed");
-      setMessage(getExportErrorMessage(error, t));
+      setMessage(errorMessage);
+      showStudioError(errorMessage);
     }
   }
 
@@ -160,6 +184,7 @@ export function ExportPanel({
     if (!videoState || !videoJobId) {
       setStatus("failed");
       setMessage(t.videoExportNext);
+      showStudioError(t.videoExportNext);
       return;
     }
 
@@ -168,27 +193,32 @@ export function ExportPanel({
     queueJob(videoJobId, "video-export", t.videoExportNext);
 
     try {
-      const nextResult = await exportEditedVideo({
-        onProgress: (update) => updateJob(videoJobId, update),
-        source: asset.file,
-        state: videoState,
-      });
+      const nextResult =
+        matchingGeneratedPreview?.kind === "video"
+          ? matchingGeneratedPreview
+          : await exportEditedVideo({
+              onProgress: (update) => updateJob(videoJobId, update),
+              source: asset.file,
+              state: videoState,
+            });
 
-      if (result) {
+      if (result && result.url !== nextResult.url) {
         URL.revokeObjectURL(result.url);
       }
 
-      setResult(nextResult);
+      setResult(matchingGeneratedPreview?.kind === "video" ? null : nextResult);
       completeJob(videoJobId, t.downloadReady);
       setStatus("ready");
       setMessage(t.downloadReady);
       await saveVideoExport(nextResult);
       setStatus("saved");
       setMessage(t.exportSaved);
+      showStudioSuccess(t.exportSaved);
     } catch (error) {
       if (isAbortError(error)) {
         setStatus("canceled");
         setMessage(t.exportCanceled);
+        showStudioInfo(t.exportCanceled);
         return;
       }
 
@@ -200,6 +230,7 @@ export function ExportPanel({
       });
       setStatus("failed");
       setMessage(errorMessage);
+      showStudioError(errorMessage);
     }
   }
 

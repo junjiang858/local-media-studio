@@ -149,7 +149,7 @@ export function VideoTrimTimeline({
         </button>
         <button
           className="secondary-button"
-          onClick={() => onApply({ duration, type: "reset-trim" })}
+          onClick={() => onApply({ duration: timelineDuration, type: "reset-trim" })}
           type="button"
         >
           <StudioIcon name="restartAlt" size={17} />
