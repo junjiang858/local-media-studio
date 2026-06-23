@@ -28,6 +28,7 @@ export default function App() {
   const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("preview");
   const [compareOriginal, setCompareOriginal] = useState(false);
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
+  const [videoPreviewRequestKey, setVideoPreviewRequestKey] = useState(0);
   const [zoom, setZoom] = useState(100);
   const t = messages[language];
 
@@ -219,6 +220,7 @@ export default function App() {
           selectedAsset={selectedAsset}
           t={t}
           videoState={selectedVideoState}
+          videoPreviewRequestKey={videoPreviewRequestKey}
           zoom={zoom}
         />
 
@@ -229,6 +231,7 @@ export default function App() {
             isVisible={currentMobileTab === "edit" || currentMobileTab === "export"}
             onApplyImageAction={handleApplyImageAction}
             onApplyVideoAction={handleApplyVideoAction}
+            onGenerateVideoPreview={() => setVideoPreviewRequestKey((key) => key + 1)}
             onRemoveBackground={() => void handleRemoveBackground()}
             selectedAsset={selectedAsset}
             t={t}

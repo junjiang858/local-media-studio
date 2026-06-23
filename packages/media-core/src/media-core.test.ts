@@ -303,4 +303,37 @@ describe("media core helpers", () => {
       },
     ]);
   });
+
+  it("resets individual video edit groups to original defaults", () => {
+    const editedState = updateVideoEditState(
+      updateVideoEditState(
+        updateVideoEditState(
+          updateVideoEditState(initialVideoEditState(12), {
+            endTime: 8,
+            startTime: 2,
+            type: "set-trim",
+          }),
+          { speed: 1.5, type: "set-speed" },
+        ),
+        {
+          cue: { endTime: 4, id: "cue-1", startTime: 2, text: "Hello clip" },
+          type: "add-subtitle",
+        },
+      ),
+      { format: "webm", type: "set-format" },
+    );
+    const trimReset = updateVideoEditState(editedState, { duration: 12, type: "reset-trim" });
+    const speedReset = updateVideoEditState(editedState, { type: "reset-speed" });
+    const formatReset = updateVideoEditState(editedState, { type: "reset-format" });
+    const subtitlesReset = updateVideoEditState(editedState, { type: "reset-subtitles" });
+
+    expect(trimReset).toMatchObject({ trimEnd: 12, trimStart: 0 });
+    expect(trimReset.speed).toBe(1.5);
+    expect(speedReset.speed).toBe(1);
+    expect(speedReset.trimStart).toBe(2);
+    expect(formatReset.exportFormat).toBe("mp4");
+    expect(formatReset.subtitles).toHaveLength(1);
+    expect(subtitlesReset.subtitles).toEqual([]);
+    expect(subtitlesReset.exportFormat).toBe("webm");
+  });
 });

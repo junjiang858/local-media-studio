@@ -20,6 +20,7 @@ export function EditorRail({
   isVisible,
   onApplyImageAction,
   onApplyVideoAction,
+  onGenerateVideoPreview,
   onRemoveBackground,
   selectedAsset,
   t,
@@ -30,6 +31,7 @@ export function EditorRail({
   isVisible: boolean;
   onApplyImageAction: (action: ImageEditAction) => void;
   onApplyVideoAction: (action: VideoEditAction) => void;
+  onGenerateVideoPreview: () => void;
   onRemoveBackground: () => void;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
@@ -106,6 +108,7 @@ export function EditorRail({
             activeTab={visibleActiveTab ?? "trim"}
             duration={selectedAsset.duration ?? null}
             onApply={onApplyVideoAction}
+            onGeneratePreview={onGenerateVideoPreview}
             t={t}
             videoState={videoState}
           />

@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type WheelEvent,
+} from "react";
 import {
   formatDuration,
   formatFileSize,
@@ -13,8 +20,17 @@ import type { Copy } from "../../i18n";
 import { getKindLabel } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";
+import {
+  exportEditedVideo,
+  getVideoExportErrorMessage,
+  type VideoExportResult,
+} from "../../utils/video-export";
 import { ImagePreviewPane, type PreviewBounds } from "./ImagePreviewPane";
 import { PreviewToolbar } from "./PreviewToolbar";
+import {
+  VideoPreviewWorkbench,
+  type VideoPreviewStatus,
+} from "./VideoPreviewWorkbench";
 
 export function SelectedPreview({
   asset,
@@ -27,6 +43,7 @@ export function SelectedPreview({
   onZoomChange,
   t,
   videoState,
+  videoPreviewRequestKey,
   zoom,
 }: {
   asset: WorkspaceAsset;
@@ -39,14 +56,24 @@ export function SelectedPreview({
   onZoomChange: (zoom: number) => void;
   t: Copy;
   videoState: VideoEditState | null;
+  videoPreviewRequestKey: number;
   zoom: number;
 }) {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [previewBounds, setPreviewBounds] = useState<PreviewBounds | null>(null);
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
+  const [derivedVideoPreview, setDerivedVideoPreview] = useState<DerivedVideoPreview | null>(null);
+  const [isVideoLooping, setIsVideoLooping] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState<string | null>(null);
+  const [previewProgress, setPreviewProgress] = useState(0);
+  const [previewStatus, setPreviewStatus] = useState<VideoPreviewStatus>("idle");
+  const [videoDuration, setVideoDuration] = useState(asset.duration ?? 0);
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoPreviewAbortRef = useRef<AbortController | null>(null);
+  const lastVideoPreviewRequestRef = useRef(videoPreviewRequestKey);
   const dragRef = useRef({
     isDragging: false,
     panX: 0,
@@ -75,6 +102,20 @@ export function SelectedPreview({
   }, []);
 
   useEffect(() => {
+    return () => {
+      videoPreviewAbortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (derivedVideoPreview) {
+        URL.revokeObjectURL(derivedVideoPreview.url);
+      }
+    };
+  }, [derivedVideoPreview]);
+
+  useEffect(() => {
     const video = videoRef.current;
 
     if (!video || !videoState) {
@@ -84,7 +125,123 @@ export function SelectedPreview({
     video.playbackRate = videoState.speed;
   }, [videoState?.speed, videoState]);
 
-  const activeSubtitleCue = videoState ? getActiveSubtitleCue(videoState, currentVideoTime) : null;
+  const activeDerivedVideoPreview =
+    asset.kind === "video" && derivedVideoPreview?.assetId === asset.id
+      ? derivedVideoPreview
+      : null;
+  const videoSource = activeDerivedVideoPreview?.url ?? asset.objectUrl;
+  const effectiveTrimStart =
+    activeDerivedVideoPreview || !videoState ? 0 : Math.max(0, videoState.trimStart);
+  const effectiveTrimEnd = activeDerivedVideoPreview ? null : videoState?.trimEnd;
+  const activeSubtitleCue =
+    videoState && !activeDerivedVideoPreview
+      ? getActiveSubtitleCue(videoState, currentVideoTime)
+      : null;
+
+  const handleGenerateVideoPreview = useCallback(async () => {
+    if (asset.kind !== "video" || !videoState) {
+      return;
+    }
+
+    videoPreviewAbortRef.current?.abort();
+    const controller = new AbortController();
+    videoPreviewAbortRef.current = controller;
+    setPreviewStatus("busy");
+    setPreviewMessage(t.generatingVideoPreview);
+    setPreviewProgress(0);
+
+    try {
+      const result = await exportEditedVideo({
+        onProgress: (update) => {
+          setPreviewProgress(Math.round(update.progress ?? 0));
+          setPreviewMessage(update.message ?? t.generatingVideoPreview);
+        },
+        signal: controller.signal,
+        source: asset.file,
+        state: videoState,
+      });
+
+      if (controller.signal.aborted || videoPreviewAbortRef.current !== controller) {
+        return;
+      }
+
+      setDerivedVideoPreview({ ...result, assetId: asset.id });
+      setPreviewStatus("ready");
+      setPreviewMessage(t.videoPreviewReady);
+      setPreviewProgress(100);
+      setCurrentVideoTime(0);
+    } catch (error) {
+      if (videoPreviewAbortRef.current !== controller) {
+        return;
+      }
+
+      if (isAbortError(error)) {
+        setPreviewStatus("canceled");
+        setPreviewMessage(t.videoPreviewCanceled);
+        return;
+      }
+
+      setPreviewStatus("failed");
+      setPreviewMessage(getVideoExportErrorMessage(error, t.videoPreviewFailed));
+    } finally {
+      if (videoPreviewAbortRef.current === controller) {
+        videoPreviewAbortRef.current = null;
+      }
+    }
+  }, [asset, t, videoState]);
+
+  useEffect(() => {
+    if (videoPreviewRequestKey === lastVideoPreviewRequestRef.current) {
+      return;
+    }
+
+    lastVideoPreviewRequestRef.current = videoPreviewRequestKey;
+
+    if (videoPreviewRequestKey > 0) {
+      queueMicrotask(() => void handleGenerateVideoPreview());
+    }
+  }, [handleGenerateVideoPreview, videoPreviewRequestKey]);
+
+  function handleCancelVideoPreview() {
+    videoPreviewAbortRef.current?.abort();
+  }
+
+  function handlePlayToggle() {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    if (video.paused) {
+      void video.play();
+      return;
+    }
+
+    video.pause();
+  }
+
+  function handleResetVideoTime() {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    video.currentTime = effectiveTrimStart;
+    setCurrentVideoTime(effectiveTrimStart);
+  }
+
+  function handleVideoScrub(time: number) {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    video.currentTime = time;
+    setCurrentVideoTime(time);
+  }
 
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -182,27 +339,56 @@ export function SelectedPreview({
             <video
               ref={videoRef}
               className="video-preview"
-              controls
+              controls={false}
+              key={videoSource}
               onLoadedMetadata={(event) => {
-                if (videoState?.trimStart) {
-                  event.currentTarget.currentTime = videoState.trimStart;
-                }
+                const nextDuration = event.currentTarget.duration || asset.duration || 0;
+                setVideoDuration(nextDuration);
+                event.currentTarget.currentTime = effectiveTrimStart;
+                setCurrentVideoTime(effectiveTrimStart);
               }}
+              onPause={() => setIsVideoPlaying(false)}
+              onPlay={() => setIsVideoPlaying(true)}
               onTimeUpdate={(event) => {
                 const currentTime = event.currentTarget.currentTime;
                 setCurrentVideoTime(currentTime);
 
-                if (videoState?.trimEnd && currentTime >= videoState.trimEnd) {
+                if (effectiveTrimEnd && currentTime >= effectiveTrimEnd) {
                   event.currentTarget.pause();
-                  event.currentTarget.currentTime = videoState.trimStart;
+
+                  if (isVideoLooping) {
+                    event.currentTarget.currentTime = effectiveTrimStart;
+                    void event.currentTarget.play();
+                  }
                 }
               }}
-              src={asset.objectUrl}
+              src={videoSource}
             >
               <track kind="captions" />
             </video>
             {activeSubtitleCue ? (
               <div className="video-subtitle-overlay">{activeSubtitleCue.text}</div>
+            ) : null}
+            {videoState ? (
+              <VideoPreviewWorkbench
+                asset={asset}
+                currentTime={currentVideoTime}
+                duration={videoDuration || asset.duration || 0}
+                isDerivedPreview={Boolean(activeDerivedVideoPreview)}
+                isLooping={isVideoLooping}
+                isPlaying={isVideoPlaying}
+                onCancelPreview={handleCancelVideoPreview}
+                onGeneratePreview={() => void handleGenerateVideoPreview()}
+                onLoopToggle={() => setIsVideoLooping((value) => !value)}
+                onPlayToggle={handlePlayToggle}
+                onResetTime={handleResetVideoTime}
+                onScrub={handleVideoScrub}
+                previewMessage={previewMessage}
+                previewProgress={previewProgress}
+                previewStatus={previewStatus}
+                t={t}
+                videoState={videoState}
+              />
             ) : null}
           </div>
         )}
@@ -220,6 +406,10 @@ export function SelectedPreview({
     </section>
   );
 }
+
+type DerivedVideoPreview = VideoExportResult & {
+  assetId: string;
+};
 
 function MediaInfo({ asset, t }: { asset: WorkspaceAsset; t: Copy }) {
   const dimensions =
@@ -266,6 +456,10 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
 function getPreviewBounds(frame: HTMLDivElement): PreviewBounds {
   const style = getComputedStyle(frame);
   const horizontalPadding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
@@ -285,7 +479,9 @@ function isPreviewControl(target: EventTarget | null) {
   return (
     target instanceof Element &&
     Boolean(
-      target.closest("button, input, select, textarea, a, video, .preview-toolbar, .media-info"),
+      target.closest(
+        "button, input, select, textarea, a, video, .preview-toolbar, .video-workbench, .media-info",
+      ),
     )
   );
 }

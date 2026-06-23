@@ -1,4 +1,5 @@
 import { Add } from "@material-symbols-svg/react/icons/add";
+import { AllInclusive } from "@material-symbols-svg/react/icons/all-inclusive";
 import { AspectRatio } from "@material-symbols-svg/react/icons/aspect-ratio";
 import { BackgroundReplace } from "@material-symbols-svg/react/icons/background-replace";
 import { CheckCircle, CheckCircleFill } from "@material-symbols-svg/react/icons/check-circle";
@@ -24,9 +25,11 @@ import { ImageSearch } from "@material-symbols-svg/react/icons/image-search";
 import { Info } from "@material-symbols-svg/react/icons/info";
 import { Language } from "@material-symbols-svg/react/icons/language";
 import { Movie } from "@material-symbols-svg/react/icons/movie";
+import { Pause } from "@material-symbols-svg/react/icons/pause";
 import { PhotoLibrary } from "@material-symbols-svg/react/icons/photo-library";
 import { PlayArrow } from "@material-symbols-svg/react/icons/play-arrow";
 import { Redo } from "@material-symbols-svg/react/icons/redo";
+import { RestartAlt } from "@material-symbols-svg/react/icons/restart-alt";
 import { Settings } from "@material-symbols-svg/react/icons/settings";
 import { Shield, ShieldFill } from "@material-symbols-svg/react/icons/shield";
 import { Speed } from "@material-symbols-svg/react/icons/speed";
@@ -44,6 +47,7 @@ import { ZoomOut } from "@material-symbols-svg/react/icons/zoom-out";
 
 const iconComponents = {
   add: Add,
+  loop: AllInclusive,
   aspectRatio: AspectRatio,
   backgroundReplace: BackgroundReplace,
   checkCircle: CheckCircle,
@@ -71,9 +75,11 @@ const iconComponents = {
   info: Info,
   language: Language,
   movie: Movie,
+  pause: Pause,
   photoLibrary: PhotoLibrary,
   play: PlayArrow,
   redo: Redo,
+  restartAlt: RestartAlt,
   settings: Settings,
   shield: Shield,
   speed: Speed,

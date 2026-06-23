@@ -5,6 +5,8 @@ import type {
 } from "@local-media-studio/media-core";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
+import { SubtitleTimeline } from "./SubtitleTimeline";
+import { VideoTrimTimeline } from "./VideoTrimTimeline";
 
 const speedOptions = [0.5, 1, 1.25, 1.5, 2] as const;
 const formatOptions: VideoExportFormat[] = ["mp4", "webm"];
@@ -13,12 +15,14 @@ export function VideoEditorPanel({
   activeTab,
   duration,
   onApply,
+  onGeneratePreview,
   t,
   videoState,
 }: {
   activeTab: string;
   duration: number | null;
   onApply: (action: VideoEditAction) => void;
+  onGeneratePreview: () => void;
   t: Copy;
   videoState: VideoEditState;
 }) {
@@ -31,6 +35,13 @@ export function VideoEditorPanel({
             <h3>{t.trimRange}</h3>
           </div>
           <p className="export-helper">{t.trimPlanned}</p>
+          <VideoTrimTimeline
+            duration={duration}
+            onApply={onApply}
+            onGeneratePreview={onGeneratePreview}
+            t={t}
+            videoState={videoState}
+          />
           <div className="tool-grid two-col">
             <div className="form-field">
               <label htmlFor="video-trim-start">{t.trimStart}</label>
@@ -95,6 +106,20 @@ export function VideoEditorPanel({
               ))}
             </select>
           </div>
+          <div className="video-timeline-actions">
+            <button className="secondary-button" onClick={onGeneratePreview} type="button">
+              <StudioIcon name="checkCircle" size={17} />
+              <span>{t.generateVideoPreview}</span>
+            </button>
+            <button
+              className="secondary-button"
+              onClick={() => onApply({ type: "reset-speed" })}
+              type="button"
+            >
+              <StudioIcon name="restartAlt" size={17} />
+              <span>{t.resetSpeed}</span>
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -105,6 +130,7 @@ export function VideoEditorPanel({
             <h3>{t.manualSubtitles}</h3>
           </div>
           <p className="export-helper">{t.subtitleDetail}</p>
+          <SubtitleTimeline duration={duration} t={t} videoState={videoState} />
           <button
             className="primary-button full-width"
             onClick={() => onApply({ cue: createSubtitleCue(videoState, t), type: "add-subtitle" })}
@@ -182,6 +208,14 @@ export function VideoEditorPanel({
               ))
             )}
           </div>
+          <button
+            className="secondary-button full-width"
+            onClick={() => onApply({ type: "reset-subtitles" })}
+            type="button"
+          >
+            <StudioIcon name="restartAlt" size={18} />
+            <span>{t.resetSubtitles}</span>
+          </button>
         </div>
       ) : null}
 
@@ -210,7 +244,21 @@ export function VideoEditorPanel({
               ))}
             </select>
           </div>
-          <p className="export-helper">{t.videoExportNext}</p>
+          <div className="video-timeline-actions">
+            <button className="secondary-button" onClick={onGeneratePreview} type="button">
+              <StudioIcon name="checkCircle" size={17} />
+              <span>{t.generateVideoPreview}</span>
+            </button>
+            <button
+              className="secondary-button"
+              onClick={() => onApply({ type: "reset-format" })}
+              type="button"
+            >
+              <StudioIcon name="restartAlt" size={17} />
+              <span>{t.resetFormat}</span>
+            </button>
+          </div>
+          <p className="export-helper">{t.videoExportHelper}</p>
         </div>
       ) : null}
     </section>

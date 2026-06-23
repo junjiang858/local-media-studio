@@ -21,6 +21,7 @@ export function PreviewStage({
   selectedAsset,
   t,
   videoState,
+  videoPreviewRequestKey,
   zoom,
 }: {
   compareOriginal: boolean;
@@ -35,6 +36,7 @@ export function PreviewStage({
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
+  videoPreviewRequestKey: number;
   zoom: number;
 }) {
   return (
@@ -54,6 +56,7 @@ export function PreviewStage({
           onZoomChange={onZoomChange}
           t={t}
           videoState={videoState}
+          videoPreviewRequestKey={videoPreviewRequestKey}
           zoom={zoom}
         />
       ) : (

@@ -301,6 +301,10 @@ describe("media workspace shell", () => {
 
     expect(screen.getByLabelText(/video format/i)).toHaveValue("webm");
 
+    await user.click(screen.getAllByRole("button", { name: /generate preview/i }).at(-1)!);
+
+    expect(await screen.findByText(/preview ready/i)).toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: /export current asset/i }));
 
     expect(await screen.findByText(/export saved/i)).toBeInTheDocument();

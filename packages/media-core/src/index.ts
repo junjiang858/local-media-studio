@@ -140,6 +140,10 @@ export type VideoEditAction =
   | { type: "add-subtitle"; cue: SubtitleCue }
   | { type: "update-subtitle"; cueId: string; patch: Partial<Omit<SubtitleCue, "id">> }
   | { type: "remove-subtitle"; cueId: string }
+  | { type: "reset-trim"; duration?: number | null }
+  | { type: "reset-speed" }
+  | { type: "reset-format" }
+  | { type: "reset-subtitles" }
   | { type: "reset"; duration?: number | null };
 
 export type ImageExportPlan = {
@@ -338,6 +342,38 @@ export function updateVideoEditState(
 ): VideoEditState {
   if (action.type === "reset") {
     return initialVideoEditState(action.duration);
+  }
+
+  if (action.type === "reset-trim") {
+    return {
+      ...cloneVideoEditState(state),
+      trimEnd:
+        typeof action.duration === "number" && action.duration > 0
+          ? Math.round(action.duration * 100) / 100
+          : null,
+      trimStart: 0,
+    };
+  }
+
+  if (action.type === "reset-speed") {
+    return {
+      ...cloneVideoEditState(state),
+      speed: 1,
+    };
+  }
+
+  if (action.type === "reset-format") {
+    return {
+      ...cloneVideoEditState(state),
+      exportFormat: "mp4",
+    };
+  }
+
+  if (action.type === "reset-subtitles") {
+    return {
+      ...cloneVideoEditState(state),
+      subtitles: [],
+    };
   }
 
   if (action.type === "set-trim") {

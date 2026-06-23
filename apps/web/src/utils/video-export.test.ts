@@ -90,4 +90,26 @@ describe("video export utility", () => {
       status: "loading",
     });
   });
+
+  it("transcodes when only the output video format changes", async () => {
+    const source = new File(["video"], "clip.mp4", { type: "video/mp4" });
+    const state = updateVideoEditState(initialVideoEditState(12), {
+      format: "webm",
+      type: "set-format",
+    });
+
+    fetchFileMock.mockResolvedValue(new Uint8Array([1, 2, 3]));
+    ffmpegInstance.load.mockResolvedValue(true);
+    ffmpegInstance.exec.mockResolvedValue(0);
+    ffmpegInstance.readFile.mockResolvedValue(new Uint8Array([4, 5, 6]));
+
+    await exportEditedVideo({
+      source,
+      state,
+    });
+
+    expect(ffmpegInstance.exec).toHaveBeenCalledWith(
+      expect.arrayContaining(["-c:v", "libvpx-vp9", "-c:a", "libopus", "output.webm"]),
+    );
+  });
 });

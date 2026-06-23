@@ -134,6 +134,8 @@ export function getVideoExportErrorMessage(error: unknown, fallback: string) {
 
 function buildVideoArgs(inputName: string, outputName: string, state: VideoEditState): string[] {
   const args: string[] = [];
+  const inputFormat = getInputFormat(inputName);
+  const needsTranscode = state.speed !== 1 || inputFormat !== state.exportFormat;
 
   if (state.trimStart > 0) {
     args.push("-ss", String(state.trimStart));
@@ -158,6 +160,9 @@ function buildVideoArgs(inputName: string, outputName: string, state: VideoEditS
   if (state.speed !== 1) {
     args.push("-filter:v", `setpts=${(1 / state.speed).toFixed(4)}*PTS`);
     args.push("-filter:a", `atempo=${state.speed}`);
+  }
+
+  if (needsTranscode) {
     args.push(...getTranscodeArgs(state.exportFormat));
   } else {
     args.push("-c:v", "copy", "-c:a", "copy");
@@ -177,6 +182,10 @@ function getTranscodeArgs(format: VideoEditState["exportFormat"]) {
   }
 
   return ["-c:v", "libx264", "-c:a", "aac"];
+}
+
+function getInputFormat(inputName: string): VideoEditState["exportFormat"] {
+  return inputName.toLowerCase().endsWith(".webm") ? "webm" : "mp4";
 }
 
 function getInputExtension(source: File) {
