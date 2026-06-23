@@ -6,6 +6,7 @@
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, approved in chat on 2026-06-22.
 - Last reviewed: 2026-06-23.
+- Current interaction cleanup checkpoint: Approved by user on 2026-06-23 as A path. Scope covers top history copy, video preview controls, preview background switching, image crop/layer transforms, editor-owned format conversion, export-panel simplification, and reset controls.
 
 ## Product Tone
 
@@ -61,7 +62,7 @@ Rules:
 | Media Library Panel | Manage uploaded images/videos in the current session                            | Select previous/next asset, filter by type, remove asset                                                             | MediaAsset list, selected asset id, filter mode                                                      | Empty, populated, filtered-empty, metadata-loading, item-error                                                                      |
 | Image Editor Panel  | Apply image-specific operations                                                 | Crop rectangle, rotate, flip, resize, beautify/filter, annotate, watermark layer, remove background, undo/redo/reset | ImageEditState, operation history, crop rectangle, layer objects, background-removal job             | Clean, dirty, comparing, crop-editing, layer-selected, background-loading, background-processing, failed, export-ready              |
 | Video Editor Panel  | Apply single-video operations                                                   | Scrub preview, set trim handles, reset values, adjust speed, add subtitle cue, apply derived preview, export         | VideoEditState, duration, current time, loop state, thumbnail frames, subtitle cues, export settings | Metadata-loading, ready, timeline-editing, invalid-range, subtitle-editing, processing, derived-preview-ready, failed, export-ready |
-| Export Panel        | Configure and run export for current asset                                      | Choose output format/quality and download result                                                                     | Selected asset, edit state, format capability state, export settings, ExportJob                      | Disabled, unsupported-format, ready, loading-engine, processing, completed, canceled, failed                                        |
+| Export Panel        | Save or download the current edited asset using the editor-selected output settings | Start export, inspect progress/failure, download result                                                              | Selected asset, edit state, current editor format/quality settings, ExportJob                        | Disabled, unsupported-format, ready, loading-engine, processing, completed, canceled, failed                                        |
 | Processing Feedback | Keep long-running work understandable                                           | Cancel, retry, inspect failure                                                                                       | ExportJob or background-removal job status                                                           | Queued, loading, progress, canceling, failed, completed                                                                             |
 
 ## First MVP Page
@@ -86,14 +87,15 @@ Rules:
   - Export disabled, ready, processing, completed, canceled, and failed states.
 - Interaction model:
   - Desktop uses the Stitch workstation structure directly: media library, preview canvas, and inspector/export rail visible together.
-  - The visible top bar is utility chrome only: left OBSCURA Canvas darkroom/aperture mark plus wordmark, a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. Do not show explanatory title/subtitle copy in the top bar.
+  - The visible top bar is utility chrome only: left OBSCURA Canvas darkroom/aperture mark plus wordmark, a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. In Simplified Chinese the redo action is labeled `恢复` to avoid confusion with `恢复原图`; English keeps the standard `Redo`. Do not show explanatory title/subtitle copy in the top bar.
   - Empty workspace follows the Stitch empty-state screen: the main preview canvas becomes a large dashed upload dropzone with one Import Media action, no template exploration action, short capability notes, and localized copy.
   - After media exists, upload/import has one visible entry point in the media library panel. Do not duplicate upload actions in the top toolbar.
   - Export has one visible action in the export panel. The export action should prepare the local result and immediately start the browser save/download flow when possible.
   - Compare mode lives in the preview viewport toolbar only. Do not duplicate compare in the top toolbar.
   - Image annotation and watermark editing use an object-layer interaction model: selected objects show a visible transform rectangle and handles; dragging an annotation must not pan the underlying preview.
   - Image crop uses a visible crop selection rectangle with handles. Presets set the rectangle ratio, while custom lets users drag or enter exact width/height ratio before applying.
-  - Video preview borrows the Clypra workbench pattern where it fits the product: a compact preview header with media dimensions and zoom/fit state, a main preview surface, and bottom playback controls with play/pause, reset time, scrubber, timestamp, loop, and timeline affordances.
+  - Preview background has a localized `transparent`/`black` switch. Transparent keeps the checkerboard canvas used for alpha inspection. Black paints the preview stage background black for image and video inspection, but it is preview-only unless a later source-of-truth update explicitly adds background baking into export.
+  - Image preview owns the viewport toolbar for zoom, compare, and fullscreen. Video preview does not render the image viewport toolbar; it borrows the Clypra workbench pattern where it fits the product: a compact preview header with media dimensions and format state, a main preview surface, and bottom playback controls fixed to the preview frame with play/pause, reset time, scrubber, timestamp, loop, and timeline affordances.
   - Video trim and format conversion are explicit apply actions that create a derived local preview asset. Changing a select alone must not silently overwrite the source preview.
   - Video editing controls with reversible numeric state, including trim, speed, subtitle timing, and format draft, provide local reset buttons that restore original/default values.
   - The inspector/editor/export rail is hidden while there is no uploaded media and appears only after a media asset exists.
@@ -347,9 +349,11 @@ Rules:
   - Video trim uses draggable handles over thumbnail frames and an Apply button. Applying trim generates a derived local preview video; the original source remains available.
   - Video format changes use a draft selection plus Apply conversion. Applying conversion generates a derived local preview video instead of only changing export settings.
   - Video subtitles appear both as cue rows and as draggable blocks on the subtitle timeline. Manual text entry remains v1 scope; AI subtitles remain out of scope.
-  - Use menus/selects for output format and quality options.
+  - Image and video format conversion live in the editor rail, not the bottom export panel. Image format controls support PNG, JPEG, WebP, AVIF, BMP, GIF, and TIFF with browser/encoder capability states; the selected format defaults from the current media type where possible. Video format controls support common ffmpeg.wasm container targets that are practical for v1, starting with MP4 and WebM and including MOV, MKV, and AVI with clear preview/browser-compatibility copy when needed.
+  - Quality controls are shown only when they affect the current format. For images, JPEG/WebP/AVIF expose a numeric quality control; PNG/BMP/GIF/TIFF hide quality. Video quality remains deferred to future named presets instead of a misleading bottom-panel number.
   - Use text labels beside unfamiliar icons for consumer-facing clarity.
   - Show visible status for export preparation and other asynchronous work.
+  - The export panel does not duplicate editor format or quality controls. It summarizes the current target format and is responsible for export, progress, errors, retry/download, and save handoff.
   - The export panel must keep the export button fully visible in the inspector rail; dense editor content scrolls independently above it.
   - Use tactile active states and restrained transform/opacity transitions only. Do not add scroll hijacks, decorative marquees, custom cursors, or unmotivated motion to the editing workspace.
   - Selection uses a ghost border in the blue accent family without heavy drop shadows.

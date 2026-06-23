@@ -7,6 +7,7 @@
 - Database decision confirmed: Yes, `docs/architecture/DATABASE_DESIGN.md` states v1 has no server database.
 - User approved writing this document: Yes, selected accelerated path B in chat on 2026-06-22.
 - Last reviewed: 2026-06-23.
+- Current local worker update: Approved by user on 2026-06-23 as A path. This pass keeps processing local and extends editor-owned format settings without adding a backend.
 
 ## Decision Summary
 
@@ -68,8 +69,8 @@ These are internal browser contracts, not network APIs.
 | `detectImageExportCapabilities` | browser canvas support and registered encoder adapters                          | format availability map, MIME type, extension, disabled reason   | capability probe failed, encoder unavailable                                  |
 | `buildImageExport`              | source image, ImageEditState, export settings                                   | output blob and suggested filename                               | invalid image state, canvas export failed, unsupported format, encoder failed |
 | `adaptImageInputFormat`         | image `File` and target preview format                                          | decoded preview blob/object URL and metadata                     | HEIC/TIFF decode failed, license-gated adapter disabled, memory limit         |
-| `runVideoDerivedPreview`        | source video, VideoEditState, operation kind                                    | derived preview blob/object URL, filename, metadata              | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit  |
-| `runVideoExport`                | source video or derived preview, VideoEditState, subtitle cues, export settings | output blob and suggested filename                               | ffmpeg load failed, unsupported codec, invalid range, canceled, memory limit  |
+| `runVideoDerivedPreview`        | source video, VideoEditState, operation kind                                    | derived preview blob/object URL, filename, metadata              | ffmpeg load failed, unsupported codec/container, invalid range, canceled, memory limit, browser preview unsupported |
+| `runVideoExport`                | source video or derived preview, VideoEditState, subtitle cues, export settings | output blob and suggested filename                               | ffmpeg load failed, unsupported codec/container, invalid range, canceled, memory limit  |
 | `serializeWebVTT`               | subtitle cue list                                                               | WebVTT text/blob                                                 | invalid cue timing, empty cue text where required                             |
 
 ## Data Flow
@@ -81,8 +82,8 @@ These are internal browser contracts, not network APIs.
 | Image format export   | Selected image, edit state, format registry                               | Temporary generated blob/object URL and user download                             | Browser-native formats are feature-detected; GIF/TIFF/BMP use local encoders. |
 | Background removal    | Selected image and job settings                                           | Runtime job state and generated result blob/object URL                            | Model assets may load from app/CDN path; user image remains local.            |
 | Video editing         | MediaAsset and VideoEditState                                             | In-memory VideoEditState, thumbnail metadata, subtitle cues, derived preview blob | Single-asset only; no multi-track timeline in v1.                             |
-| Video derived preview | Source video, trim/speed/format/subtitle settings                         | Temporary local derived blob/object URL and optional library asset                | Original source remains untouched; derived URLs must be revoked.              |
-| Export                | Selected asset, derived preview when present, edit state, export settings | Runtime ExportJob and user-downloaded blob                                        | Export result is temporary unless user downloads it.                          |
+| Video derived preview | Source video, trim/speed/format/subtitle settings                         | Temporary local derived blob/object URL and optional library asset                | Original source remains untouched; derived URLs must be revoked. MP4/WebM are preferred for in-browser preview; MOV/MKV/AVI may still be valid download targets even if the browser cannot preview them. |
+| Export                | Selected asset, derived preview when present, edit state, editor-owned export settings | Runtime ExportJob and user-downloaded blob                                        | Export result is temporary unless user downloads it. The export panel must not own duplicated format settings. |
 | Draft recovery        | Lightweight edit metadata                                                 | Browser storage draft metadata when implemented                                   | Raw media bytes are not silently persisted.                                   |
 
 ## Auth And Permissions
@@ -99,6 +100,7 @@ These are internal browser contracts, not network APIs.
   - Use Zod for subtitle cues, export settings, worker messages, and draft metadata.
   - Validate MIME type, file size, duration, dimensions, crop rectangle, layer transforms, trim range, speed value, loop/current-time values, output format, and required text fields.
   - Validate image export format capability before invoking an encoder.
+  - Validate video output containers before invoking ffmpeg and show a readable message when a generated result is downloadable but not browser-previewable.
   - Validate video reset actions by mapping them to documented original/default values rather than ad hoc UI-only values.
 - Error shape:
   - Runtime jobs should return a typed error with `code`, `message`, `recoverable`, and optional `details`.

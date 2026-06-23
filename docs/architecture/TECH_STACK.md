@@ -8,6 +8,7 @@
 - User confirmed this stack: Yes, confirmed in chat on 2026-06-22.
 - User approved writing this document: Yes, approved in chat on 2026-06-22.
 - Last reviewed: 2026-06-23.
+- Current media-editor interaction update: Approved by user on 2026-06-23 as A path; no new major dependency is introduced for this pass.
 
 ## Selection Context
 
@@ -38,7 +39,7 @@
 | Image editing         | Canvas API + Cropper.js + Konva/react-konva                               | Separates precise crop behavior from annotation/watermark object editing.                                                                  |
 | Image format adapters | Browser Canvas encoders + local BMP encoder + `gifenc` + `utif2`          | Expands image export beyond PNG/JPEG/WebP without uploading media or replacing the image pipeline.                                         |
 | Background removal    | `@imgly/background-removal`, with AGPL/license caveat                     | Local browser background removal fits v1 privacy goals, but the license must be rechecked before closed-source or commercial distribution. |
-| Video processing      | ffmpeg.wasm in Web Workers, coordinated through Comlink                   | Enables local trim, speed, subtitle burn-in/attachment where feasible, and format conversion.                                              |
+| Video processing      | ffmpeg.wasm in Web Workers, coordinated through Comlink                   | Enables local trim, speed, subtitle burn-in/attachment where feasible, and format conversion. MP4 and WebM remain the strongest preview targets; MOV, MKV, and AVI may be offered as local ffmpeg container exports with browser-preview compatibility messaging. |
 | Subtitles             | In-app subtitle cue state + WebVTT export/preview                         | Manual subtitles are simple enough to manage without adding a parser library in v1.                                                        |
 | Deployment            | Vercel static deployment or equivalent static host with COOP/COEP support | Static hosting is enough, but WASM/SharedArrayBuffer paths may require cross-origin isolation headers.                                     |
 | Testing               | Vitest + React Testing Library + Playwright                               | Covers media logic, UI components, and browser workflows.                                                                                  |
@@ -110,6 +111,7 @@
 ## Production Compatibility
 
 - Choices intended to survive launch: React, TypeScript, Vite, pnpm workspace, Tailwind, shadcn/ui, Radix UI, Material Symbols SVG React, Zustand, Zod, Cropper.js, Konva/react-konva, Canvas/BMP/GIF/TIFF image export adapters, ffmpeg.wasm, Comlink, Vitest, React Testing Library, Playwright.
+- Format-control ownership: image/video format conversion settings belong to the relevant editor tools. The bottom export panel starts export/download, shows status, and summarizes current settings rather than owning duplicated format selectors.
 - Choices that are acceptable only for prototype or local development: Browser-only draft recovery without explicit persistence guarantees; single-thread or simplified ffmpeg.wasm processing when advanced codec support is not available.
 - What must not be replaced later without explicit approval: frontend framework, package manager, deployment model, local-first processing promise, state library, image editor architecture, video processing backend, background-removal strategy, and any move from local to cloud processing.
 
