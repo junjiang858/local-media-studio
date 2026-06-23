@@ -9,6 +9,7 @@ import {
 import { EditorRail } from "../components/editor/EditorRail";
 import { MediaLibraryPanel } from "../components/media-library/MediaLibraryPanel";
 import { PreviewStage } from "../components/preview/PreviewStage";
+import type { PreviewBackground } from "../components/preview/types";
 import { MobileTabs } from "../components/studio/MobileTabs";
 import { TopToolbar } from "../components/studio/TopToolbar";
 import { emptyWorkspaceTabs, populatedWorkspaceTabs } from "../config/workspace";
@@ -28,6 +29,7 @@ export default function App() {
   const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>("preview");
   const [compareOriginal, setCompareOriginal] = useState(false);
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
+  const [previewBackground, setPreviewBackground] = useState<PreviewBackground>("transparent");
   const [videoPreviewRequestKey, setVideoPreviewRequestKey] = useState(0);
   const [zoom, setZoom] = useState(100);
   const t = messages[language];
@@ -216,7 +218,9 @@ export default function App() {
           onApplyImageAction={handleApplyImageAction}
           onCompareToggle={() => setCompareOriginal((value) => !value)}
           onFullscreenToggle={() => setIsPreviewFullscreen((value) => !value)}
+          onPreviewBackgroundChange={setPreviewBackground}
           onZoomChange={setZoom}
+          previewBackground={previewBackground}
           selectedAsset={selectedAsset}
           t={t}
           videoState={selectedVideoState}

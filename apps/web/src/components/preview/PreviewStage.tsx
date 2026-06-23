@@ -7,6 +7,7 @@ import type { Copy } from "../../i18n";
 import type { WorkspaceAsset } from "../../stores/media-store";
 import { EmptyPreview } from "./EmptyPreview";
 import { SelectedPreview } from "./SelectedPreview";
+import type { PreviewBackground } from "./types";
 
 export function PreviewStage({
   compareOriginal,
@@ -17,7 +18,9 @@ export function PreviewStage({
   onApplyImageAction,
   onCompareToggle,
   onFullscreenToggle,
+  onPreviewBackgroundChange,
   onZoomChange,
+  previewBackground,
   selectedAsset,
   t,
   videoState,
@@ -32,7 +35,9 @@ export function PreviewStage({
   onApplyImageAction: (action: ImageEditAction) => void;
   onCompareToggle: () => void;
   onFullscreenToggle: () => void;
+  onPreviewBackgroundChange: (background: PreviewBackground) => void;
   onZoomChange: (zoom: number) => void;
+  previewBackground: PreviewBackground;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
@@ -53,7 +58,9 @@ export function PreviewStage({
           onCompareToggle={onCompareToggle}
           onApplyImageAction={onApplyImageAction}
           onFullscreenToggle={onFullscreenToggle}
+          onPreviewBackgroundChange={onPreviewBackgroundChange}
           onZoomChange={onZoomChange}
+          previewBackground={previewBackground}
           t={t}
           videoState={videoState}
           videoPreviewRequestKey={videoPreviewRequestKey}

@@ -843,6 +843,46 @@ svg {
   gap: 8px;
 }
 
+.preview-background-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 34px;
+  padding: 3px;
+  border: 1px solid rgba(135, 151, 170, 0.22);
+  border-radius: var(--radius-tight);
+  background: rgba(13, 17, 23, 0.46);
+}
+
+.preview-background-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.preview-background-toggle button.is-active {
+  background: rgba(65, 184, 255, 0.18);
+  color: var(--accent-strong);
+}
+
+.black-background-swatch {
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(230, 237, 246, 0.28);
+  border-radius: 50%;
+  background: #000;
+}
+
 .preview-meta span {
   display: block;
   margin-bottom: 4px;
@@ -891,6 +931,16 @@ svg {
     -10px 0;
   background-size: 20px 20px;
   touch-action: none;
+}
+
+.preview-frame.preview-background-black {
+  background: #000;
+}
+
+.preview-frame.is-video-preview {
+  padding-bottom: 150px;
+  cursor: default;
+  touch-action: auto;
 }
 
 .preview-frame::before {
@@ -1136,18 +1186,22 @@ svg {
 
 .video-preview {
   width: min(100%, 900px);
-  max-height: 52vh;
+  max-height: min(58vh, calc(100% - 18px));
   pointer-events: auto;
   border-radius: var(--radius);
   background: #0f141b;
 }
 
 .video-workbench {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
   z-index: 2;
   display: grid;
   gap: 8px;
-  width: min(100%, 960px);
-  margin-top: 12px;
+  width: min(calc(100% - 36px), 960px);
+  margin: 0 auto;
   padding: 10px;
   pointer-events: auto;
   border: 1px solid rgba(135, 151, 170, 0.2);
@@ -1994,6 +2048,10 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 
   .preview-frame {
     padding: 14px 14px 78px;
+  }
+
+  .preview-frame.is-video-preview {
+    padding-bottom: 186px;
   }
 
   .preview-edge-button {

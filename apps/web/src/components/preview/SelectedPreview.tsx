@@ -27,6 +27,7 @@ import {
 } from "../../utils/video-export";
 import { ImagePreviewPane, type PreviewBounds } from "./ImagePreviewPane";
 import { PreviewToolbar } from "./PreviewToolbar";
+import type { PreviewBackground } from "./types";
 import { VideoPreviewWorkbench, type VideoPreviewStatus } from "./VideoPreviewWorkbench";
 
 export function SelectedPreview({
@@ -37,7 +38,9 @@ export function SelectedPreview({
   onApplyImageAction,
   onCompareToggle,
   onFullscreenToggle,
+  onPreviewBackgroundChange,
   onZoomChange,
+  previewBackground,
   t,
   videoState,
   videoPreviewRequestKey,
@@ -50,7 +53,9 @@ export function SelectedPreview({
   onApplyImageAction: (action: ImageEditAction) => void;
   onCompareToggle: () => void;
   onFullscreenToggle: () => void;
+  onPreviewBackgroundChange: (background: PreviewBackground) => void;
   onZoomChange: (zoom: number) => void;
+  previewBackground: PreviewBackground;
   t: Copy;
   videoState: VideoEditState | null;
   videoPreviewRequestKey: number;
@@ -134,6 +139,7 @@ export function SelectedPreview({
     videoState && !activeDerivedVideoPreview
       ? getActiveSubtitleCue(videoState, currentVideoTime)
       : null;
+  const isImageAsset = asset.kind === "image";
 
   const handleGenerateVideoPreview = useCallback(async () => {
     if (asset.kind !== "video" || !videoState) {
@@ -241,6 +247,10 @@ export function SelectedPreview({
   }
 
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
+    if (!isImageAsset) {
+      return;
+    }
+
     event.preventDefault();
     const sensitivity = event.ctrlKey ? 0.9 : 0.14;
     const nextZoom = clamp(zoom - event.deltaY * sensitivity, 40, 320);
@@ -248,7 +258,7 @@ export function SelectedPreview({
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (!event.isPrimary || event.button !== 0 || isPreviewControl(event.target)) {
+    if (!isImageAsset || !event.isPrimary || event.button !== 0 || isPreviewControl(event.target)) {
       return;
     }
 
@@ -292,13 +302,20 @@ export function SelectedPreview({
           <h1>{asset.name}</h1>
         </div>
         <div className="preview-meta-actions">
+          <PreviewBackgroundToggle
+            onChange={onPreviewBackgroundChange}
+            t={t}
+            value={previewBackground}
+          />
           <MediaInfo asset={asset} t={t} />
         </div>
       </div>
 
       <div
         ref={frameRef}
-        className="preview-frame"
+        className={`preview-frame preview-background-${previewBackground} ${
+          asset.kind === "video" ? "is-video-preview" : ""
+        }`}
         onPointerCancel={handlePointerEnd}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -310,7 +327,7 @@ export function SelectedPreview({
             <StudioIcon name="warning" size={36} />
             <strong>{t.unsupportedFormat}</strong>
           </div>
-        ) : asset.kind === "image" ? (
+        ) : isImageAsset ? (
           <div
             className={`preview-canvas-layer ${isDragging ? "is-dragging" : ""}`}
             style={{
@@ -327,12 +344,7 @@ export function SelectedPreview({
             />
           </div>
         ) : (
-          <div
-            className={`preview-canvas-layer ${isDragging ? "is-dragging" : ""}`}
-            style={{
-              transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom / 100})`,
-            }}
-          >
+          <div className="preview-canvas-layer video-canvas-layer">
             <video
               ref={videoRef}
               className="video-preview"
@@ -366,39 +378,40 @@ export function SelectedPreview({
             {activeSubtitleCue ? (
               <div className="video-subtitle-overlay">{activeSubtitleCue.text}</div>
             ) : null}
-            {videoState ? (
-              <VideoPreviewWorkbench
-                asset={asset}
-                currentTime={currentVideoTime}
-                duration={videoDuration || asset.duration || 0}
-                isDerivedPreview={Boolean(activeDerivedVideoPreview)}
-                isLooping={isVideoLooping}
-                isPlaying={isVideoPlaying}
-                onCancelPreview={handleCancelVideoPreview}
-                onGeneratePreview={() => void handleGenerateVideoPreview()}
-                onLoopToggle={() => setIsVideoLooping((value) => !value)}
-                onPlayToggle={handlePlayToggle}
-                onResetTime={handleResetVideoTime}
-                onScrub={handleVideoScrub}
-                previewMessage={previewMessage}
-                previewProgress={previewProgress}
-                previewStatus={previewStatus}
-                t={t}
-                videoState={videoState}
-              />
-            ) : null}
           </div>
         )}
 
-        <PreviewToolbar
-          compareOriginal={compareOriginal}
-          isFullscreen={isFullscreen}
-          onCompareToggle={onCompareToggle}
-          onFullscreenToggle={onFullscreenToggle}
-          onZoomChange={onZoomChange}
-          t={t}
-          zoom={zoom}
-        />
+        {isImageAsset ? (
+          <PreviewToolbar
+            compareOriginal={compareOriginal}
+            isFullscreen={isFullscreen}
+            onCompareToggle={onCompareToggle}
+            onFullscreenToggle={onFullscreenToggle}
+            onZoomChange={onZoomChange}
+            t={t}
+            zoom={zoom}
+          />
+        ) : videoState ? (
+          <VideoPreviewWorkbench
+            asset={asset}
+            currentTime={currentVideoTime}
+            duration={videoDuration || asset.duration || 0}
+            isDerivedPreview={Boolean(activeDerivedVideoPreview)}
+            isLooping={isVideoLooping}
+            isPlaying={isVideoPlaying}
+            onCancelPreview={handleCancelVideoPreview}
+            onGeneratePreview={() => void handleGenerateVideoPreview()}
+            onLoopToggle={() => setIsVideoLooping((value) => !value)}
+            onPlayToggle={handlePlayToggle}
+            onResetTime={handleResetVideoTime}
+            onScrub={handleVideoScrub}
+            previewMessage={previewMessage}
+            previewProgress={previewProgress}
+            previewStatus={previewStatus}
+            t={t}
+            videoState={videoState}
+          />
+        ) : null}
       </div>
     </section>
   );
@@ -407,6 +420,41 @@ export function SelectedPreview({
 type DerivedVideoPreview = VideoExportResult & {
   assetId: string;
 };
+
+function PreviewBackgroundToggle({
+  onChange,
+  t,
+  value,
+}: {
+  onChange: (background: PreviewBackground) => void;
+  t: Copy;
+  value: PreviewBackground;
+}) {
+  return (
+    <div aria-label={t.previewBackground} className="preview-background-toggle" role="toolbar">
+      <button
+        aria-label={t.transparentBackground}
+        aria-pressed={value === "transparent"}
+        className={value === "transparent" ? "is-active" : ""}
+        onClick={() => onChange("transparent")}
+        type="button"
+      >
+        <StudioIcon name="gridView" size={16} />
+        <span>{t.transparentBackground}</span>
+      </button>
+      <button
+        aria-label={t.blackBackground}
+        aria-pressed={value === "black"}
+        className={value === "black" ? "is-active" : ""}
+        onClick={() => onChange("black")}
+        type="button"
+      >
+        <span aria-hidden="true" className="black-background-swatch" />
+        <span>{t.blackBackground}</span>
+      </button>
+    </div>
+  );
+}
 
 function MediaInfo({ asset, t }: { asset: WorkspaceAsset; t: Copy }) {
   const dimensions =
