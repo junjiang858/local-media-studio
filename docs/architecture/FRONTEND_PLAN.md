@@ -5,7 +5,7 @@
 - Project charter confirmed: Yes, `docs/project/PROJECT_CHARTER.md`.
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, approved in chat on 2026-06-22.
-- Last reviewed: 2026-06-22.
+- Last reviewed: 2026-06-23.
 
 ## Product Tone
 
@@ -22,7 +22,7 @@
 - Surface type: Dense local-first media editing workspace, not a marketing landing page.
 - Audience: Personal creators editing private images and short videos in the browser.
 - Product tone: Professional Studio: calm, precise, dark, canvas-first, and task-focused.
-- Reference signals: Google Stitch project `1201636135287513933` / MagicMedia Editor, the existing three-region studio shell, Material Symbols tool icons, and dark media workstation conventions.
+- Reference signals: Google Stitch project `1201636135287513933` / MagicMedia Editor, the existing three-region studio shell, Material Symbols tool icons, dark media workstation conventions, and Clypra Studio's composition/video preview workbench inspected on 2026-06-23.
 - Existing brand assets: OBSCURA wordmark in the top toolbar, a Canvas-drawn darkroom/aperture brand mark, Magic Blue/Cyan accent family, Material Symbols SVG React icon adapter, and the current localized English/Chinese message dictionaries.
 - Quiet constraints: User media stays local; import and export each have one primary visible entry point; desktop stays dense but readable; mobile uses stacked workflow tabs; UI copy must localize; browser controls must not hide long-running media job states.
 - One-sentence direction: Build a real local media workstation whose first frame makes upload, preview, editing, and export immediately inspectable without adding marketing chrome.
@@ -59,9 +59,9 @@ Rules:
 | ------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
 | `/` Media Workspace | Upload, preview, edit, and export selected media through a guided consumer flow | Add media, select asset, edit, export                                                       | Local files, object URLs, media metadata, edit states, export jobs, active language        | Empty, drag-over, importing, selected, unsupported, editing, processing, failed, exported  |
 | Media Library Panel | Manage uploaded images/videos in the current session                            | Select previous/next asset, filter by type, remove asset                                    | MediaAsset list, selected asset id, filter mode                                            | Empty, populated, filtered-empty, metadata-loading, item-error                             |
-| Image Editor Panel  | Apply image-specific operations                                                 | Crop, rotate, flip, resize, adjust, annotate, watermark, remove background, undo/redo/reset | ImageEditState, operation history, crop preset, annotation objects, background-removal job | Clean, dirty, comparing, background-loading, background-processing, failed, export-ready   |
-| Video Editor Panel  | Apply single-video operations                                                   | Set trim range, adjust speed, add subtitle cue, export                                      | VideoEditState, duration, current time, thumbnail frames, subtitle cues, export settings   | Metadata-loading, ready, invalid-range, subtitle-editing, processing, failed, export-ready |
-| Export Panel        | Configure and run export for current asset                                      | Choose output format/quality and download result                                            | Selected asset, edit state, export settings, ExportJob                                     | Disabled, ready, loading-engine, processing, completed, canceled, failed                   |
+| Image Editor Panel  | Apply image-specific operations                                                 | Crop rectangle, rotate, flip, resize, beautify/filter, annotate, watermark layer, remove background, undo/redo/reset | ImageEditState, operation history, crop rectangle, layer objects, background-removal job | Clean, dirty, comparing, crop-editing, layer-selected, background-loading, background-processing, failed, export-ready |
+| Video Editor Panel  | Apply single-video operations                                                   | Scrub preview, set trim handles, reset values, adjust speed, add subtitle cue, apply derived preview, export | VideoEditState, duration, current time, loop state, thumbnail frames, subtitle cues, export settings | Metadata-loading, ready, timeline-editing, invalid-range, subtitle-editing, processing, derived-preview-ready, failed, export-ready |
+| Export Panel        | Configure and run export for current asset                                      | Choose output format/quality and download result                                            | Selected asset, edit state, format capability state, export settings, ExportJob             | Disabled, unsupported-format, ready, loading-engine, processing, completed, canceled, failed |
 | Processing Feedback | Keep long-running work understandable                                           | Cancel, retry, inspect failure                                                              | ExportJob or background-removal job status                                                 | Queued, loading, progress, canceling, failed, completed                                    |
 
 ## First MVP Page
@@ -79,8 +79,10 @@ Rules:
   - No selected asset state.
   - Unsupported format state.
   - Image edit dirty state with undo/redo/reset.
+  - Image crop-editing state with visible crop rectangle and apply/cancel affordances.
+  - Image layer-selected state with visible transform handles for annotation and watermark objects.
   - Image background-removal loading/processing/failed states.
-  - Video metadata-loading, invalid trim range, subtitle editing, and processing states.
+  - Video metadata-loading, timeline-editing, invalid trim range, resettable control, subtitle editing, derived-preview-ready, and processing states.
   - Export disabled, ready, processing, completed, canceled, and failed states.
 - Interaction model:
   - Desktop uses the Stitch workstation structure directly: media library, preview canvas, and inspector/export rail visible together.
@@ -89,6 +91,11 @@ Rules:
   - After media exists, upload/import has one visible entry point in the media library panel. Do not duplicate upload actions in the top toolbar.
   - Export has one visible action in the export panel. The export action should prepare the local result and immediately start the browser save/download flow when possible.
   - Compare mode lives in the preview viewport toolbar only. Do not duplicate compare in the top toolbar.
+  - Image annotation and watermark editing use an object-layer interaction model: selected objects show a visible transform rectangle and handles; dragging an annotation must not pan the underlying preview.
+  - Image crop uses a visible crop selection rectangle with handles. Presets set the rectangle ratio, while custom lets users drag or enter exact width/height ratio before applying.
+  - Video preview borrows the Clypra workbench pattern where it fits the product: a compact preview header with media dimensions and zoom/fit state, a main preview surface, and bottom playback controls with play/pause, reset time, scrubber, timestamp, loop, and timeline affordances.
+  - Video trim and format conversion are explicit apply actions that create a derived local preview asset. Changing a select alone must not silently overwrite the source preview.
+  - Video editing controls with reversible numeric state, including trim, speed, subtitle timing, and format draft, provide local reset buttons that restore original/default values.
   - The inspector/editor/export rail is hidden while there is no uploaded media and appears only after a media asset exists.
   - The Import, Edit, Export flow may remain in semantic or mobile navigation, but it must not appear as a large visible header block on desktop.
   - Advanced controls should be grouped into short sections with visible labels and helper copy.
@@ -122,20 +129,24 @@ Rules:
 | `MediaAssetCard`             | Compact thumbnail, type, name, size, dimensions/duration, error badge                                 | `apps/web/src/components/media-library`               | Media library             | Stateless display plus selected/disabled props                               |
 | `PreviewStage`               | Hosts selected image/video preview and edit overlay                                                   | `apps/web/src/components/preview`                     | Workspace                 | Owns preview-only controls through props from app                            |
 | `ImagePreviewCanvas`         | Image display, crop preview, comparison, annotation/watermark rendering                               | `apps/web/src/components/preview`                     | Image workflow            | Receives edit state; does not own history                                    |
+| `ImageLayerCanvas`           | Konva-backed selectable/draggable annotation and watermark layer surface                              | `apps/web/src/components/preview`                     | Image workflow            | Receives layer state and selected layer id; commits transforms through actions |
+| `ImageCropOverlay`           | Cropper-backed crop rectangle and custom ratio interaction                                            | `apps/web/src/components/preview` or `editor`         | Image workflow            | Local crop drag state; committed crop rectangle lives in image edit state     |
 | `PreviewViewportToolbar`     | Zoom out/in, fullscreen/theater toggle, and before/after compare mode                                 | `apps/web/src/components/preview`                     | Workspace                 | Preview zoom/compare/fullscreen state is owned by app composition            |
-| `VideoPreviewPlayer`         | Video playback, current time, subtitle preview, trim markers                                          | `apps/web/src/components/preview`                     | Video workflow            | Future local playback state only                                             |
+| `VideoPreviewPlayer`         | Video playback, current time, subtitle preview, trim markers                                          | `apps/web/src/components/preview`                     | Video workflow            | Local playback state; committed video edit state remains in store/core       |
+| `VideoPreviewWorkbench`      | Clypra-inspired video preview header, fit/zoom metadata, playback controls, scrubber, loop, and reset time | `apps/web/src/components/preview`                 | Video workflow            | Owns transient playback UI and dispatches edit/reset actions                 |
 | `EditorPanel` / `EditorRail` | Switches between image/video tool groups based on selected asset type                                 | `apps/web/src/components/editor`                      | Workspace                 | Receives selected asset and edit state                                       |
 | `ImageToolTabs`              | Crop, transform, adjust, annotate, watermark, background removal                                      | `apps/web/src/components/editor`                      | Image workflow            | Tab/expanded-section state may be local; image history stays in store/core   |
 | `VideoToolTabs`              | Trim, speed, subtitles, export options                                                                | `apps/web/src/components/editor`                      | Video workflow            | Future video edit draft state should live in store/core                      |
 | `CropPresetControl`          | Social crop presets and custom ratio controls                                                         | `apps/web/src/components/editor`                      | Image workflow            | Stateless action dispatch                                                    |
-| `AdjustmentControls`         | Brightness, contrast, saturation sliders                                                              | `apps/web/src/components/editor`                      | Image workflow            | Stateless action dispatch                                                    |
+| `BeautifyControls`           | Brightness, contrast, saturation sliders plus filter presets and filter strength                       | `apps/web/src/components/editor`                      | Image workflow            | Stateless action dispatch                                                    |
 | `AnnotationToolbar`          | Text, brush, rectangle, arrow, selection controls                                                     | `apps/web/src/components/editor`                      | Image workflow            | Future annotation selection may be local until persisted to image edit state |
 | `WatermarkControls`          | Text/image watermark placement and opacity controls                                                   | `apps/web/src/components/editor`                      | Image workflow            | Future draft form state local; committed watermark state in store/core       |
 | `BackgroundRemovalPanel`     | Starts local background removal and shows model/job progress                                          | `apps/web/src/components/editor`                      | Image workflow            | Future job state in store/worker boundary                                    |
-| `TrimRangeControl`           | Start/end inputs and visual trim range                                                                | `apps/web/src/components/editor`                      | Video workflow            | Future validated trim state in store/core                                    |
-| `SpeedControl`               | Speed preset and custom speed input                                                                   | `apps/web/src/components/editor`                      | Video workflow            | Future validated speed state in store/core                                   |
-| `SubtitleCueList`            | Manual subtitle cue creation, validation, editing, deletion                                           | `apps/web/src/components/editor`                      | Video workflow            | Future cue draft state in store/core with local row editing                  |
-| `ExportPanel`                | Output format, quality, resolution/size where feasible, and the single export/save action             | `apps/web/src/components/export`                      | Workspace                 | Future export settings/job state in store/worker boundary                    |
+| `TrimTimelineControl`        | Thumbnail strip, playhead, draggable trim handles, exact inputs, reset, and apply trim                 | `apps/web/src/components/editor`                      | Video workflow            | Validated trim state in store/core; drag draft can be local                  |
+| `SpeedControl`               | Speed preset/custom input with reset to original                                                      | `apps/web/src/components/editor`                      | Video workflow            | Validated speed state in store/core                                          |
+| `SubtitleTimeline`           | Manual subtitle cue creation, row editing, draggable cue blocks, validation, deletion, reset timing    | `apps/web/src/components/editor`                      | Video workflow            | Cue state in store/core with local row editing                               |
+| `VideoFormatControl`         | Draft output format selection, reset to source/default, and apply conversion to derived preview        | `apps/web/src/components/editor` or `export`          | Video workflow            | Format draft in video state; conversion job in job store                     |
+| `ExportPanel`                | Output format, quality, resolution/size where feasible, capability reasons, and single export/save action | `apps/web/src/components/export`                  | Workspace                 | Export settings/job state in store/worker boundary                          |
 | `ProcessingJobToast`         | Progress, cancel, retry, and failure reason for long-running jobs                                     | `apps/web/src/components/export` or `studio`          | App-wide                  | Future job state in store/worker boundary                                    |
 | `EmptyState`                 | First-run upload prompt and filtered-empty guidance                                                   | `apps/web/src/components/preview` and `media-library` | Workspace                 | Stateless display and action callbacks                                       |
 | `ErrorState`                 | Unsupported format, metadata failure, processing failure, export failure                              | Relevant feature component folder                     | App-wide                  | Error source stays with asset/job state                                      |
@@ -178,13 +189,13 @@ Rules:
 - `apps/web/src/components/studio`: Shared studio UI primitives and region chrome such as `TopToolbar`, `MobileTabs`, `PanelHeader`, `StudioButton`, and `StudioIconButton`.
 - `apps/web/src/components/media-library`: Media library panel, asset cards, filters, empty states, and asset-level status UI.
 - `apps/web/src/components/preview`: Preview stage, empty upload state, selected image/video preview, image panes, and preview toolbar.
-- `apps/web/src/components/editor`: Editor rail, image tool groups, crop preset grid, adjustment sliders, progressive tool rows, and video tool placeholders.
+- `apps/web/src/components/editor`: Editor rail, image tool groups, crop preset grid, beautify/filter controls, annotation/watermark controls, video timeline controls, resettable video controls, and subtitle timeline rows.
 - `apps/web/src/components/export`: Export panel, export status, and job message UI.
-- `apps/web/src/config`: Static UI, media, workspace, and design-system configuration such as supported filters, tab order, icon sizes, export choices, quality ranges, and crop preset metadata.
+- `apps/web/src/config`: Static UI, media, workspace, and design-system configuration such as supported filters, tab order, icon sizes, export choices, format capability metadata, quality ranges, and crop preset metadata.
 - `apps/web/src/i18n`: Language types, browser-language detection, message dictionaries, and localized label helpers.
 - `apps/web/src/icons`: Studio icon adapter for the approved icon family. Components should import icons from this adapter rather than directly from the icon package.
 - `apps/web/src/stores`: Zustand stores and state selectors.
-- `apps/web/src/utils`: Browser, image export, media asset, formatting, and DOM utility helpers that are not React components.
+- `apps/web/src/utils`: Browser, image export/encoder adapters, media asset, video export/timeline helpers, formatting, and DOM utility helpers that are not React components.
 - Keep files focused by ownership. A region component may compose smaller local components, but it should not define global copy, media store state, or browser export logic inline.
 
 ## File Boundary Contract
@@ -203,7 +214,7 @@ Rules:
 | i18n messages                   | `apps/web/src/i18n`                                                    | Language types, detection, dictionaries, and localized label helpers.                              |
 | Icons                           | `apps/web/src/icons`                                                   | Local adapter for Material Symbols; components do not import directly from the icon package.       |
 | Assets/media                    | Future approved `apps/web/src/assets`                                  | Add only when local static assets are needed and documented here.                                  |
-| Utilities and browser adapters  | `apps/web/src/utils`                                                   | Object URL, metadata, export, formatting, and DOM helpers.                                         |
+| Utilities and browser adapters  | `apps/web/src/utils`                                                   | Object URL, metadata, image/video export adapters, format capability checks, formatting, and DOM helpers. |
 | Global styles                   | `apps/web/src/styles.css`                                              | Theme tokens, layout classes, and shared control styling.                                          |
 
 Rules:
@@ -217,6 +228,7 @@ Rules:
 - Split by user-facing concept when a file begins mixing library, preview, editor, export, or processing responsibilities.
 - Split by interaction state when loading, empty, error, success, disabled, selected, editing, processing, or failure markup becomes large enough to obscure the main flow.
 - Split by data or domain boundary when image edit history, video edit settings, export jobs, media metadata, or localization needs separate validation or ownership.
+- Split interactive canvas code when event handling, layer transforms, crop selection, playback controls, or timeline drag math begins to obscure preview composition.
 - Split repeated patterns after they appear in two regions with the same behavior, not merely the same visual shape.
 - Keep local-only pieces inline when they are short, single-use, and have no independent state or accessibility contract.
 - Extract custom hooks when DOM/browser APIs, object URL lifecycle, keyboard shortcuts, worker messages, or measurement logic would otherwise dominate a component.
@@ -255,6 +267,7 @@ Rules:
 - Form and validation pattern:
   - Use controlled inputs for compact tool controls where immediate preview matters.
   - Validate trim ranges, subtitle cue timing, output format, and numeric values before enabling export.
+  - Reset buttons restore the documented default/original values for video trim, speed, time, loop, subtitle cue timing, and format draft. Reset should be local, immediate, and undoable where it changes durable edit state.
 - Error and empty-state pattern:
   - Preview empty state must match the MagicMedia Stitch empty workspace composition: a centered dashed dropzone panel, import-file icon with a small add badge, `Start Your Creation`, helper copy, a single `Import Media` primary action, and supported-format capability tags. Do not render the `Explore Templates` action in v1, and do not use the older Import/Edit/Export process cards for this state.
   - Empty states should provide direct upload actions, but the persistent upload action belongs to the media library.
@@ -264,12 +277,14 @@ Rules:
   - UI dispatches typed jobs to Worker-facing APIs.
   - Job state updates flow back into `ExportJob` or background-removal job state.
   - UI must stay responsive during model/WASM loading and processing.
+  - Derived video results from trim/speed/format/subtitle work become selectable local assets or preview results with object URLs that are revoked when replaced or removed.
 
 ## Design System
 
 - UI library: shadcn/ui components built on Radix primitives and Tailwind CSS.
 - Icon library: Material Symbols SVG React through a local studio icon adapter. Keep one icon family across the app. Use outlined icons for default tools, filled or heavier symbols for selected and active states, and standard sizes of 16px, 20px, 24px, and 48px.
 - Stitch reference: Google Stitch project `1201636135287513933`, titled MagicMedia Editor, is the current visual baseline for the workspace. The implementation should restore the exposed MagicMedia Studio structure as directly as possible using the available Stitch design system data.
+- Clypra reference: the video preview workbench may borrow a compact composition header, fit/zoom controls, quick export/status buttons, playback strip, reset-time button, scrubber, loop toggle, and right-side contextual inspector pattern. Do not borrow its text-effect templates, AI/account controls, or keyframe-heavy scope.
 - Style direction: Professional Studio. The interface should feel like a precise local editing suite: dark, calm, technically capable, and focused on the media canvas. It should avoid a marketing hero, bubbly consumer styling, generic white cards, and decorative dashboard chrome.
 - Visual dials for the current redesign: design variance 5, motion intensity 3, visual density 7. This favors a dense but readable tool workspace with restrained motion and progressive disclosure.
 - Color tokens:
@@ -323,7 +338,15 @@ Rules:
   - Use themed sliders or number inputs for numeric values. Range controls should visually match the dark studio theme globally instead of using browser-default styling.
   - Use segmented controls/tabs for mode switches.
   - Crop aspect selection uses the visual preset cards only; do not duplicate the same control as both a select and cards in the inspector. Changing crop aspect must keep the preview centered by resetting or recalculating pan around the current media.
-  - The right inspector groups tools into media-type-aware tabs. Image tabs include transform, adjustments, layers, and background. Video tabs include trim, speed, subtitles, and format. The tab strip supports arrow-button scrolling and native horizontal gesture scrolling.
+  - Crop custom mode shows a direct crop rectangle instead of a passive preset. Apply commits the rectangle to state; cancel exits crop mode without changing export output.
+  - Annotation and watermark tools use select/move/draw modes. Pointer events over selected objects transform the layer; pointer events over empty preview canvas pan the preview only in view mode.
+  - Watermarks are layers. Text and image watermarks can be moved, transformed, hidden, deleted, and exported through the same layer renderer as annotations.
+  - Beautify replaces the older "adjustments" naming in user-facing UI. Basic adjustment sliders remain, and filter presets are additive local transforms with a visible strength control.
+  - The right inspector groups tools into media-type-aware tabs. Image tabs include transform, beautify, layers, and background. Video tabs include trim, speed, subtitles, and format. The tab strip supports arrow-button scrolling and native horizontal gesture scrolling.
+  - Video preview uses a workbench layout: preview metadata/fit controls above or near the video, the video surface in the center, and playback controls below it with play/pause, reset time, scrubber, timestamp, loop, and thumbnail timeline.
+  - Video trim uses draggable handles over thumbnail frames and an Apply button. Applying trim generates a derived local preview video; the original source remains available.
+  - Video format changes use a draft selection plus Apply conversion. Applying conversion generates a derived local preview video instead of only changing export settings.
+  - Video subtitles appear both as cue rows and as draggable blocks on the subtitle timeline. Manual text entry remains v1 scope; AI subtitles remain out of scope.
   - Use menus/selects for output format and quality options.
   - Use text labels beside unfamiliar icons for consumer-facing clarity.
   - Show visible status for export preparation and other asynchronous work.
@@ -386,6 +409,7 @@ Rules:
 | Success              | The edited preview/export-ready state is visible without celebratory overlay clutter                             | Preview, editor, export                    | Downloads should start directly when browser behavior allows.                   |
 | Disabled             | Disabled controls remain visible with understandable labels or helper text                                       | Editor controls, export action, navigation | Export disabled state must explain missing asset/settings when useful.          |
 | Validating or saving | Inline validation for trim, subtitles, numeric values, and export settings                                       | Editor, export                             | Use Zod or core validation at boundaries.                                       |
+| Resetting            | Small reset actions restore original/default values without destructive dialogs                                  | Video editor, image beautify/filter       | Use reset buttons for trim, speed, time, loop, format draft, subtitle timing, and filter strength. |
 | Selected or editing  | Blue accent selection and tactile active states without heavy shadows                                            | Media library, preview toolbar, tool tabs  | Selection state must not depend on color alone.                                 |
 | Destructive action   | Remove/reset actions require clear affordance and should avoid accidental activation                             | Media library, editor                      | Confirm only where data loss is non-obvious or irreversible within the session. |
 | Focus and keyboard   | Visible focus rings, accessible names, and keyboard paths for upload, navigation, tool buttons, tabs, and export | All interactive regions                    | Icon-only controls need names and tooltips where helpful.                       |
@@ -416,12 +440,13 @@ Rules:
 
 1. First MVP page shell: `/` guided studio layout, upload dropzone, media tray, preview, current task panel, and language switcher.
 2. Media model and selection: local file import, metadata extraction, thumbnails, previous/next navigation, type filter, empty/error states.
-3. Image core: preview, crop/rotate/flip/resize/adjust, undo/redo/reset, original comparison, watermark text, image export.
+3. Image core: preview, crop/rotate/flip/resize/beautify/filter, undo/redo/reset, original comparison, watermark layer, image export.
 4. Browser/i18n verification: English and Chinese UI, browser-language default, manual switching, upload/edit/export smoke, no media upload network path.
-5. Image annotations: brush, rectangle, arrow, richer watermark controls.
+5. Image interactive editing: Cropper.js crop rectangle, Konva annotation/watermark layers, layer selection, drag, transform, hide, delete, and export parity.
 6. Image background removal: local model loading, processing state, result preview, failure handling.
-7. Video core: video preview, metadata, trim start/end controls, speed controls, manual subtitle cue editor.
-8. Video export: ffmpeg.wasm Worker path, progress, cancel/retry where feasible, output download.
+7. Rich image formats: browser-native feature detection plus local BMP/GIF/TIFF encoders, unsupported-format messaging, and export tests.
+8. Video preview workbench: Clypra-inspired preview header, fit/zoom/status controls, play/pause, reset time, scrubber, loop, and keyboard-safe toolbar behavior.
+9. Video timeline editing: thumbnail trim handles, resettable trim/speed/format controls, subtitle timeline blocks, apply-to-derived-preview jobs, and export.
 
 ## Change Rule
 

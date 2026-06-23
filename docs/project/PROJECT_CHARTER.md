@@ -4,12 +4,12 @@
 
 - Purpose summary confirmed by user: Yes, confirmed in chat on 2026-06-22.
 - User approved writing this document: Yes, approved in chat on 2026-06-22.
-- Last reviewed: 2026-06-22.
+- Last reviewed: 2026-06-23.
 
 ## Reference Project Scan
 
 - Scan completed before purpose confirmation: Yes.
-- Selected direction after reviewing references: Local Media Studio starts as a lightweight local media workspace with an image-first editing experience. A short-video timeline editor is reserved for later versions.
+- Selected direction after reviewing references: Local Media Studio starts as a lightweight local media workspace with an image-first editing experience. A single-video preview timeline is part of the first version, while multi-track project editing stays reserved for later versions.
 
 | Project                     | Direct link                                         | Source type                                  | What to borrow                                                                                                                  | What not to copy blindly                                                               | Direction impact                                                                                                         |
 | --------------------------- | --------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -20,6 +20,7 @@
 | FreeCut                     | https://github.com/walterlow/freecut                | Open-source browser video editor             | Local browser editing, media library, thumbnails, waveform/cache ideas, keyboard shortcuts, export panel, future timeline route | Multi-track timeline, keyframes, AI captioning, scene search, advanced export pipeline | First version borrows media management and single-asset video editing patterns; multi-track becomes the advanced roadmap |
 | ffmpeg.wasm / ffmpeg-webCLI | https://github.com/ffmpegwasm/ffmpeg.wasm           | Open-source browser media processing library | In-browser video/audio conversion, trimming, format conversion, worker-based heavy processing                                   | Assuming all codecs and large files work smoothly in every browser                     | Use local processing as the default technical principle, with clear limits and failure states                            |
 | bg-remove / withoutbg       | https://github.com/addyosmani/bg-remove             | Open-source local background removal example | Browser-side background removal and privacy-friendly AI processing                                                              | Expecting perfect hair/glass edges or fast processing on all devices                   | First version includes basic automatic image background removal; manual refinement is deferred                           |
+| Clypra Studio               | https://clypra.abdulkabirmusa.com/studio?q=transitions | Inspectable browser creative editor           | Video/composition preview header with dimensions and zoom, playback controls, reset-time action, loop toggle, contextual inspector, and compact export buttons | Text-effect/template product scope, AI features, accounts, remote generation, keyframe-heavy editor complexity | Borrow preview-workbench ergonomics for the local single-video editor without expanding v1 into a template or multi-track product |
 
 ## Product Definition
 
@@ -57,21 +58,23 @@
 - Previous and next asset switching, including keyboard arrow support.
 - Filter by media type: all, images, videos.
 - Large preview for the selected image or video.
-- Image crop, rotate, flip, resize, and format conversion.
-- Image basic adjustments: brightness, contrast, saturation.
-- Image simple annotation: text, brush, rectangle, arrow.
-- Image watermark with position adjustment.
+- Image crop, rotate, flip, resize, and richer format conversion.
+- Image basic beautify controls: brightness, contrast, saturation, and local filter presets.
+- Image simple annotation: text, brush, rectangle, arrow, with draggable and selectable object behavior.
+- Image watermark as a movable text/image layer with position, opacity, and transform controls.
 - Image original-versus-edited comparison.
 - Image undo, redo, and reset.
 - Image social crop presets: 1:1, 4:5, 9:16, 16:9, avatar-style square.
 - Image basic automatic background removal using a local-first approach.
-- Video preview and single-asset editing.
-- Video trim by start and end time, including precise numeric input.
-- Video speed adjustment.
+- Video preview and single-asset editing workbench.
+- Video trim by start and end time, including precise numeric input, draggable timeline handles, and an explicit apply action that generates a derived preview video.
+- Video speed adjustment with reset-to-original controls.
 - Video manual subtitle creation and editing by time range.
-- Video format conversion.
+- Video format conversion that generates a derived preview video before download.
 - Video thumbnail frames for easier positioning.
+- Video playback controls with play/pause, reset time, scrubber, and loop controls.
 - Export panel with target format, resolution or size option when feasible, quality preset, progress, cancel, retry, and clear failure reason.
+- Image export should support the browser-native formats plus richer local encoders where feasible: PNG, JPEG, WebP, AVIF when the browser supports it, BMP, GIF, and TIFF. HEIC/HEIF import adaptation may be added only with an approved license path; HEIC export is not promised in v1.
 - Local edit draft state retained within the browser session where feasible.
 
 ### Should Have
@@ -115,8 +118,9 @@
 | -------------- | --------------------------------------------------------------------------------------------------------------------- | ---------- |
 | MediaAsset     | Represents an uploaded image or video and its metadata                                                                | Local user |
 | MediaLibrary   | Holds the current session's uploaded assets and selection state                                                       | Local user |
-| ImageEditState | Stores image operations such as crop, rotate, flip, adjustments, annotations, watermark, and background removal state | Local user |
-| VideoEditState | Stores video operations such as trim range, speed, subtitle cues, and export settings                                 | Local user |
+| ImageEditState | Stores image operations such as crop rectangle, rotate, flip, beautify/filter values, annotations, watermark layers, and background removal state | Local user |
+| ImageLayer     | Represents a draggable/selectable image annotation or watermark object used by the preview and export renderer        | Local user |
+| VideoEditState | Stores video operations such as trim range, speed, current time, loop state, subtitle cues, and export settings       | Local user |
 | SubtitleCue    | Represents one manual subtitle segment with start time, end time, and text                                            | Local user |
 | ExportJob      | Tracks local export status, progress, result file, cancellation, retry, and errors                                    | Local user |
 | LocalDraft     | Stores recoverable in-browser session state where feasible                                                            | Local user |
@@ -126,8 +130,9 @@
 | Object or workflow | User operation                                                                        | Important states                                        | Evidence or history                                     |
 | ------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
 | MediaAsset         | Upload, select, preview, switch, remove                                               | Imported, selected, edited, exporting, exported, failed | File metadata, thumbnail, current selection             |
-| ImageEditState     | Crop, rotate, flip, adjust, annotate, watermark, remove background, undo, redo, reset | Clean, edited, background-processing, export-ready      | Operation stack, preview render, comparison state       |
-| VideoEditState     | Trim, change speed, add subtitles, preview, export                                    | Clean, edited, processing, export-ready                 | Trim times, speed value, subtitle cues, export settings |
+| ImageEditState     | Crop, rotate, flip, beautify, filter, annotate, watermark, remove background, undo, redo, reset | Clean, edited, layer-selected, crop-editing, background-processing, export-ready | Operation stack, preview render, comparison state       |
+| ImageLayer         | Add, select, drag, resize, rotate, reorder, hide, lock, delete                         | Selected, dragging, transforming, locked, hidden        | Layer order, transform values, visual selection handles |
+| VideoEditState     | Trim, change speed, reset values, add subtitles, scrub preview, apply derived video, export | Clean, edited, timeline-editing, processing, derived-preview-ready, export-ready | Trim times, speed value, subtitle cues, export settings |
 | ExportJob          | Start, cancel, retry, download                                                        | Queued, processing, completed, canceled, failed         | Progress value, error reason, generated file            |
 | LocalDraft         | Save draft, restore draft, clear draft                                                | Available, restored, stale, cleared                     | Browser storage marker and recoverable edit state       |
 
@@ -137,7 +142,7 @@
 | ------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Browser file picker / drag-and-drop   | User-selected local media input                    | The app must not access files outside the user's explicit selection          |
 | Canvas / image processing APIs        | Image preview and transformations                  | Large images may consume memory or render slowly                             |
-| WebAssembly media processing          | Local video trimming, speed, and format conversion | Large files, codecs, and memory limits may fail depending on device/browser  |
+| WebAssembly media processing          | Local video trimming, speed, subtitle attachment/burn-in where feasible, and format conversion | Large files, codecs, and memory limits may fail depending on device/browser  |
 | Web Workers                           | Keep heavy processing off the main UI thread       | Worker errors and cancellation must be visible to users                      |
 | Local AI model for background removal | Basic automatic image cutout                       | Model size, processing speed, and edge quality may vary                      |
 | Browser storage                       | Session draft recovery and lightweight metadata    | Do not silently persist sensitive raw media beyond the agreed local behavior |
@@ -159,6 +164,7 @@
 | Local background removal model is heavy                  | First use may feel slow and consume memory | Make it clearly asynchronous, show model loading/progress, and keep manual refinement out of first version |
 | UI becomes too complex by mixing image and video tools   | Users may feel lost                        | Use one media workspace with asset-type-specific editing panels                                            |
 | Scope creep toward CapCut or Photoshop                   | MVP may become too large to finish         | Keep first version to single-asset workflows and defer timeline/layer complexity                           |
+| Rich format encoders increase bundle size or license risk | App may become slower or legally harder to ship | Feature-detect browser-native formats, keep HEIC/HEIF behind license review, and prefer small local encoders |
 | Raw media persistence could surprise users               | Privacy trust could be damaged             | Keep storage behavior explicit and avoid silent cloud or long-term raw media retention                     |
 
 ## Acceptance Criteria
@@ -166,18 +172,19 @@
 - [ ] A user can upload multiple images and videos into one media library.
 - [ ] A user can switch to previous and next assets from the preview workspace.
 - [ ] The media library shows thumbnails and basic metadata for each asset.
-- [ ] A user can crop, rotate, flip, resize, adjust, annotate, watermark, and export an image.
+- [ ] A user can crop with a visible crop rectangle, rotate, flip, resize, beautify/filter, annotate with movable layers, watermark as a movable layer, and export an image.
 - [ ] A user can compare an edited image with the original.
 - [ ] A user can undo, redo, and reset image edits.
 - [ ] A user can run basic local automatic background removal on an image and export the result.
-- [ ] A user can preview a video, trim by start/end time, adjust speed, add manual subtitle cues, and export the result.
-- [ ] Export flows show format options, quality or size options when feasible, progress, cancel or retry where feasible, and readable errors.
+- [ ] A user can preview a video in a workbench with play/pause, reset time, loop, scrubber, thumbnail trim handles, reset controls, manual subtitle cues, and export the result.
+- [ ] A video trim or format conversion can generate a derived local preview asset before download.
+- [ ] Export flows show richer format options, quality or size options when feasible, progress, cancel or retry where feasible, and readable errors.
 - [ ] The first version does not upload user media to a backend or third-party API.
 - [ ] The product clearly handles unsupported formats, large files, and processing failures.
 
 ## Open Questions
 
-- Which image and video formats are required for the first public test: PNG, JPG, WebP, GIF, MP4, WebM, MOV, or others?
+- Should HEIC/HEIF support ship as import-only conversion after license review, or stay deferred until the project has a clearer distribution model?
 - What maximum image size and video duration should the first version officially support?
 - Should the first version target Chrome/Edge first, or attempt broader Safari/Firefox support from day one?
 - Should local draft recovery persist only metadata/edit operations, or also retain user-selected files when browser capabilities allow it?
