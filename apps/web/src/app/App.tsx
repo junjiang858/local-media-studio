@@ -5,7 +5,7 @@ import {
   initialVideoEditState,
   type ImageEditAction,
   type VideoEditAction,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import { EditorRail } from "../components/editor/EditorRail";
 import { MediaLibraryPanel } from "../components/media-library/MediaLibraryPanel";
 import { PreviewStage } from "../components/preview/PreviewStage";

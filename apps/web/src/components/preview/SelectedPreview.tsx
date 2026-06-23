@@ -6,16 +6,8 @@ import {
   type PointerEvent,
   type WheelEvent,
 } from "react";
-import {
-  formatDuration,
-  formatFileSize,
-  getActiveSubtitleCue,
-} from "@local-media-studio/media-core";
-import type {
-  ImageEditAction,
-  ImageEditState,
-  VideoEditState,
-} from "@local-media-studio/media-core";
+import { formatDuration, formatFileSize, getActiveSubtitleCue } from "@obscura/media-core";
+import type { ImageEditAction, ImageEditState, VideoEditState } from "@obscura/media-core";
 import type { ImageExportSettings } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { getKindLabel } from "../../i18n";

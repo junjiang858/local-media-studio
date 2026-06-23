@@ -7,7 +7,7 @@ import type {
   ImageCropRect,
   ImageEditAction,
   ImageEditState,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 
 const cropLayerId = "__crop";
 

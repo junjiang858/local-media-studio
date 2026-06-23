@@ -3,7 +3,7 @@ import {
   applyImageEditAction,
   initialImageEditHistory,
   getCurrentImageEditState,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import { en } from "../i18n/messages/en";
 import type { WorkspaceAsset } from "../stores/media-store";
 import { exportEditedImage, getCanvasFilter, getImageExportAvailability } from "./image-export";

@@ -3,7 +3,7 @@ import type {
   ImageExportFormat,
   ImageFilterPreset,
   VideoExportFormat,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import type { Copy } from "../i18n";
 import type { StudioIconName } from "../icons/studio-icons";
 

@@ -6,14 +6,14 @@ import {
   initialImageEditHistory,
   initialVideoEditState,
   updateVideoEditState,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import type {
   ImageEditAction,
   ImageEditHistory,
   VideoEditAction,
   VideoEditState,
-} from "@local-media-studio/media-core";
-import type { MediaAsset, MediaKind } from "@local-media-studio/shared";
+} from "@obscura/media-core";
+import type { MediaAsset, MediaKind } from "@obscura/shared";
 import {
   getDefaultImageExportSettings,
   getVideoExportFormatFromMimeType,

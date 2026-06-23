@@ -1,4 +1,4 @@
-import type { ImageCropAspect, ImageEditAction } from "@local-media-studio/media-core";
+import type { ImageCropAspect, ImageEditAction } from "@obscura/media-core";
 import { cropPresets } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";

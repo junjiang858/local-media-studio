@@ -1,5 +1,5 @@
 import { removeBackground } from "@imgly/background-removal";
-import type { WorkerJobProgressUpdate } from "@local-media-studio/media-core";
+import type { WorkerJobProgressUpdate } from "@obscura/media-core";
 
 export type BackgroundRemovalResult = {
   blob: Blob;

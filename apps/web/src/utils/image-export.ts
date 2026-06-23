@@ -5,13 +5,13 @@ import {
   buildImageExportPlan,
   getImageExportExtension,
   getImageExportMimeType,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import type {
   ImageAnnotation,
   ImageEditState,
   ImageExportFormat,
   ImageFilterPreset,
-} from "@local-media-studio/media-core";
+} from "@obscura/media-core";
 import type { Copy } from "../i18n";
 import type { WorkspaceAsset } from "../stores/media-store";
 

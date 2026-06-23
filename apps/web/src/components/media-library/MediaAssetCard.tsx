@@ -1,4 +1,4 @@
-import { formatFileSize } from "@local-media-studio/media-core";
+import { formatFileSize } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 import { getKindLabel } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";

@@ -73,15 +73,15 @@ importers:
       "@imgly/background-removal":
         specifier: ^1.7.0
         version: 1.7.0(onnxruntime-web@1.21.0)
-      "@local-media-studio/media-core":
-        specifier: workspace:*
-        version: link:../../packages/media-core
-      "@local-media-studio/shared":
-        specifier: workspace:*
-        version: link:../../packages/shared
       "@material-symbols-svg/react":
         specifier: ^0.10.1
         version: 0.10.1(react@19.2.7)
+      "@obscura/media-core":
+        specifier: workspace:*
+        version: link:../../packages/media-core
+      "@obscura/shared":
+        specifier: workspace:*
+        version: link:../../packages/shared
       "@radix-ui/react-tabs":
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -134,7 +134,7 @@ importers:
 
   packages/media-core:
     dependencies:
-      "@local-media-studio/shared":
+      "@obscura/shared":
         specifier: workspace:*
         version: link:../shared
 

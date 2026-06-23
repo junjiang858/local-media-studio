@@ -2,7 +2,7 @@ import { en } from "./messages/en";
 import { zh } from "./messages/zh";
 import type { Copy, Language } from "./types";
 import type { MediaFilter } from "../stores/media-store";
-import type { MediaKind } from "@local-media-studio/shared";
+import type { MediaKind } from "@obscura/shared";
 
 export type { Copy, Language };
 

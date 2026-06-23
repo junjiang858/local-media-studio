@@ -1,4 +1,4 @@
-import type { ImageEditAction } from "@local-media-studio/media-core";
+import type { ImageEditAction } from "@obscura/media-core";
 import type { Copy, Language } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";

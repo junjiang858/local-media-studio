@@ -5,8 +5,8 @@ import type {
   ImageEditState,
   ImageExportFormat,
   WatermarkPosition,
-} from "@local-media-studio/media-core";
-import type { WorkerJob } from "@local-media-studio/shared";
+} from "@obscura/media-core";
+import type { WorkerJob } from "@obscura/shared";
 import {
   imageExportFormats,
   supportsImageQuality,

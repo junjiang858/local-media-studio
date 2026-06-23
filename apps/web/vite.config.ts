@@ -7,8 +7,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@local-media-studio/shared": path.resolve(__dirname, "../../packages/shared/src"),
-      "@local-media-studio/media-core": path.resolve(__dirname, "../../packages/media-core/src"),
+      "@obscura/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@obscura/media-core": path.resolve(__dirname, "../../packages/media-core/src"),
     },
   },
   test: {

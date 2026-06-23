@@ -23,8 +23,8 @@
 - Surface type: Dense local-first media editing workspace, not a marketing landing page.
 - Audience: Personal creators editing private images and short videos in the browser.
 - Product tone: Professional Studio: calm, precise, dark, canvas-first, and task-focused.
-- Reference signals: Google Stitch project `1201636135287513933` / MagicMedia Editor, the existing three-region studio shell, Material Symbols tool icons, dark media workstation conventions, and Clypra Studio's composition/video preview workbench inspected on 2026-06-23.
-- Existing brand assets: OBSCURA wordmark in the top toolbar, a Canvas-drawn darkroom/aperture brand mark, Magic Blue/Cyan accent family, Material Symbols SVG React icon adapter, and the current localized English/Chinese message dictionaries.
+- Reference signals: Google Stitch project `1201636135287513933`, the existing three-region studio shell, Material Symbols tool icons, dark media workstation conventions, and Clypra Studio's composition/video preview workbench inspected on 2026-06-23.
+- Existing brand assets: Obscura wordmark in the top toolbar, a Canvas-drawn darkroom/aperture brand mark, cyan/green accent family, Material Symbols SVG React icon adapter, and the current localized English/Chinese message dictionaries.
 - Quiet constraints: User media stays local; import and export each have one primary visible entry point; desktop stays dense but readable; mobile uses stacked workflow tabs; UI copy must localize; browser controls must not hide long-running media job states.
 - One-sentence direction: Build a real local media workstation whose first frame makes upload, preview, editing, and export immediately inspectable without adding marketing chrome.
 
@@ -87,7 +87,7 @@ Rules:
   - Export disabled, ready, processing, completed, canceled, and failed states.
 - Interaction model:
   - Desktop uses the Stitch workstation structure directly: media library, preview canvas, and inspector/export rail visible together.
-  - The visible top bar is utility chrome only: left OBSCURA Canvas darkroom/aperture mark plus wordmark, a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. In Simplified Chinese the redo action is labeled `恢复` to avoid confusion with `恢复原图`; English keeps the standard `Redo`. Do not show explanatory title/subtitle copy in the top bar.
+  - The visible top bar is utility chrome only: left Obscura Canvas darkroom/aperture mark plus wordmark, a concise local-only advantage tag, centered previous/next plus undo/redo controls, and right compact language switching. In Simplified Chinese the redo action is labeled `恢复` to avoid confusion with `恢复原图`; English keeps the standard `Redo`. Do not show explanatory title/subtitle copy in the top bar.
   - Empty workspace follows the Stitch empty-state screen: the main preview canvas becomes a large dashed upload dropzone with one Import Media action, no template exploration action, short capability notes, and localized copy.
   - After media exists, upload/import has one visible entry point in the media library panel. Do not duplicate upload actions in the top toolbar.
   - Export has one visible action in the export panel. The export action should prepare the local result and immediately start the browser save/download flow when possible.
@@ -240,7 +240,7 @@ Rules:
 
 - Route/page/app composition may import workflow components, config, i18n, stores, icons, and utilities.
 - Shared studio UI may import config tokens and icon adapters, but should not import media-core editing logic or workflow-specific stores directly.
-- Feature/domain modules may import shared studio components, config, i18n types/messages, stores/selectors, utilities, and package APIs from `@local-media-studio/*`.
+- Feature/domain modules may import shared studio components, config, i18n types/messages, stores/selectors, utilities, and package APIs from `@obscura/*`.
 - Stores may import pure logic/types from workspace packages and utilities, but should not import React components.
 - i18n, config, and icons should not import feature components or stores.
 - Forbidden imports: UI components importing from sibling feature folders just to reach hidden helpers; direct icon-package imports outside `icons`; workflow logic hidden in `styles.css`; store definitions inside route or component files.
@@ -271,7 +271,7 @@ Rules:
   - Validate trim ranges, subtitle cue timing, output format, and numeric values before enabling export.
   - Reset buttons restore the documented default/original values for video trim, speed, time, loop, subtitle cue timing, and format draft. Reset should be local, immediate, and undoable where it changes durable edit state.
 - Error and empty-state pattern:
-  - Preview empty state must match the MagicMedia Stitch empty workspace composition: a centered dashed dropzone panel, import-file icon with a small add badge, `Start Your Creation`, helper copy, a single `Import Media` primary action, and supported-format capability tags. Do not render the `Explore Templates` action in v1, and do not use the older Import/Edit/Export process cards for this state.
+  - Preview empty state must match the Stitch reference empty workspace composition: a centered dashed dropzone panel, import-file icon with a small add badge, `Start Your Creation`, helper copy, a single `Import Media` primary action, and supported-format capability tags. Do not render the `Explore Templates` action in v1, and do not use the older Import/Edit/Export process cards for this state.
   - Empty states should provide direct upload actions, but the persistent upload action belongs to the media library.
   - Error states must explain the failed operation and offer reset/retry where feasible.
   - Unsupported formats/codecs must be visible on the affected asset and in the preview area when selected.
@@ -285,14 +285,14 @@ Rules:
 
 - UI library: shadcn/ui components built on Radix primitives and Tailwind CSS.
 - Icon library: Material Symbols SVG React through a local studio icon adapter. Keep one icon family across the app. Use outlined icons for default tools, filled or heavier symbols for selected and active states, and standard sizes of 16px, 20px, 24px, and 48px.
-- Stitch reference: Google Stitch project `1201636135287513933`, titled MagicMedia Editor, is the current visual baseline for the workspace. The implementation should restore the exposed MagicMedia Studio structure as directly as possible using the available Stitch design system data.
+- Stitch reference: Google Stitch project `1201636135287513933` is the current visual baseline for the workspace. The implementation should preserve the exposed studio structure as directly as possible using the available Stitch design system data while expressing the product as Obscura.
 - Clypra reference: the video preview workbench may borrow a compact composition header, fit/zoom controls, quick export/status buttons, playback strip, reset-time button, scrubber, loop toggle, and right-side contextual inspector pattern. Do not borrow its text-effect templates, AI/account controls, or keyframe-heavy scope.
 - Style direction: Professional Studio. The interface should feel like a precise local editing suite: dark, calm, technically capable, and focused on the media canvas. It should avoid a marketing hero, bubbly consumer styling, generic white cards, and decorative dashboard chrome.
 - Visual dials for the current redesign: design variance 5, motion intensity 3, visual density 7. This favors a dense but readable tool workspace with restrained motion and progressive disclosure.
 - Color tokens:
   - Background: `#0f1419` for the app shell and `#0a0f14` or `#0A0A0A` for the lowest canvas layer.
   - Panel surface: `#1E1E1E` for side panels, with `#171c22`, `#1b2026`, and `#262a30` for tonal hierarchy.
-  - Primary action and active state: Magic Blue/Cyan, using `#00a3ff`, `#98cbff`, and `#00D1FF` consistently as the single blue accent family.
+  - Primary action and active state: cyan/blue, using `#00a3ff`, `#98cbff`, and `#00D1FF` consistently as the single blue accent family.
   - Text: `#dfe3ea` for primary text and `#bec7d4` for secondary text.
   - Border and separators: `#3f4852` for low-emphasis structure and `#88919d` only where stronger separation is needed.
   - Success: `#10B981`; error: `#EF4444` or the documented accessible error tokens.

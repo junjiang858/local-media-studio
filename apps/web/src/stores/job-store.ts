@@ -6,8 +6,8 @@ import {
   failWorkerJob,
   updateWorkerJobProgress,
   type WorkerJobProgressUpdate,
-} from "@local-media-studio/media-core";
-import type { WorkerJob } from "@local-media-studio/shared";
+} from "@obscura/media-core";
+import type { WorkerJob } from "@obscura/shared";
 
 type JobStore = {
   jobs: Record<string, WorkerJob>;

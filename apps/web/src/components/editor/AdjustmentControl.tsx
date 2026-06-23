@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { ImageAdjustment, ImageEditAction } from "@local-media-studio/media-core";
+import type { ImageAdjustment, ImageEditAction } from "@obscura/media-core";
 
 export function AdjustmentControl({
   adjustment,

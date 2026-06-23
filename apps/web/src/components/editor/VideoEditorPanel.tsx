@@ -1,8 +1,4 @@
-import type {
-  VideoEditAction,
-  VideoEditState,
-  VideoExportFormat,
-} from "@local-media-studio/media-core";
+import type { VideoEditAction, VideoEditState, VideoExportFormat } from "@obscura/media-core";
 import { videoExportFormats } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";

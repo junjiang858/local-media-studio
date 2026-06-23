@@ -3,7 +3,7 @@ import {
   type MediaKind,
   type SubtitleCue,
   type WorkerJob,
-} from "@local-media-studio/shared";
+} from "@obscura/shared";
 
 const byteUnits = ["B", "KB", "MB", "GB", "TB"] as const;
 

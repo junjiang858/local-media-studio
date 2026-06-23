@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import type {
-  ImageCropAspect,
-  ImageEditAction,
-  ImageEditState,
-} from "@local-media-studio/media-core";
+import type { ImageCropAspect, ImageEditAction, ImageEditState } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 import type { WorkspaceAsset } from "../../stores/media-store";
 import { getImagePreviewStyle } from "../../utils/image-export";

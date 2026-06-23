@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { initialVideoEditState, updateVideoEditState } from "@local-media-studio/media-core";
+import { initialVideoEditState, updateVideoEditState } from "@obscura/media-core";
 import { exportEditedVideo } from "./video-export";
 
 const { ffmpegInstance, fetchFileMock } = vi.hoisted(() => ({

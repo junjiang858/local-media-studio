@@ -1,7 +1,7 @@
 import type { Copy } from "../types";
 
 export const zh = {
-  brand: "OBSCURA",
+  brand: "Obscura",
   brandMarkLabel: "Obscura 品牌标识",
   brandTitle: "图片编辑详情",
   heroTitle: "私密创作，快速导出。",

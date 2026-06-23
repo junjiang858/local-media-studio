@@ -1,5 +1,5 @@
 export const en = {
-  brand: "OBSCURA",
+  brand: "Obscura",
   brandMarkLabel: "Obscura brand mark",
   brandTitle: "Image Editing Details",
   heroTitle: "Create privately. Export in seconds.",

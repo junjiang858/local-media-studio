@@ -4,8 +4,8 @@ import type {
   ImageEditState,
   VideoEditAction,
   VideoEditState,
-} from "@local-media-studio/media-core";
-import type { WorkerJob } from "@local-media-studio/shared";
+} from "@obscura/media-core";
+import type { WorkerJob } from "@obscura/shared";
 import { getVideoExportFormatFromMimeType, type ImageExportSettings } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon, type StudioIconName } from "../../icons/studio-icons";

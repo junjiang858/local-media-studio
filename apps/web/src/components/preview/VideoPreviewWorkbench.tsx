@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { formatDuration, type VideoEditState } from "@local-media-studio/media-core";
+import { formatDuration, type VideoEditState } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 import type { WorkspaceAsset } from "../../stores/media-store";

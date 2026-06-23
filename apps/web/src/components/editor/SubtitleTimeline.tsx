@@ -1,4 +1,4 @@
-import { formatDuration, type VideoEditState } from "@local-media-studio/media-core";
+import { formatDuration, type VideoEditState } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 
 export function SubtitleTimeline({

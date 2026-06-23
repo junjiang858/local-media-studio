@@ -1,9 +1,5 @@
 import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import {
-  formatDuration,
-  type VideoEditAction,
-  type VideoEditState,
-} from "@local-media-studio/media-core";
+import { formatDuration, type VideoEditAction, type VideoEditState } from "@obscura/media-core";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
 

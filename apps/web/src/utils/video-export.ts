@@ -1,7 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
-import { serializeWebVtt } from "@local-media-studio/media-core";
-import type { VideoEditState, WorkerJobProgressUpdate } from "@local-media-studio/media-core";
+import { serializeWebVtt } from "@obscura/media-core";
+import type { VideoEditState, WorkerJobProgressUpdate } from "@obscura/media-core";
 
 export type VideoExportResult = {
   blob: Blob;

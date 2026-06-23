@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import type {
-  ImageEditState,
-  ImageExportFormat,
-  VideoEditState,
-} from "@local-media-studio/media-core";
+import type { ImageEditState, ImageExportFormat, VideoEditState } from "@obscura/media-core";
 import {
   imageExportFormats,
   supportsImageQuality,

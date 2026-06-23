@@ -1,5 +1,5 @@
 {
-  "name": "@local-media-studio/web",
+  "name": "@obscura/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@imgly/background-removal": "^1.7.0",
-    "@local-media-studio/media-core": "workspace:*",
-    "@local-media-studio/shared": "workspace:*",
+    "@obscura/media-core": "workspace:*",
+    "@obscura/shared": "workspace:*",
     "@material-symbols-svg/react": "^0.10.1",
     "@radix-ui/react-tabs": "^1.1.15",
     "@radix-ui/react-tooltip": "^1.2.10",
