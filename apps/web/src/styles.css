@@ -1402,12 +1402,16 @@ svg {
 }
 
 .image-layer-canvas.is-interactive {
-  cursor: default;
+  cursor: grab;
   pointer-events: auto;
 }
 
 .image-layer-canvas canvas {
   display: block;
+}
+
+.image-layer-canvas.is-interactive canvas {
+  cursor: inherit;
 }
 
 .annotation-preview-overlay {
