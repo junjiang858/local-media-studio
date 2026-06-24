@@ -2,6 +2,10 @@ import type { VideoEditAction, VideoEditState, VideoExportFormat } from "@obscur
 import { videoExportFormats } from "../../config/media";
 import type { Copy } from "../../i18n";
 import { StudioIcon } from "../../icons/studio-icons";
+import {
+  isBrowserPreviewSafeVideoFormat,
+  isLargeVideoForLocalProcessing,
+} from "../../utils/video-processing";
 import type { VideoThumbnail } from "../../utils/video-thumbnails";
 import { SubtitleTimeline } from "./SubtitleTimeline";
 import { VideoTrimTimeline } from "./VideoTrimTimeline";
@@ -13,6 +17,7 @@ export function VideoEditorPanel({
   duration,
   onApply,
   onGeneratePreview,
+  sourceSize,
   sourceFormat,
   t,
   videoState,
@@ -22,11 +27,18 @@ export function VideoEditorPanel({
   duration: number | null;
   onApply: (action: VideoEditAction) => void;
   onGeneratePreview: () => void;
+  sourceSize: number;
   sourceFormat: VideoExportFormat;
   t: Copy;
   videoState: VideoEditState;
   videoThumbnails: VideoThumbnail[];
 }) {
+  const largeVideoWarning = isLargeVideoForLocalProcessing({
+    duration,
+    size: sourceSize,
+  });
+  const previewCompatibilityWarning = !isBrowserPreviewSafeVideoFormat(videoState.exportFormat);
+
   return (
     <section aria-label={t.imageEditControls} className="editor-panel-content">
       {activeTab === "trim" ? (
@@ -36,6 +48,9 @@ export function VideoEditorPanel({
             <h3>{t.trimRange}</h3>
           </div>
           <p className="export-helper">{t.trimPlanned}</p>
+          {largeVideoWarning ? (
+            <p className="export-helper warning-helper">{t.largeVideoWarning}</p>
+          ) : null}
           <VideoTrimTimeline
             duration={duration}
             onApply={onApply}
@@ -260,11 +275,20 @@ export function VideoEditorPanel({
               <span>{t.resetFormat}</span>
             </button>
           </div>
+          {previewCompatibilityWarning ? (
+            <p className="export-helper warning-helper">
+              {formatMessage(t.videoPreviewCompatibilityWarning, videoState.exportFormat)}
+            </p>
+          ) : null}
           <p className="export-helper">{t.videoExportHelper}</p>
         </div>
       ) : null}
     </section>
   );
+}
+
+function formatMessage(template: string, format: string) {
+  return template.replace("{format}", format.toUpperCase());
 }
 
 function createSubtitleCue(videoState: VideoEditState, t: Copy) {

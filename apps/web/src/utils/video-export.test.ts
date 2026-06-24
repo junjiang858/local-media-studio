@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { initialVideoEditState, updateVideoEditState } from "@obscura/media-core";
-import { buildVideoArgs, getInputExtension, getVideoMimeType } from "./video-processing";
+import {
+  buildVideoArgs,
+  getInputExtension,
+  getVideoMimeType,
+  isBrowserPreviewSafeVideoFormat,
+  isLargeVideoForLocalProcessing,
+} from "./video-processing";
 
 describe("video export utility", () => {
   beforeEach(() => {
@@ -82,5 +88,34 @@ describe("video export utility", () => {
     );
     expect(getInputExtension(source)).toBe("mp4");
     expect(getVideoMimeType("avi")).toBe("video/x-msvideo");
+  });
+
+  it("flags large local video jobs before expensive processing", () => {
+    expect(
+      isLargeVideoForLocalProcessing({
+        duration: 181,
+        size: 1024,
+      }),
+    ).toBe(true);
+    expect(
+      isLargeVideoForLocalProcessing({
+        duration: 12,
+        size: 80 * 1024 * 1024,
+      }),
+    ).toBe(true);
+    expect(
+      isLargeVideoForLocalProcessing({
+        duration: 12,
+        size: 12 * 1024 * 1024,
+      }),
+    ).toBe(false);
+  });
+
+  it("identifies which output containers are safe for browser preview", () => {
+    expect(isBrowserPreviewSafeVideoFormat("mp4")).toBe(true);
+    expect(isBrowserPreviewSafeVideoFormat("webm")).toBe(true);
+    expect(isBrowserPreviewSafeVideoFormat("mov")).toBe(false);
+    expect(isBrowserPreviewSafeVideoFormat("mkv")).toBe(false);
+    expect(isBrowserPreviewSafeVideoFormat("avi")).toBe(false);
   });
 });

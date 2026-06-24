@@ -21,6 +21,7 @@ export function PreviewStage({
   onFullscreenToggle,
   onGeneratedPreview,
   onPreviewBackgroundChange,
+  onRegisterJobCanceler,
   onZoomChange,
   previewBackground,
   selectedAsset,
@@ -42,6 +43,7 @@ export function PreviewStage({
   onFullscreenToggle: () => void;
   onGeneratedPreview: (preview: GeneratedPreview) => void;
   onPreviewBackgroundChange: (background: PreviewBackground) => void;
+  onRegisterJobCanceler: (jobId: string, cancel: () => void) => () => void;
   onZoomChange: (zoom: number) => void;
   previewBackground: PreviewBackground;
   selectedAsset: WorkspaceAsset | null;
@@ -69,6 +71,7 @@ export function PreviewStage({
           onFullscreenToggle={onFullscreenToggle}
           onGeneratedPreview={onGeneratedPreview}
           onPreviewBackgroundChange={onPreviewBackgroundChange}
+          onRegisterJobCanceler={onRegisterJobCanceler}
           onZoomChange={onZoomChange}
           previewBackground={previewBackground}
           t={t}

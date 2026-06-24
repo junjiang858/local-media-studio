@@ -168,7 +168,9 @@ export async function saveImageExport(result: ImageExportResult, format: ImageEx
 }
 
 export function isAbortError(error: unknown) {
-  return error instanceof DOMException && error.name === "AbortError";
+  return (
+    typeof error === "object" && error !== null && "name" in error && error.name === "AbortError"
+  );
 }
 
 export function getExportErrorMessage(error: unknown, t: Copy) {

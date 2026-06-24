@@ -75,7 +75,7 @@
 - Video playback controls with play/pause, reset time, scrubber, and loop controls.
 - Export panel with target format, resolution or size option when feasible, quality preset, progress, cancel, retry, and clear failure reason.
 - Image export should support the browser-native formats plus richer local encoders where feasible: PNG, JPEG, WebP, AVIF when the browser supports it, BMP, GIF, and TIFF. HEIC/HEIF import adaptation may be added only with an approved license path; HEIC export is not promised in v1.
-- Local edit draft state retained within the browser session where feasible.
+- Generated outputs and library state are retained within the browser session where feasible. Selecting a different source asset rebuilds a fresh editor draft from that asset's metadata so unfinished edit parameters do not leak between assets.
 
 ### Should Have
 
@@ -108,7 +108,7 @@
 
 1. Image quick edit: upload images, choose one image, preview it, crop or rotate it, optionally remove background or add watermark, compare against the original, export in the selected format.
 2. Video quick edit: upload a video, preview it, set trim start and end, adjust speed, add manual subtitle cues, choose output format and quality, export with progress feedback.
-3. Media management: upload mixed media, inspect thumbnails and metadata, filter by image or video, move to previous or next asset, keep draft edits during the session, and export one selected asset.
+3. Media management: upload mixed media, inspect thumbnails and metadata, filter by image or video, move to previous or next asset, keep generated session assets, and export one selected asset. Switching assets intentionally resets the editable draft for the selected source.
 
 ## Domain Model
 

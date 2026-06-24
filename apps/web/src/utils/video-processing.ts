@@ -1,6 +1,9 @@
 import { serializeWebVtt } from "@obscura/media-core";
 import type { VideoEditState } from "@obscura/media-core";
 
+export const largeVideoSizeThresholdBytes = 80 * 1024 * 1024;
+export const largeVideoDurationThresholdSeconds = 180;
+
 export function buildVideoArgs(inputName: string, outputName: string, state: VideoEditState) {
   const args: string[] = [];
   const inputFormat = getInputFormat(inputName);
@@ -76,6 +79,23 @@ export function getVideoMimeType(format: VideoEditState["exportFormat"]) {
   }
 
   return "video/mp4";
+}
+
+export function isBrowserPreviewSafeVideoFormat(format: VideoEditState["exportFormat"]) {
+  return format === "mp4" || format === "webm";
+}
+
+export function isLargeVideoForLocalProcessing({
+  duration,
+  size,
+}: {
+  duration?: number | null;
+  size: number;
+}) {
+  return (
+    size >= largeVideoSizeThresholdBytes ||
+    (typeof duration === "number" && duration >= largeVideoDurationThresholdSeconds)
+  );
 }
 
 export function getVideoMimeTypeFromExtension(extension: string) {

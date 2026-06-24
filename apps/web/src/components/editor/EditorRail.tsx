@@ -33,6 +33,7 @@ export function EditorRail({
   onImageExportSettingsChange,
   onGenerateVideoPreview,
   onRemoveBackground,
+  onRegisterJobCanceler,
   selectedAsset,
   t,
   videoState,
@@ -55,6 +56,7 @@ export function EditorRail({
   onImageExportSettingsChange: (patch: Partial<ImageExportSettings>) => void;
   onGenerateVideoPreview: () => void;
   onRemoveBackground: () => void;
+  onRegisterJobCanceler: (jobId: string, cancel: () => void) => () => void;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
@@ -136,6 +138,7 @@ export function EditorRail({
             duration={selectedAsset.duration ?? null}
             onApply={onApplyVideoAction}
             onGeneratePreview={onGenerateVideoPreview}
+            sourceSize={selectedAsset.size}
             sourceFormat={getVideoExportFormatFromMimeType(selectedAsset.mimeType)}
             t={t}
             videoState={videoState}
@@ -167,6 +170,7 @@ export function EditorRail({
           imageState={imageState}
           selectedAsset={selectedAsset}
           onGeneratedResult={onGeneratedExportResult}
+          onRegisterJobCanceler={onRegisterJobCanceler}
           t={t}
           videoState={videoState}
         />

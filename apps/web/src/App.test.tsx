@@ -486,6 +486,64 @@ describe("media workspace shell", () => {
     );
   });
 
+  it("warns when local video processing is large or not browser-preview safe", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const video = new File(["video"], "large clip.mp4", { type: "video/mp4" });
+    Object.defineProperty(video, "size", {
+      configurable: true,
+      value: 90 * 1024 * 1024,
+    });
+
+    await user.upload(screen.getByLabelText(/choose media files/i), video);
+
+    expect(screen.getAllByText(/large local video job/i).length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("tab", { name: /format/i }));
+    await user.selectOptions(screen.getByLabelText(/video format/i), "mkv");
+
+    expect(screen.getAllByText(/mkv can be downloaded/i).length).toBeGreaterThan(0);
+  });
+
+  it("allows a running video export to be canceled from the export panel", async () => {
+    const user = userEvent.setup();
+    let exportSignal: AbortSignal | undefined;
+
+    exportEditedVideoMock.mockImplementation(({ onProgress, signal }) => {
+      exportSignal = signal;
+      onProgress?.({
+        message: "Encoding video",
+        progress: 40,
+        status: "processing",
+      });
+
+      return new Promise((_resolve, reject) => {
+        signal?.addEventListener("abort", () => {
+          reject(new DOMException("Video export canceled", "AbortError"));
+        });
+      });
+    });
+
+    render(<App />);
+
+    await user.upload(
+      screen.getByLabelText(/choose media files/i),
+      new File(["video"], "clip.mp4", { type: "video/mp4" }),
+    );
+
+    await user.click(screen.getByRole("button", { name: /export asset/i }));
+    await user.click(await screen.findByRole("button", { name: /cancel export/i }));
+
+    await waitFor(() => expect(toastInfoMock).toHaveBeenCalledWith("Export canceled."));
+    expect(exportSignal?.aborted).toBe(true);
+    await waitFor(() => {
+      expect(Object.values(useJobStore.getState().jobs).map((job) => job.status)).toContain(
+        "canceled",
+      );
+    });
+  });
+
   it("keeps repeated video preview jobs in the session task list with format-specific titles", async () => {
     const user = userEvent.setup();
 

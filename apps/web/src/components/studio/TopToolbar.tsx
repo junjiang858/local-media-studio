@@ -8,11 +8,16 @@ import { ProcessingCenter } from "./ProcessingCenter";
 
 export function TopToolbar({
   canEditSelectedImage,
+  canCancelProcessingJob,
+  canRetryProcessingJob,
+  onCancelProcessingJob,
   onApplyImageAction,
   onAcknowledgeCompletedJobs,
   onClearCompletedJobs,
   onClearProcessingJob,
+  onOpenProcessingResult,
   onLanguageChange,
+  onRetryProcessingJob,
   onSelectAdjacent,
   processingJobs,
   selectedAsset,
@@ -20,13 +25,18 @@ export function TopToolbar({
   totalAssets,
   language,
 }: {
+  canCancelProcessingJob: (job: WorkerJob) => boolean;
   canEditSelectedImage: boolean;
+  canRetryProcessingJob: (job: WorkerJob) => boolean;
   language: Language;
+  onCancelProcessingJob: (jobId: string) => void;
   onApplyImageAction: (action: ImageEditAction) => void;
   onAcknowledgeCompletedJobs: () => void;
   onClearCompletedJobs: () => void;
   onClearProcessingJob: (jobId: string) => void;
+  onOpenProcessingResult: (assetId: string) => void;
   onLanguageChange: (language: Language) => void;
+  onRetryProcessingJob: (jobId: string) => void;
   onSelectAdjacent: (direction: 1 | -1) => void;
   processingJobs: WorkerJob[];
   selectedAsset: WorkspaceAsset | null;
@@ -97,10 +107,15 @@ export function TopToolbar({
 
       <div className="top-settings">
         <ProcessingCenter
+          canCancelJob={canCancelProcessingJob}
+          canRetryJob={canRetryProcessingJob}
           jobs={processingJobs}
           onAcknowledgeCompletedJobs={onAcknowledgeCompletedJobs}
+          onCancelJob={onCancelProcessingJob}
           onClearCompletedJobs={onClearCompletedJobs}
           onClearJob={onClearProcessingJob}
+          onOpenResult={onOpenProcessingResult}
+          onRetryJob={onRetryProcessingJob}
           t={t}
         />
         <label className="language-control">

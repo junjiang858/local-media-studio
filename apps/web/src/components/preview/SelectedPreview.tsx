@@ -39,6 +39,7 @@ export function SelectedPreview({
   onFullscreenToggle,
   onGeneratedPreview,
   onPreviewBackgroundChange,
+  onRegisterJobCanceler,
   onZoomChange,
   previewBackground,
   t,
@@ -58,6 +59,7 @@ export function SelectedPreview({
   onFullscreenToggle: () => void;
   onGeneratedPreview: (preview: GeneratedPreview) => void;
   onPreviewBackgroundChange: (background: PreviewBackground) => void;
+  onRegisterJobCanceler: (jobId: string, cancel: () => void) => () => void;
   onZoomChange: (zoom: number) => void;
   previewBackground: PreviewBackground;
   t: Copy;
@@ -172,8 +174,9 @@ export function SelectedPreview({
     queueJob(jobId, "image-preview", t.generatingImagePreview, {
       fingerprint: currentPreviewFingerprint,
       inputSnapshot: {
-        format: imageExportSettings.format,
-        quality: imageExportSettings.quality,
+        fingerprint: currentPreviewFingerprint,
+        settings: imageExportSettings,
+        state: imageState,
       },
       launchId: jobId,
       sourceAssetId: asset.id,
@@ -257,14 +260,12 @@ export function SelectedPreview({
     videoPreviewAbortRef.current?.abort();
     const controller = new AbortController();
     videoPreviewAbortRef.current = controller;
+    const unregisterCanceler = onRegisterJobCanceler(jobId, () => controller.abort());
     queueJob(jobId, "video-preview", t.generatingVideoPreview, {
       fingerprint: previewFingerprint,
       inputSnapshot: {
-        exportFormat: videoState.exportFormat,
-        speed: videoState.speed,
-        subtitleCount: videoState.subtitles.length,
-        trimEnd: videoState.trimEnd,
-        trimStart: videoState.trimStart,
+        fingerprint: previewFingerprint,
+        state: videoState,
       },
       launchId: jobId,
       sourceAssetId: asset.id,
@@ -315,6 +316,7 @@ export function SelectedPreview({
       });
       showStudioError(errorMessage);
     } finally {
+      unregisterCanceler();
       if (videoPreviewAbortRef.current === controller) {
         videoPreviewAbortRef.current = null;
       }
@@ -326,6 +328,7 @@ export function SelectedPreview({
     failJob,
     onGeneratedPreview,
     queueJob,
+    onRegisterJobCanceler,
     t,
     updateJob,
     videoState,

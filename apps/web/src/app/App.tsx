@@ -4,8 +4,11 @@ import {
   initialImageEditHistory,
   initialVideoEditState,
   type ImageEditAction,
+  type ImageEditState,
   type VideoEditAction,
+  type VideoEditState,
 } from "@obscura/media-core";
+import type { WorkerJob } from "@obscura/shared";
 import { EditorRail } from "../components/editor/EditorRail";
 import { MediaLibraryPanel } from "../components/media-library/MediaLibraryPanel";
 import { PreviewStage } from "../components/preview/PreviewStage";
@@ -17,9 +20,13 @@ import {
   type TaskLaunchMarker,
 } from "../components/studio/TaskLaunchAnimation";
 import { TopToolbar } from "../components/studio/TopToolbar";
-import { showStudioError, showStudioSuccess } from "../components/studio/studio-toast";
+import {
+  showStudioError,
+  showStudioInfo,
+  showStudioSuccess,
+} from "../components/studio/studio-toast";
 import { emptyWorkspaceTabs, populatedWorkspaceTabs } from "../config/workspace";
-import { getDefaultImageExportSettings } from "../config/media";
+import { getDefaultImageExportSettings, type ImageExportSettings } from "../config/media";
 import { detectInitialLanguage, messages, type Language } from "../i18n";
 import { useJobStore } from "../stores/job-store";
 import { getVisibleAssets, useMediaStore, type WorkspaceAsset } from "../stores/media-store";
@@ -34,8 +41,16 @@ import {
   type GeneratedPreview,
 } from "../utils/generated-preview";
 import { readAssetMetadata } from "../utils/media-metadata";
-import type { ImageExportResult } from "../utils/image-export";
-import type { VideoExportResult } from "../utils/video-export";
+import {
+  exportEditedImage,
+  getExportErrorMessage as getImageExportErrorMessage,
+  type ImageExportResult,
+} from "../utils/image-export";
+import {
+  exportEditedVideo,
+  getVideoExportErrorMessage,
+  type VideoExportResult,
+} from "../utils/video-export";
 import {
   generateVideoPoster,
   generateVideoThumbnails,
@@ -60,6 +75,7 @@ export default function App() {
   const [videoPostersByAsset, setVideoPostersByAsset] = useState<Record<string, string>>({});
   const [zoom, setZoom] = useState(100);
   const generatedPreviewsRef = useRef(generatedPreviews);
+  const jobCancelersRef = useRef<Record<string, () => void>>({});
   const knownJobIdsRef = useRef<Set<string>>(new Set());
   const launchSequenceRef = useRef(0);
   const taskLaunchTimerRef = useRef<number | null>(null);
@@ -88,6 +104,7 @@ export default function App() {
   const updateJob = useJobStore((state) => state.updateJob);
   const completeJob = useJobStore((state) => state.completeJob);
   const failJob = useJobStore((state) => state.failJob);
+  const cancelJob = useJobStore((state) => state.cancelJob);
   const acknowledgeCompletedJobs = useJobStore((state) => state.acknowledgeCompletedJobs);
   const clearJob = useJobStore((state) => state.clearJob);
   const clearCompletedJobs = useJobStore((state) => state.clearCompletedJobs);
@@ -151,6 +168,16 @@ export default function App() {
   function getNextLaunchId(jobId: string) {
     launchSequenceRef.current += 1;
     return `${jobId}:${launchSequenceRef.current}`;
+  }
+
+  function registerJobCanceler(jobId: string, cancel: () => void) {
+    jobCancelersRef.current[jobId] = cancel;
+
+    return () => {
+      if (jobCancelersRef.current[jobId] === cancel) {
+        delete jobCancelersRef.current[jobId];
+      }
+    };
   }
 
   useEffect(() => {
@@ -466,12 +493,158 @@ export default function App() {
     });
   }
 
-  async function handleRemoveBackground() {
-    if (selectedAsset?.kind !== "image") {
+  async function retryGeneratedPreviewJob(job: WorkerJob, asset: WorkspaceAsset) {
+    const snapshot = getJobInputSnapshot(job);
+    const retryJobId = getNextLaunchId(`${job.type}:${asset.id}:retry`);
+
+    if (job.type === "image-preview" && asset.kind === "image") {
+      const imageSnapshot = getImagePreviewRetrySnapshot(snapshot);
+
+      if (!imageSnapshot) {
+        showStudioError(t.videoPreviewFailed);
+        return;
+      }
+
+      queueJob(retryJobId, "image-preview", t.generatingImagePreview, {
+        fingerprint: imageSnapshot.fingerprint,
+        inputSnapshot: job.inputSnapshot,
+        launchId: retryJobId,
+        sourceAssetId: asset.id,
+        sourceAssetKind: "image",
+        sourceAssetName: asset.name,
+        title: job.title ?? t.preview,
+      });
+      updateJob(retryJobId, {
+        message: t.generatingImagePreview,
+        progress: 8,
+        status: "processing",
+      });
+
+      try {
+        const result = await exportEditedImage({
+          asset,
+          format: imageSnapshot.settings.format,
+          quality: imageSnapshot.settings.quality,
+          state: imageSnapshot.state,
+          t,
+        });
+
+        handleGeneratedPreview({
+          ...result,
+          assetId: asset.id,
+          fingerprint: imageSnapshot.fingerprint,
+          jobId: retryJobId,
+          kind: "image",
+        });
+        showStudioSuccess(t.imagePreviewReady);
+      } catch (error) {
+        const errorMessage = getImageExportErrorMessage(error, t);
+        failJob(retryJobId, {
+          code: "image-preview-failed",
+          message: errorMessage,
+          recoverable: true,
+        });
+        showStudioError(errorMessage);
+      }
+
       return;
     }
 
-    const asset = selectedAsset;
+    if (job.type === "video-preview" && asset.kind === "video") {
+      const videoSnapshot = getVideoPreviewRetrySnapshot(snapshot);
+
+      if (!videoSnapshot) {
+        showStudioError(t.videoPreviewFailed);
+        return;
+      }
+
+      queueJob(retryJobId, "video-preview", t.generatingVideoPreview, {
+        fingerprint: videoSnapshot.fingerprint,
+        inputSnapshot: job.inputSnapshot,
+        launchId: retryJobId,
+        sourceAssetId: asset.id,
+        sourceAssetKind: "video",
+        sourceAssetName: asset.name,
+        title: job.title ?? t.preview,
+      });
+
+      try {
+        const result = await exportEditedVideo({
+          onProgress: (update) => updateJob(retryJobId, update),
+          source: asset.file,
+          state: videoSnapshot.state,
+        });
+
+        handleGeneratedPreview({
+          ...result,
+          assetId: asset.id,
+          fingerprint: videoSnapshot.fingerprint,
+          jobId: retryJobId,
+          kind: "video",
+        });
+        showStudioSuccess(t.videoPreviewReady);
+      } catch (error) {
+        const errorMessage = getVideoExportErrorMessage(error, t.videoPreviewFailed);
+        failJob(retryJobId, {
+          code: "video-preview-failed",
+          message: errorMessage,
+          recoverable: true,
+        });
+        showStudioError(errorMessage);
+      }
+    }
+  }
+
+  function handleCancelProcessingJob(jobId: string) {
+    const cancel = jobCancelersRef.current[jobId];
+
+    if (cancel) {
+      cancel();
+      return;
+    }
+
+    cancelJob(jobId, t.jobCanceled);
+    showStudioInfo(t.jobCanceled);
+  }
+
+  function canCancelProcessingJob(job: WorkerJob) {
+    return Boolean(jobCancelersRef.current[job.id]);
+  }
+
+  function canRetryProcessingJob(job: WorkerJob) {
+    return (
+      job.status === "failed" &&
+      (job.type === "background-removal" ||
+        job.type === "image-preview" ||
+        job.type === "video-preview") &&
+      Boolean(job.sourceAssetId)
+    );
+  }
+
+  function handleOpenProcessingResult(assetId: string) {
+    selectAsset(assetId);
+    setActiveMobileTab("preview");
+  }
+
+  function handleRetryProcessingJob(jobId: string) {
+    const job = jobs[jobId];
+    const asset = job?.sourceAssetId
+      ? assets.find((item) => item.id === job.sourceAssetId)
+      : undefined;
+
+    if (!job || !asset) {
+      return;
+    }
+
+    if (job.type === "background-removal" && asset.kind === "image") {
+      void handleRemoveBackgroundForAsset(asset);
+      return;
+    }
+
+    void retryGeneratedPreviewJob(job, asset);
+  }
+
+  async function handleRemoveBackgroundForAsset(asset: WorkspaceAsset) {
     const jobId = getNextLaunchId(getBackgroundRemovalJobId(asset.id));
 
     if (
@@ -522,6 +695,14 @@ export default function App() {
       });
       showStudioError(errorMessage);
     }
+  }
+
+  async function handleRemoveBackground() {
+    if (selectedAsset?.kind !== "image") {
+      return;
+    }
+
+    await handleRemoveBackgroundForAsset(selectedAsset);
   }
 
   function handleRemoveSelectedAsset() {
@@ -589,13 +770,18 @@ export default function App() {
         />
 
         <TopToolbar
+          canCancelProcessingJob={canCancelProcessingJob}
           canEditSelectedImage={canEditSelectedImage}
+          canRetryProcessingJob={canRetryProcessingJob}
           language={language}
+          onCancelProcessingJob={handleCancelProcessingJob}
           onAcknowledgeCompletedJobs={acknowledgeCompletedJobs}
           onApplyImageAction={handleApplyImageAction}
           onClearCompletedJobs={clearCompletedJobs}
           onClearProcessingJob={clearJob}
+          onOpenProcessingResult={handleOpenProcessingResult}
           onLanguageChange={setLanguage}
+          onRetryProcessingJob={handleRetryProcessingJob}
           onSelectAdjacent={selectAdjacent}
           processingJobs={processingJobs}
           selectedAsset={selectedAsset}
@@ -646,6 +832,7 @@ export default function App() {
             onFullscreenToggle={() => setIsPreviewFullscreen((value) => !value)}
             onGeneratedPreview={handleGeneratedPreview}
             onPreviewBackgroundChange={setPreviewBackground}
+            onRegisterJobCanceler={registerJobCanceler}
             onZoomChange={setZoom}
             previewBackground={previewBackground}
             selectedAsset={selectedAsset}
@@ -674,6 +861,7 @@ export default function App() {
               onGenerateVideoPreview={() => setVideoPreviewRequestKey((key) => key + 1)}
               onGeneratedExportResult={handleGeneratedExportResult}
               onRemoveBackground={() => void handleRemoveBackground()}
+              onRegisterJobCanceler={registerJobCanceler}
               selectedAsset={selectedAsset}
               t={t}
               videoState={selectedVideoState}
@@ -691,6 +879,61 @@ export default function App() {
 
 function getBackgroundRemovalJobId(assetId: string) {
   return `background-removal:${assetId}`;
+}
+
+function getJobInputSnapshot(job: WorkerJob) {
+  return job.inputSnapshot && typeof job.inputSnapshot === "object" ? job.inputSnapshot : null;
+}
+
+function getImagePreviewRetrySnapshot(snapshot: Record<string, unknown> | null): {
+  fingerprint: string;
+  settings: ImageExportSettings;
+  state: ImageEditState;
+} | null {
+  if (!snapshot) {
+    return null;
+  }
+
+  const fingerprint = snapshot.fingerprint;
+  const settings = snapshot.settings;
+  const state = snapshot.state;
+
+  if (
+    typeof fingerprint !== "string" ||
+    !settings ||
+    typeof settings !== "object" ||
+    !state ||
+    typeof state !== "object"
+  ) {
+    return null;
+  }
+
+  return {
+    fingerprint,
+    settings: settings as ImageExportSettings,
+    state: state as ImageEditState,
+  };
+}
+
+function getVideoPreviewRetrySnapshot(snapshot: Record<string, unknown> | null): {
+  fingerprint: string;
+  state: VideoEditState;
+} | null {
+  if (!snapshot) {
+    return null;
+  }
+
+  const fingerprint = snapshot.fingerprint;
+  const state = snapshot.state;
+
+  if (typeof fingerprint !== "string" || !state || typeof state !== "object") {
+    return null;
+  }
+
+  return {
+    fingerprint,
+    state: state as VideoEditState,
+  };
 }
 
 function isActiveJob(job: ReturnType<typeof useJobStore.getState>["jobs"][string] | undefined) {

@@ -2243,6 +2243,14 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   margin: 0;
 }
 
+.warning-helper {
+  padding: 8px 10px;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  border-radius: var(--radius-tight);
+  background: rgba(251, 191, 36, 0.08);
+  color: #f8d890;
+}
+
 .job-message {
   gap: 7px;
   min-height: 34px;

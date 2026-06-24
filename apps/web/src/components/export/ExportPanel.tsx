@@ -22,6 +22,10 @@ import {
   saveVideoExport,
   type VideoExportResult,
 } from "../../utils/video-export";
+import {
+  isBrowserPreviewSafeVideoFormat,
+  isLargeVideoForLocalProcessing,
+} from "../../utils/video-processing";
 
 type ExportStatus = "idle" | "busy" | "ready" | "saved" | "canceled" | "failed";
 
@@ -31,6 +35,7 @@ export function ExportPanel({
   imageExportSettings,
   imageState,
   onGeneratedResult,
+  onRegisterJobCanceler,
   selectedAsset,
   t,
   videoState,
@@ -44,6 +49,7 @@ export function ExportPanel({
     result: ImageExportResult | VideoExportResult;
     sourceAssetId: string;
   }) => void;
+  onRegisterJobCanceler: (jobId: string, cancel: () => void) => () => void;
   selectedAsset: WorkspaceAsset | null;
   t: Copy;
   videoState: VideoEditState | null;
@@ -52,14 +58,17 @@ export function ExportPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [result, setResult] = useState<ImageExportResult | VideoExportResult | null>(null);
   const [activeExportJobId, setActiveExportJobId] = useState<string | null>(null);
+  const [canCancelExport, setCanCancelExport] = useState(false);
   const [imageAvailability, setImageAvailability] = useState<
     Partial<Record<ImageExportFormat, ImageExportAvailability>>
   >({});
   const launchSequenceRef = useRef(0);
+  const activeExportAbortRef = useRef<AbortController | null>(null);
   const jobs = useJobStore((state) => state.jobs);
   const queueJob = useJobStore((state) => state.queueJob);
   const updateJob = useJobStore((state) => state.updateJob);
   const failJob = useJobStore((state) => state.failJob);
+  const cancelJob = useJobStore((state) => state.cancelJob);
   const activeImageAvailability =
     selectedAsset?.kind === "image" && imageExportSettings
       ? imageAvailability[imageExportSettings.format]
@@ -90,6 +99,17 @@ export function ExportPanel({
     status === "saved" || status === "canceled" || status === "failed"
       ? message
       : (activeExportJob?.error?.message ?? activeExportJob?.message ?? message);
+  const largeVideoWarning =
+    selectedAsset?.kind === "video"
+      ? isLargeVideoForLocalProcessing({
+          duration: selectedAsset.duration ?? null,
+          size: selectedAsset.size,
+        })
+      : false;
+  const previewCompatibilityWarning =
+    selectedAsset?.kind === "video" && videoState
+      ? !isBrowserPreviewSafeVideoFormat(videoState.exportFormat)
+      : false;
 
   useEffect(() => {
     return () => {
@@ -151,8 +171,9 @@ export function ExportPanel({
     queueJob(imageJobId, "image-export", t.preparingImageExport, {
       fingerprint: currentPreviewFingerprint ?? `${selectedAsset.id}:image-export`,
       inputSnapshot: {
-        format: imageExportSettings.format,
-        quality: imageExportSettings.quality,
+        fingerprint: currentPreviewFingerprint ?? `${selectedAsset.id}:image-export`,
+        settings: imageExportSettings,
+        state: imageState,
       },
       launchId: imageJobId,
       sourceAssetId: selectedAsset.id,
@@ -191,6 +212,7 @@ export function ExportPanel({
       showStudioSuccess(t.exportSaved);
     } catch (error) {
       if (isAbortError(error)) {
+        cancelJob(imageJobId, t.exportCanceled);
         setStatus("canceled");
         setMessage(null);
         showStudioInfo(t.exportCanceled);
@@ -220,15 +242,16 @@ export function ExportPanel({
     setStatus("busy");
     setMessage(t.videoExportNext);
     const videoJobId = getNextLaunchId(`video-export:${asset.id}`);
+    const controller = new AbortController();
+    activeExportAbortRef.current = controller;
+    setCanCancelExport(true);
+    const unregisterCanceler = onRegisterJobCanceler(videoJobId, () => controller.abort());
     setActiveExportJobId(videoJobId);
     queueJob(videoJobId, "video-export", t.videoExportNext, {
       fingerprint: currentPreviewFingerprint ?? `${asset.id}:video-export`,
       inputSnapshot: {
-        exportFormat: videoState.exportFormat,
-        speed: videoState.speed,
-        subtitleCount: videoState.subtitles.length,
-        trimEnd: videoState.trimEnd,
-        trimStart: videoState.trimStart,
+        fingerprint: currentPreviewFingerprint ?? `${asset.id}:video-export`,
+        state: videoState,
       },
       launchId: videoJobId,
       sourceAssetId: asset.id,
@@ -243,6 +266,7 @@ export function ExportPanel({
           ? matchingGeneratedPreview
           : await exportEditedVideo({
               onProgress: (update) => updateJob(videoJobId, update),
+              signal: controller.signal,
               source: asset.file,
               state: videoState,
             });
@@ -265,6 +289,7 @@ export function ExportPanel({
       showStudioSuccess(t.exportSaved);
     } catch (error) {
       if (isAbortError(error)) {
+        cancelJob(videoJobId, t.exportCanceled);
         setStatus("canceled");
         setMessage(null);
         showStudioInfo(t.exportCanceled);
@@ -280,7 +305,17 @@ export function ExportPanel({
       setStatus("failed");
       setMessage(errorMessage);
       showStudioError(errorMessage);
+    } finally {
+      unregisterCanceler();
+      if (activeExportAbortRef.current === controller) {
+        activeExportAbortRef.current = null;
+      }
+      setCanCancelExport(false);
     }
+  }
+
+  function handleCancelExport() {
+    activeExportAbortRef.current?.abort();
   }
 
   function getNextLaunchId(jobId: string) {
@@ -305,6 +340,20 @@ export function ExportPanel({
               : t.exportCurrentAsset}
         </span>
       </button>
+      {status === "busy" && canCancelExport ? (
+        <button className="secondary-button full-width" onClick={handleCancelExport} type="button">
+          <StudioIcon name="close" size={17} />
+          <span>{t.cancelExport}</span>
+        </button>
+      ) : null}
+      {largeVideoWarning ? (
+        <p className="export-helper warning-helper">{t.largeVideoWarning}</p>
+      ) : null}
+      {previewCompatibilityWarning && videoState ? (
+        <p className="export-helper warning-helper">
+          {formatMessage(t.videoPreviewCompatibilityWarning, videoState.exportFormat)}
+        </p>
+      ) : null}
       {jobMessage ? (
         <div className={`job-message ${jobStatus}`}>
           <StudioIcon name={jobStatus === "failed" ? "warning" : "checkCircle"} size={17} />
@@ -333,5 +382,9 @@ export function ExportPanel({
 }
 
 function getFormatTaskTitle(template: string, format: string) {
+  return template.replace("{format}", format.toUpperCase());
+}
+
+function formatMessage(template: string, format: string) {
   return template.replace("{format}", format.toUpperCase());
 }

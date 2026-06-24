@@ -125,7 +125,8 @@ Job launchers must use values captured at submit time. They must not read mutabl
   - Use Zod for subtitle cues, export settings, worker messages, and draft metadata.
   - Validate MIME type, file size, duration, dimensions, crop rectangle, layer transforms, trim range, speed value, loop/current-time values, output format, and required text fields.
   - Validate image export format capability before invoking an encoder.
-  - Validate video output containers before invoking ffmpeg and show a readable message when a generated result is downloadable but not browser-previewable.
+  - Warn before video preview/export when the source is at least 80 MB or at least 3 minutes long. This is a non-blocking short-video expectation warning, not a hard limit.
+  - Validate video output containers before invoking ffmpeg and show a readable message when a generated result is downloadable but not browser-previewable. MP4 and WebM are browser-preview-safe targets; MOV, MKV, and AVI are local download targets that may not preview in the browser.
   - Validate video reset actions by mapping them to documented original/default values rather than ad hoc UI-only values.
 - Error shape:
   - Runtime jobs should return a typed error with `code`, `message`, `recoverable`, and optional `details`.
