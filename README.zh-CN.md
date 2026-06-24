@@ -1,24 +1,64 @@
-# Obscura
-
-[![Check](https://github.com/junjiang858/obscura/actions/workflows/check.yml/badge.svg)](https://github.com/junjiang858/obscura/actions/workflows/check.yml)
+<div align="center">
+  <img src="apps/web/public/favicon.svg" width="96" height="96" alt="Obscura 图标" />
+  <h1>Obscura</h1>
+  <p><strong>本地优先的图片与短视频媒体工作台。</strong></p>
+  <p>
+    <a href="README.md">English</a>
+    ·
+    <strong>简体中文</strong>
+  </p>
+  <p>
+    <a href="https://github.com/junjiang858/obscura/actions/workflows/check.yml">
+      <img alt="检查状态" src="https://github.com/junjiang858/obscura/actions/workflows/check.yml/badge.svg" />
+    </a>
+    <a href="LICENSE">
+      <img alt="许可证：MIT" src="https://img.shields.io/badge/license-MIT-62e0c1?style=flat-square" />
+    </a>
+    <img alt="本地优先" src="https://img.shields.io/badge/local--first-browser-7cd7ff?style=flat-square" />
+    <img alt="隐私优先" src="https://img.shields.io/badge/privacy--first-no%20uploads-9fe870?style=flat-square" />
+    <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?style=flat-square" />
+    <img alt="Vite" src="https://img.shields.io/badge/Vite-7-646cff?style=flat-square" />
+    <img alt="pnpm" src="https://img.shields.io/badge/pnpm-10-f69220?style=flat-square" />
+  </p>
+  <p>
+    <sub>
+      标签：本地优先 · 隐私优先 · 浏览器媒体编辑器 · 图片编辑 · 短视频编辑 · React · Vite · TypeScript
+    </sub>
+  </p>
+  <p>
+    <a href="#-项目简介">项目简介</a>
+    ·
+    <a href="#-mvp-范围">MVP 范围</a>
+    ·
+    <a href="#-隐私边界">隐私边界</a>
+    ·
+    <a href="#-技术栈">技术栈</a>
+    ·
+    <a href="#-本地开发">本地开发</a>
+    ·
+    <a href="#-文档地图">文档地图</a>
+    ·
+    <a href="#-路线图">路线图</a>
+    ·
+    <a href="#-贡献说明">贡献说明</a>
+  </p>
+</div>
 
 Obscura 是一个面向个人创作者的本地优先 Web 媒体工作台，用于在浏览器里快速预览、编辑、管理和导出图片与短视频，不需要安装重型桌面软件，也不需要上传私密媒体文件。
 
-语言：[English](README.md) | 简体中文
-
-## 项目简介
+## ✨ 项目简介
 
 Obscura 是为快速、私密的媒体清理流程而设计的。它把媒体库、大预览区、图片编辑工具、单视频编辑工作台和导出控制放在同一个浏览器工作台里。
 
 第一个版本以图片编辑为主，同时包含单个视频资产的基础编辑工作台。它不是云端编辑器、账号系统、协作平台、多轨时间线，也不是模板市场。
 
-## 为什么做 Obscura
+## 🎯 为什么做 Obscura
 
 创作者经常为了处理一张图片或一段短视频，在桌面编辑器、在线转换器、背景移除网站和视频工具之间来回切换。这个流程慢、碎片化，而且经常要求用户上传私密媒体。
 
 Obscura 的第一个 MVP 坚持本地优先：用户选择的媒体保留在浏览器会话内，重型处理通过明确的 Worker-facing API 承载，导出结果在本地生成后再下载。
 
-## 与代表项目相比
+## 🧭 与代表项目相比
 
 Obscura 与社区里一些优秀的开源媒体编辑项目站在同一类问题空间里，但它选择的是更克制的本地优先工作台路线：
 
@@ -30,7 +70,7 @@ Obscura 与社区里一些优秀的开源媒体编辑项目站在同一类问题
 
 一句话说，Obscura 聚焦于隐私优先、图片优先的媒体工作台，并补足日常创作者清理短视频所需的基础能力。
 
-## MVP 范围
+## 🧩 MVP 范围
 
 图片工作流：
 
@@ -58,7 +98,7 @@ Obscura 与社区里一些优秀的开源媒体编辑项目站在同一类问题
 - 在工作台里切换上一个/下一个资产。
 - 将编辑状态保留在当前浏览器会话内。
 
-## 非目标
+## 🚫 非目标
 
 Obscura v1 不包含：
 
@@ -70,7 +110,7 @@ Obscura v1 不包含：
 - AI 视频生成或自动字幕。
 - Photoshop 式完整图层编辑。
 
-## 隐私边界
+## 🔒 隐私边界
 
 v1 的产品承诺是本地优先媒体处理：
 
@@ -80,7 +120,7 @@ v1 的产品承诺是本地优先媒体处理：
 - 只有在文档明确记录时，才可以保存轻量草稿元数据，并且不得包含原始媒体字节。
 - 背景移除模型或运行时资产可以作为应用资产加载；用户图片仍保留在本地。
 
-## 技术栈
+## 🛠️ 技术栈
 
 - 运行时和工作区：Node.js 24 LTS、pnpm workspace。
 - 前端：React 19、TypeScript、Vite。
@@ -91,7 +131,7 @@ v1 的产品承诺是本地优先媒体处理：
 - 视频处理：在 Web Worker 中运行 ffmpeg.wasm，并通过 Comlink 协调。
 - 测试：Vitest、React Testing Library、Playwright。
 
-## 仓库结构
+## 🗂️ 仓库结构
 
 ```text
 .
@@ -104,7 +144,7 @@ v1 的产品承诺是本地优先媒体处理：
 └── AGENTS.md             # Agent/项目工作规则
 ```
 
-## 本地开发
+## 🚀 本地开发
 
 前置要求：
 
@@ -135,7 +175,7 @@ pnpm check
 pnpm test:e2e
 ```
 
-## 文档地图
+## 📚 文档地图
 
 - [项目章程](docs/project/PROJECT_CHARTER.md)：产品目的、MVP 范围、非目标、风险和验收标准。
 - [技术栈](docs/architecture/TECH_STACK.md)：已批准架构、依赖、媒体管线和被拒绝的替代方案。
@@ -147,7 +187,7 @@ pnpm test:e2e
 - [工具政策](docs/ops/TOOL_POLICY.md)：允许的工具、确认要求和禁止操作。
 - [部署](docs/ops/DEPLOYMENT.md)：静态部署模型、浏览器要求、响应头和发布检查。
 
-## 路线图
+## 🗺️ 路线图
 
 当前：
 
@@ -166,13 +206,13 @@ v1 明确不做：
 
 - 云处理、账号、远程同步、协作、多轨编辑、AI 视频生成和模板市场。
 
-## 贡献说明
+## 🤝 贡献说明
 
 修改行为前，请先阅读 [AGENTS.md](AGENTS.md) 和 `docs/` 下的相关源文档。
 
 如果要改变产品范围、架构、依赖、持久化、后端/API 边界、部署行为、工具权限或隐私规则，请先更新对应文档。除非源文档和项目 owner 明确批准新的方向，否则媒体处理必须保持本地优先。
 
-## 许可证
+## 📄 许可证
 
 Obscura 项目代码基于 [MIT License](LICENSE) 授权。
 

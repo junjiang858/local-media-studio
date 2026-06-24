@@ -1,24 +1,64 @@
-# Obscura
-
-[![Check](https://github.com/junjiang858/obscura/actions/workflows/check.yml/badge.svg)](https://github.com/junjiang858/obscura/actions/workflows/check.yml)
+<div align="center">
+  <img src="apps/web/public/favicon.svg" width="96" height="96" alt="Obscura logo" />
+  <h1>Obscura</h1>
+  <p><strong>Local-first media workspace for images and short videos.</strong></p>
+  <p>
+    <strong>English</strong>
+    ·
+    <a href="README.zh-CN.md">简体中文</a>
+  </p>
+  <p>
+    <a href="https://github.com/junjiang858/obscura/actions/workflows/check.yml">
+      <img alt="Check" src="https://github.com/junjiang858/obscura/actions/workflows/check.yml/badge.svg" />
+    </a>
+    <a href="LICENSE">
+      <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-62e0c1?style=flat-square" />
+    </a>
+    <img alt="Local-first" src="https://img.shields.io/badge/local--first-browser-7cd7ff?style=flat-square" />
+    <img alt="Privacy-first" src="https://img.shields.io/badge/privacy--first-no%20uploads-9fe870?style=flat-square" />
+    <img alt="React 19" src="https://img.shields.io/badge/React-19-149eca?style=flat-square" />
+    <img alt="Vite" src="https://img.shields.io/badge/Vite-7-646cff?style=flat-square" />
+    <img alt="pnpm" src="https://img.shields.io/badge/pnpm-10-f69220?style=flat-square" />
+  </p>
+  <p>
+    <sub>
+      Tags: local-first · privacy-first · browser media editor · image editor · short video editor · React · Vite · TypeScript
+    </sub>
+  </p>
+  <p>
+    <a href="#-overview">Overview</a>
+    ·
+    <a href="#-mvp-scope">MVP Scope</a>
+    ·
+    <a href="#-privacy-boundary">Privacy</a>
+    ·
+    <a href="#-tech-stack">Tech Stack</a>
+    ·
+    <a href="#-getting-started">Getting Started</a>
+    ·
+    <a href="#-documentation-map">Docs</a>
+    ·
+    <a href="#-roadmap">Roadmap</a>
+    ·
+    <a href="#-contributing">Contributing</a>
+  </p>
+</div>
 
 Obscura is a local-first web media workspace for personal creators to preview, edit, manage, and export images and short videos in the browser without uploading private media.
 
-Languages: English | [简体中文](README.zh-CN.md)
-
-## Overview
+## ✨ Overview
 
 Obscura is built for quick, private media cleanup. It combines a media library, a large preview stage, image editing tools, a single-video editing workbench, and export controls in one browser-based workspace.
 
 The first version is image-first and single-video focused. It is intentionally not a cloud editor, account system, collaboration suite, multi-track timeline, or template marketplace.
 
-## Why Obscura
+## 🎯 Why Obscura
 
 Creators often move between desktop editors, online converters, background-removal sites, and video tools just to prepare one image or short clip. That workflow is slow, fragmented, and often asks users to upload private media.
 
 Obscura keeps the first MVP local-first: user-selected media stays in the browser session, heavy processing is planned behind explicit Worker-facing APIs, and exported files are generated locally before download.
 
-## How Obscura Fits In
+## 🧭 How Obscura Fits In
 
 Obscura is designed alongside several excellent open-source media editing projects, but it takes a narrower local-first workspace path:
 
@@ -30,7 +70,7 @@ Obscura is designed alongside several excellent open-source media editing projec
 
 In short, Obscura focuses on a privacy-first, image-first media workspace with enough short-video editing to cover everyday creator cleanup tasks.
 
-## MVP Scope
+## 🧩 MVP Scope
 
 Image workflow:
 
@@ -58,7 +98,7 @@ Workspace workflow:
 - Switch previous/next assets from the workspace.
 - Keep edit state local to the active browser session.
 
-## Non-Goals
+## 🚫 Non-Goals
 
 Obscura v1 does not include:
 
@@ -70,7 +110,7 @@ Obscura v1 does not include:
 - AI video generation or automatic subtitles.
 - Photoshop-like layer editing.
 
-## Privacy Boundary
+## 🔒 Privacy Boundary
 
 The v1 product promise is local-first media handling:
 
@@ -80,7 +120,7 @@ The v1 product promise is local-first media handling:
 - Lightweight draft metadata may be stored only when documented and must not contain raw media bytes.
 - Background-removal model/runtime assets may load as application assets; user images remain local.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - Runtime and workspace: Node.js 24 LTS, pnpm workspace.
 - Frontend: React 19, TypeScript, Vite.
@@ -91,7 +131,7 @@ The v1 product promise is local-first media handling:
 - Video processing: ffmpeg.wasm in Web Workers coordinated through Comlink.
 - Testing: Vitest, React Testing Library, Playwright.
 
-## Repository Layout
+## 🗂️ Repository Layout
 
 ```text
 .
@@ -104,7 +144,7 @@ The v1 product promise is local-first media handling:
 └── AGENTS.md             # Agent/project working rules
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 Prerequisites:
 
@@ -135,7 +175,7 @@ Run browser tests:
 pnpm test:e2e
 ```
 
-## Documentation Map
+## 📚 Documentation Map
 
 - [Project charter](docs/project/PROJECT_CHARTER.md): product purpose, MVP scope, non-goals, risks, and acceptance criteria.
 - [Tech stack](docs/architecture/TECH_STACK.md): approved architecture, dependencies, media pipeline, and rejected alternatives.
@@ -147,7 +187,7 @@ pnpm test:e2e
 - [Tool policy](docs/ops/TOOL_POLICY.md): allowed tools, confirmation requirements, and forbidden operations.
 - [Deployment](docs/ops/DEPLOYMENT.md): static deployment model, browser requirements, headers, and rollout checks.
 
-## Roadmap
+## 🗺️ Roadmap
 
 Now:
 
@@ -166,13 +206,13 @@ Explicitly out of scope for v1:
 
 - Cloud processing, accounts, remote sync, collaboration, multi-track editing, AI video generation, and template marketplaces.
 
-## Contributing
+## 🤝 Contributing
 
 Before changing behavior, read [AGENTS.md](AGENTS.md) and the relevant source-of-truth documents under `docs/`.
 
 Update the appropriate document before changing product scope, architecture, dependencies, persistence, backend/API boundaries, deployment behavior, tool permissions, or privacy rules. Keep media processing local-first unless the source-of-truth documents and project owner explicitly approve a different direction.
 
-## License
+## 📄 License
 
 Obscura project code is licensed under the [MIT License](LICENSE).
 
