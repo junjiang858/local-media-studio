@@ -1771,6 +1771,13 @@ svg {
   color: var(--muted-low);
 }
 
+.field-helper {
+  margin: -2px 0 0;
+  color: var(--muted-low);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
 .annotation-list {
   display: grid;
   gap: 6px;

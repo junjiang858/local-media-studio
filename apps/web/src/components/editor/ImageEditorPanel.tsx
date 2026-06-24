@@ -103,6 +103,25 @@ export function ImageEditorPanel({
     });
   }
 
+  function handleWatermarkImageChange(file: File | undefined) {
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        onApply({
+          dataUrl: reader.result,
+          name: file.name,
+          type: "set-watermark-image",
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
   return (
     <section aria-label={t.imageEditControls} className="editor-panel-content">
       {activeTab === "transform" ? (
@@ -260,6 +279,47 @@ export function ImageEditorPanel({
               ))}
             </select>
           </div>
+          <div className="form-field">
+            <label htmlFor="watermark-opacity">{t.watermarkOpacity}</label>
+            <input
+              id="watermark-opacity"
+              max={100}
+              min={5}
+              onChange={(event) =>
+                onApply({
+                  patch: { opacity: Number(event.currentTarget.value) / 100 },
+                  type: "update-watermark-layer",
+                })
+              }
+              type="range"
+              value={Math.round(imageState.watermarkLayer.opacity * 100)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="watermark-image">{t.watermarkImage}</label>
+            <input
+              accept="image/*"
+              id="watermark-image"
+              onChange={(event) => {
+                handleWatermarkImageChange(event.currentTarget.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+              type="file"
+            />
+            <p className="field-helper">{t.watermarkImageHelper}</p>
+          </div>
+          {imageState.watermarkImageName ? (
+            <div className="annotation-row">
+              <span>{imageState.watermarkImageName}</span>
+              <button
+                aria-label={t.clearWatermarkImage}
+                onClick={() => onApply({ type: "clear-watermark-image" })}
+                type="button"
+              >
+                <StudioIcon name="close" size={16} />
+              </button>
+            </div>
+          ) : null}
           <div className="annotation-controls">
             <p className="field-label">{t.annotations}</p>
             <div className="tool-grid two-col">

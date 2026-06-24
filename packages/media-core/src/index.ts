@@ -45,10 +45,12 @@ export type ImageCropRect = {
 export type ImageWatermarkLayer = {
   color: string;
   fontSize: number;
+  height: number;
   id: "watermark";
   opacity: number;
   rotation: number;
   visible: boolean;
+  width: number;
   x: number;
   y: number;
 };
@@ -90,6 +92,8 @@ export type ImageEditState = {
   flipHorizontal: boolean;
   flipVertical: boolean;
   resizeWidth: number | null;
+  watermarkImageDataUrl: string | null;
+  watermarkImageName: string | null;
   watermarkText: string;
   watermarkPosition: WatermarkPosition;
   watermarkLayer: ImageWatermarkLayer;
@@ -114,6 +118,8 @@ export type ImageEditAction =
   | { type: "set-filter-preset"; preset: ImageFilterPreset }
   | { type: "set-filter-strength"; strength: number }
   | { type: "set-watermark"; text: string }
+  | { type: "set-watermark-image"; dataUrl: string; name: string }
+  | { type: "clear-watermark-image" }
   | { type: "set-watermark-position"; position: WatermarkPosition }
   | { type: "update-watermark-layer"; patch: Partial<ImageWatermarkLayer> }
   | { type: "add-annotation"; annotation: ImageAnnotation }
@@ -173,14 +179,18 @@ const defaultImageEditState: ImageEditState = {
   flipVertical: false,
   resizeWidth: null,
   watermarkText: "",
+  watermarkImageDataUrl: null,
+  watermarkImageName: null,
   watermarkPosition: "bottom-right",
   watermarkLayer: {
     color: "#f8fbff",
     fontSize: 0.045,
+    height: 0.12,
     id: "watermark",
     opacity: 0.82,
     rotation: 0,
     visible: true,
+    width: 0.22,
     x: 0.68,
     y: 0.82,
   },
@@ -604,6 +614,18 @@ function reduceImageEditState(
       };
     case "set-watermark":
       return { ...cloneImageEditState(state), watermarkText: action.text.slice(0, 120) };
+    case "set-watermark-image":
+      return {
+        ...cloneImageEditState(state),
+        watermarkImageDataUrl: action.dataUrl,
+        watermarkImageName: action.name.slice(0, 160),
+      };
+    case "clear-watermark-image":
+      return {
+        ...cloneImageEditState(state),
+        watermarkImageDataUrl: null,
+        watermarkImageName: null,
+      };
     case "set-watermark-position":
       return {
         ...cloneImageEditState(state),
@@ -671,6 +693,8 @@ function reduceImageEditState(
       return {
         ...cloneImageEditState(state),
         annotations: [],
+        watermarkImageDataUrl: defaultImageEditState.watermarkImageDataUrl,
+        watermarkImageName: defaultImageEditState.watermarkImageName,
         watermarkLayer: cloneWatermarkLayer(defaultImageEditState.watermarkLayer),
         watermarkPosition: defaultImageEditState.watermarkPosition,
         watermarkText: defaultImageEditState.watermarkText,
@@ -783,10 +807,12 @@ function normalizeWatermarkLayer(layer: ImageWatermarkLayer): ImageWatermarkLaye
   return {
     color: layer.color.slice(0, 32),
     fontSize: clamp(layer.fontSize, 0.018, 0.16),
+    height: clamp(layer.height, 0.03, 1),
     id: "watermark",
     opacity: clamp(layer.opacity, 0.05, 1),
     rotation: clamp(layer.rotation, -360, 360),
     visible: layer.visible,
+    width: clamp(layer.width, 0.03, 1),
     x: clamp(layer.x, 0, 1),
     y: clamp(layer.y, 0, 1),
   };

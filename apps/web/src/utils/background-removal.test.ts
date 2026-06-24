@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runImageBackgroundRemoval } from "./background-removal";
 
 const { removeBackgroundMock } = vi.hoisted(() => ({
@@ -12,6 +12,10 @@ vi.mock("@imgly/background-removal", () => ({
 describe("background removal utility", () => {
   beforeEach(() => {
     removeBackgroundMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("runs the local background-removal model and returns a derived image file", async () => {
@@ -34,6 +38,7 @@ describe("background removal utility", () => {
       expect.objectContaining({
         model: "isnet_quint8",
         output: { format: "image/png", quality: 0.92 },
+        publicPath: "https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/",
         proxyToWorker: true,
       }),
     );
@@ -45,5 +50,22 @@ describe("background removal utility", () => {
     expect(result.file).toBeInstanceOf(File);
     expect(result.file.name).toBe("cover-photo-background-removed.png");
     expect(result.file.type).toBe("image/png");
+  });
+
+  it("uses the configured self-hosted asset base path when provided", async () => {
+    const source = new File(["image"], "cover.png", { type: "image/png" });
+    const resultBlob = new Blob(["foreground"], { type: "image/png" });
+
+    vi.stubEnv("VITE_BACKGROUND_REMOVAL_PUBLIC_PATH", "/background-removal");
+    removeBackgroundMock.mockResolvedValue(resultBlob);
+
+    await runImageBackgroundRemoval({ source });
+
+    expect(removeBackgroundMock).toHaveBeenCalledWith(
+      source,
+      expect.objectContaining({
+        publicPath: "http://localhost:3000/background-removal/",
+      }),
+    );
   });
 });

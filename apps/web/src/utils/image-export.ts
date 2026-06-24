@@ -67,6 +67,9 @@ export async function exportEditedImage({
   t: Copy;
 }): Promise<ImageExportResult> {
   const image = await loadImage(asset.objectUrl, t);
+  const watermarkImage = state.watermarkImageDataUrl
+    ? await loadImage(state.watermarkImageDataUrl, t)
+    : null;
   const plan = buildImageExportPlan({
     sourceName: asset.name,
     sourceWidth: image.naturalWidth,
@@ -110,7 +113,18 @@ export async function exportEditedImage({
 
   drawAnnotations(context, state.annotations, canvas.width, canvas.height);
 
-  if (state.watermarkText.trim() && state.watermarkLayer.visible) {
+  if (watermarkImage && state.watermarkLayer.visible) {
+    const watermark = state.watermarkLayer;
+    const watermarkWidth = Math.max(1, Math.round(canvas.width * watermark.width));
+    const watermarkHeight = Math.max(1, Math.round(canvas.height * watermark.height));
+
+    context.save();
+    context.globalAlpha = watermark.opacity;
+    context.translate(watermark.x * canvas.width, watermark.y * canvas.height);
+    context.rotate((watermark.rotation * Math.PI) / 180);
+    context.drawImage(watermarkImage, 0, 0, watermarkWidth, watermarkHeight);
+    context.restore();
+  } else if (state.watermarkText.trim() && state.watermarkLayer.visible) {
     const watermark = state.watermarkLayer;
 
     context.save();

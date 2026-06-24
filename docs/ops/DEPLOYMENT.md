@@ -26,9 +26,9 @@ Deployment must support static assets for the app, ffmpeg.wasm assets, backgroun
 
 No runtime secrets are required in v1.
 
-| Name | Required | Scope | Notes                                                      |
-| ---- | -------- | ----- | ---------------------------------------------------------- |
-| None | No       | v1    | The app should run without API keys or server credentials. |
+| Name                                  | Required | Scope                        | Notes                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------- | -------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` | No       | Public build-time asset path | Optional override for the `@imgly/background-removal` model/WASM asset base path. It is not a secret. If omitted, the app uses the documented IMG.LY static asset base for the pinned package version. Production can set this to a self-hosted static path such as `/background-removal/` after the matching asset bundle is provisioned. |
 
 Future public build-time flags, model asset base paths, analytics keys, cloud endpoints, or API URLs require source-of-truth updates before implementation.
 
@@ -36,7 +36,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 
 - App assets are produced by the Vite build.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
-- Background-removal model/runtime assets must be served as application assets or documented external model assets.
+- Background-removal model/runtime assets must be served from the explicit `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` base path. Local/staging may use the documented IMG.LY static asset base for the pinned package version; production privacy reviews may require copying the matching background-removal data package to a self-hosted static path such as `/background-removal/`.
 - User media is not a deployment asset and must not be uploaded as part of deployment.
 - Test fixture media must remain tiny, non-private, and license-safe.
 
@@ -55,7 +55,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 2. Run `pnpm check` once scripts exist.
 3. Run `pnpm test:e2e` once browser workflows exist.
 4. Build the app with `pnpm build`.
-5. Verify static asset paths for WASM/model files.
+5. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`.
 6. Verify COOP/COEP headers when required.
 7. Run browser smoke checks on the target deploy:
    - app loads,

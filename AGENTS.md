@@ -43,8 +43,8 @@ Resolve conflicts in this order:
 - Runtime and package manager: Node.js 24 LTS with pnpm workspace.
 - Frontend: React 19 + TypeScript + Vite.
 - UI: Tailwind CSS v4 + shadcn/ui + Radix UI + Material Symbols SVG React.
-- State and validation: Zustand + zundo + Zod.
-- Image editing: Canvas API + Cropper.js + Konva/react-konva.
+- State and validation: Zustand + project-owned image edit history + Zod; zundo remains an approved fallback only after source-of-truth updates.
+- Image editing: Canvas API + Konva/react-konva with project-owned crop overlay; Cropper.js remains an approved fallback only after source-of-truth updates.
 - Background removal: `@imgly/background-removal`, with documented AGPL/license caveat.
 - Video processing: ffmpeg.wasm in Web Workers coordinated through Comlink.
 - Testing: Vitest + React Testing Library + Playwright.

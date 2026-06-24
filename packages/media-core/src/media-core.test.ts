@@ -115,6 +115,34 @@ describe("media core helpers", () => {
     expect(undoneState.watermarkPosition).toBe("bottom-right");
   });
 
+  it("stores image watermark source and layer opacity in edit history", () => {
+    const history = applyImageEditAction(
+      applyImageEditAction(initialImageEditHistory(), {
+        dataUrl: "data:image/png;base64,d2F0ZXJtYXJr",
+        name: "brand mark.png",
+        type: "set-watermark-image",
+      }),
+      {
+        patch: { height: 0.18, opacity: 0.42, width: 0.26 },
+        type: "update-watermark-layer",
+      },
+    );
+    const state = getCurrentImageEditState(history);
+    const clearedState = getCurrentImageEditState(
+      applyImageEditAction(history, { type: "clear-watermark-image" }),
+    );
+
+    expect(state.watermarkImageDataUrl).toBe("data:image/png;base64,d2F0ZXJtYXJr");
+    expect(state.watermarkImageName).toBe("brand mark.png");
+    expect(state.watermarkLayer).toMatchObject({
+      height: 0.18,
+      opacity: 0.42,
+      width: 0.26,
+    });
+    expect(clearedState.watermarkImageDataUrl).toBeNull();
+    expect(clearedState.watermarkImageName).toBeNull();
+  });
+
   it("updates image layer geometry and custom crop export plans", () => {
     const history = applyImageEditAction(
       applyImageEditAction(

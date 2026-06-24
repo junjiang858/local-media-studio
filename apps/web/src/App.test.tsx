@@ -356,6 +356,9 @@ describe("media workspace shell", () => {
     await user.click(screen.getByRole("tab", { name: /layers/i }));
     await user.type(screen.getByLabelText(/watermark text/i), "Draft");
     await user.selectOptions(screen.getByLabelText(/watermark position/i), "top-left");
+    expect(screen.getByLabelText(/watermark opacity/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/watermark image/i)).toBeInTheDocument();
+    expect(screen.getByText(/image watermark replaces/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /add text/i }));
     expect(screen.getAllByText(/text note/i).length).toBeGreaterThan(0);
     await user.click(screen.getByRole("tab", { name: /^format$/i }));

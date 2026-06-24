@@ -54,7 +54,7 @@
 ### Must Have
 
 - Unified upload for images and videos.
-- Unified media library with thumbnails, file name, format, dimensions or duration, and file size.
+- Unified media library with thumbnails, file name, media type, file size, and generated-result status; full format, dimensions, duration, and MIME metadata are exposed in the selected preview's metadata popover instead of being repeated on every compact library card.
 - Previous and next asset switching, including keyboard arrow support.
 - Filter by media type: all, images, videos.
 - Large preview for the selected image or video.
@@ -108,7 +108,7 @@
 
 1. Image quick edit: upload images, choose one image, preview it, crop or rotate it, optionally remove background or add watermark, compare against the original, export in the selected format.
 2. Video quick edit: upload a video, preview it, set trim start and end, adjust speed, add manual subtitle cues, choose output format and quality, export with progress feedback.
-3. Media management: upload mixed media, inspect thumbnails and metadata, filter by image or video, move to previous or next asset, keep generated session assets, and export one selected asset. Switching assets intentionally resets the editable draft for the selected source.
+3. Media management: upload mixed media, inspect compact library thumbnails and selected-preview metadata, filter by image or video, move to previous or next asset, keep generated session assets, and export one selected asset. Switching assets intentionally resets the editable draft for the selected source.
 
 ## Domain Model
 
@@ -176,7 +176,7 @@
 
 - [ ] A user can upload multiple images and videos into one media library.
 - [ ] A user can switch to previous and next assets from the preview workspace.
-- [ ] The media library shows thumbnails and basic metadata for each asset.
+- [ ] The media library shows thumbnails, file name, media type, file size, generated-result status when relevant, and the selected preview exposes full format, dimensions, duration, and MIME metadata.
 - [ ] A user can crop with a visible crop rectangle, rotate, flip, resize, beautify/filter, annotate with movable layers, watermark as a movable layer, and export an image.
 - [ ] A user can compare an edited image with the original.
 - [ ] A user can undo, redo, and reset image edits.

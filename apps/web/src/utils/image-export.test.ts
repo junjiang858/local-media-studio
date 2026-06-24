@@ -9,13 +9,15 @@ import type { WorkspaceAsset } from "../stores/media-store";
 import { exportEditedImage, getCanvasFilter, getImageExportAvailability } from "./image-export";
 
 describe("image export helpers", () => {
+  let drawImageMock: ReturnType<typeof vi.fn>;
   let getContextSpy: ReturnType<typeof vi.spyOn>;
   let toBlobSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    drawImageMock = vi.fn();
     getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
       clearRect: vi.fn(),
-      drawImage: vi.fn(),
+      drawImage: drawImageMock,
       fillRect: vi.fn(),
       fillText: vi.fn(),
       getImageData: vi.fn(() => ({
@@ -117,6 +119,31 @@ describe("image export helpers", () => {
     expect(getCanvasFilter(getCurrentImageEditState(history))).toBe(
       "brightness(111%) contrast(106%) saturate(113%) sepia(0%) grayscale(0%) hue-rotate(0deg)",
     );
+  });
+
+  it("draws an uploaded image watermark during local image export", async () => {
+    const history = applyImageEditAction(
+      applyImageEditAction(initialImageEditHistory(), {
+        dataUrl: "data:image/png;base64,d2F0ZXJtYXJr",
+        name: "mark.png",
+        type: "set-watermark-image",
+      }),
+      {
+        patch: { height: 0.2, opacity: 0.5, width: 0.25, x: 0.1, y: 0.2 },
+        type: "update-watermark-layer",
+      },
+    );
+
+    await exportEditedImage({
+      asset: createImageAsset(),
+      format: "png",
+      quality: 86,
+      state: getCurrentImageEditState(history),
+      t: en,
+    });
+
+    expect(drawImageMock).toHaveBeenCalledTimes(2);
+    expect(drawImageMock.mock.calls[1]?.slice(1)).toEqual([0, 0, 1, 1]);
   });
 });
 

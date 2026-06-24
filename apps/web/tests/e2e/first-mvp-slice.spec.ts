@@ -49,6 +49,13 @@ test("edits and downloads an image without external media upload requests", asyn
   await page.getByLabel(/brightness/i).fill("14");
   await page.getByRole("tab", { name: /layers/i }).click();
   await page.getByLabel(/watermark text/i).fill("Draft");
+  await page.getByLabel(/watermark opacity/i).fill("55");
+  await page
+    .getByLabel(/watermark image/i)
+    .setInputFiles(path.join(import.meta.dirname, "../fixtures/local-image.svg"));
+  await expect(
+    page.locator(".annotation-row").filter({ hasText: "local-image.svg" }),
+  ).toBeVisible();
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: /export asset/i }).click();

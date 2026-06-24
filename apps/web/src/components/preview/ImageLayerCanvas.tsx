@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-import { Arrow, Group, Layer, Line, Rect, Stage, Text, Transformer } from "react-konva";
+import {
+  Arrow,
+  Group,
+  Image as KonvaImage,
+  Layer,
+  Line,
+  Rect,
+  Stage,
+  Text,
+  Transformer,
+} from "react-konva";
 import type {
   ImageAnnotation,
   ImageCropRect,
@@ -50,6 +60,7 @@ export function ImageLayerCanvas({
         : selectedAnnotation?.type;
   const canResize =
     selectedKind === "crop" || selectedKind === "rectangle" || selectedKind === "watermark";
+  const watermarkImage = useWatermarkImage(imageState.watermarkImageDataUrl);
 
   useEffect(() => {
     const transformer = transformerRef.current;
@@ -114,7 +125,7 @@ export function ImageLayerCanvas({
     });
   }
 
-  function transformWatermark(node: Konva.Text) {
+  function transformTextWatermark(node: Konva.Text) {
     const nextFontSize =
       imageState.watermarkLayer.fontSize * Math.max(0.2, node.scaleX(), node.scaleY());
 
@@ -123,6 +134,23 @@ export function ImageLayerCanvas({
       patch: {
         fontSize: nextFontSize,
         rotation: node.rotation(),
+        x: clamp01(node.x() / size.width),
+        y: clamp01(node.y() / size.height),
+      },
+      type: "update-watermark-layer",
+    });
+  }
+
+  function transformImageWatermark(node: Konva.Image) {
+    const nextWidth = Math.max(12, node.width() * node.scaleX());
+    const nextHeight = Math.max(12, node.height() * node.scaleY());
+
+    node.scale({ x: 1, y: 1 });
+    onApply({
+      patch: {
+        height: clamp01(nextHeight / size.height),
+        rotation: node.rotation(),
+        width: clamp01(nextWidth / size.width),
         x: clamp01(node.x() / size.width),
         y: clamp01(node.y() / size.height),
       },
@@ -219,6 +247,7 @@ export function ImageLayerCanvas({
 
   const watermarkText = imageState.watermarkText.trim();
   const watermarkLayer = imageState.watermarkLayer;
+  const hasImageWatermark = Boolean(imageState.watermarkImageDataUrl);
   const cropRect = imageState.cropAspect === "custom" ? imageState.cropRect : null;
 
   return (
@@ -286,7 +315,31 @@ export function ImageLayerCanvas({
             />
           ))}
 
-          {watermarkText && watermarkLayer.visible ? (
+          {hasImageWatermark && watermarkImage && watermarkLayer.visible ? (
+            <KonvaImage
+              draggable={interactive && !isTransforming}
+              height={watermarkLayer.height * size.height}
+              image={watermarkImage}
+              opacity={watermarkLayer.opacity}
+              onClick={(event) => selectLayer(event, "watermark")}
+              onDragEnd={(event) => {
+                if (!transformLockRef.current) {
+                  updateWatermarkFromNode(event.target);
+                }
+              }}
+              onMouseDown={(event) => selectLayer(event, "watermark")}
+              onTap={(event) => selectLayer(event, "watermark")}
+              onTouchStart={(event) => selectLayer(event, "watermark")}
+              onTransformEnd={(event) => transformImageWatermark(event.target as Konva.Image)}
+              ref={(node) => setNodeRef("watermark", node)}
+              rotation={watermarkLayer.rotation}
+              width={watermarkLayer.width * size.width}
+              x={watermarkLayer.x * size.width}
+              y={watermarkLayer.y * size.height}
+            />
+          ) : null}
+
+          {!hasImageWatermark && watermarkText && watermarkLayer.visible ? (
             <Text
               draggable={interactive && !isTransforming}
               fill={watermarkLayer.color}
@@ -303,7 +356,7 @@ export function ImageLayerCanvas({
               onMouseDown={(event) => selectLayer(event, "watermark")}
               onTap={(event) => selectLayer(event, "watermark")}
               onTouchStart={(event) => selectLayer(event, "watermark")}
-              onTransformEnd={(event) => transformWatermark(event.target as Konva.Text)}
+              onTransformEnd={(event) => transformTextWatermark(event.target as Konva.Text)}
               ref={(node) => setNodeRef("watermark", node)}
               rotation={watermarkLayer.rotation}
               shadowBlur={12}
@@ -351,6 +404,40 @@ export function ImageLayerCanvas({
       </Stage>
     </div>
   );
+}
+
+function useWatermarkImage(dataUrl: string | null) {
+  const [loadedImage, setLoadedImage] = useState<{
+    dataUrl: string;
+    image: HTMLImageElement;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!dataUrl) {
+      return;
+    }
+
+    let canceled = false;
+    const nextImage = new window.Image();
+
+    nextImage.onload = () => {
+      if (!canceled) {
+        setLoadedImage({ dataUrl, image: nextImage });
+      }
+    };
+    nextImage.onerror = () => {
+      if (!canceled) {
+        setLoadedImage(null);
+      }
+    };
+    nextImage.src = dataUrl;
+
+    return () => {
+      canceled = true;
+    };
+  }, [dataUrl]);
+
+  return loadedImage?.dataUrl === dataUrl ? loadedImage.image : null;
 }
 
 function AnnotationLayerItem({

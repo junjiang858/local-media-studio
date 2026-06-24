@@ -1,5 +1,6 @@
 import { removeBackground } from "@imgly/background-removal";
 import type { WorkerJobProgressUpdate } from "@obscura/media-core";
+import { getBackgroundRemovalPublicPath } from "../config/background-removal";
 
 export type BackgroundRemovalResult = {
   blob: Blob;
@@ -32,6 +33,7 @@ export async function runImageBackgroundRemoval({
         status: "processing",
       });
     },
+    publicPath: getBackgroundRemovalPublicPath(),
     proxyToWorker: true,
   });
   const file = new File([blob], `${sanitizeBaseName(source.name)}-background-removed.png`, {
