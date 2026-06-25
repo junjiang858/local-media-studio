@@ -8,6 +8,7 @@
 - Last reviewed: 2026-06-25.
 - Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path.
 - Current public release preparation: The project owner selected Vercel GitHub integration for build/deploy and explicitly accepted using the pinned IMG.LY CDN background-removal model/runtime asset path for the initial public production release. Self-hosting remains an approved later hardening option.
+- Current public metadata update: The canonical public URL is `https://obscura-rouge.vercel.app/`. The static app ships Open Graph/Twitter metadata, a share preview image, `robots.txt`, and a basic installable web app manifest without adding a service worker.
 
 ## Deployment Summary
 
@@ -38,7 +39,7 @@ When importing the GitHub repository into Vercel, keep the project rooted at the
 | Output directory          | `apps/web/dist`                                                                                         |
 | Node.js version           | Vercel default latest LTS, currently 24.x; select 24.x manually if the dashboard does not default to it |
 
-The versioned `vercel.json` keeps the build command, output directory, framework preset, and COOP/COEP headers in source control.
+The versioned `vercel.json` keeps the build command, output directory, framework preset, COOP/COEP headers, and immutable caching for Vite content-hashed assets in source control.
 
 After the Vercel project is created from GitHub:
 
@@ -59,6 +60,13 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 ## Static Assets
 
 - App assets are produced by the Vite build.
+- Vite content-hashed build assets under `/assets/*` may be served with `Cache-Control: public, max-age=31536000, immutable`.
+- HTML entry files, root metadata files, `robots.txt`, `manifest.webmanifest`, and share preview images must not receive the `/assets/*` immutable cache rule unless their URLs become content-hashed.
+- The app's current public metadata assets are:
+  - `/og-image.svg` for Open Graph/Twitter previews.
+  - `/robots.txt` with `User-agent: *` and `Allow: /`.
+  - `/manifest.webmanifest` for basic install metadata.
+- Do not add a service worker in this release. Any service worker or runtime cache strategy must be documented here before implementation because it can complicate WASM, static asset, and app-shell freshness behavior.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
 - Background-removal model/runtime assets use the pinned IMG.LY static CDN base for the initial public production release. User media is not sent to IMG.LY; the browser only downloads static model/runtime assets.
 - Optional production self-hosting procedure for `@imgly/background-removal@1.7.0`:
@@ -76,8 +84,12 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 - If ffmpeg.wasm or related processing requires `SharedArrayBuffer` or multi-threaded WASM, deployment must set cross-origin isolation headers:
   - `Cross-Origin-Opener-Policy: same-origin`
   - `Cross-Origin-Embedder-Policy: require-corp`
+- The `/assets/*` immutable cache rule must preserve the same COOP/COEP behavior as the rest of the app.
 - Local Vite dev and preview servers must use the same COOP/COEP headers so background-removal and ffmpeg browser verification matches the release runtime.
 - Asset sources must be compatible with COOP/COEP. Cross-origin model/WASM assets may need CORS/CORP-compatible hosting.
+- Heavy WASM/model libraries must not be imported into the first-load app chunk when they can be loaded at point of use. Current expectation:
+  - ffmpeg is loaded from the video Worker path only when a video export/derived preview job starts.
+  - background removal is dynamically imported when the user starts an image background-removal job.
 - If a selected library works without SharedArrayBuffer in a slower mode, the deployment doc must note the mode and performance tradeoff before release.
 - Target browser support for first implementation should prioritize Chromium-based browsers unless a later doc update broadens support.
 
@@ -87,22 +99,33 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 2. Run `pnpm check` once scripts exist.
 3. Run `pnpm test:e2e` once browser workflows exist.
 4. Build the app with `pnpm build`.
-5. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`. The initial production target is the pinned IMG.LY CDN asset path unless `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` is set for self-hosting.
-6. Verify COOP/COEP headers when required.
-7. Verify the AGPL-compatible open-source release evidence for background removal: public source URL, build instructions, dependency versions, and third-party license notices. If the release is closed-source or commercial, stop until a separate IMG.LY/commercial license or approved replacement exists.
-8. Run browser smoke checks on the target deploy:
-   - app loads,
-   - upload fixture media works,
-   - image preview/edit/export smoke works,
-   - video preview/export smoke works where feasible,
-   - no user media upload path appears in network inspection.
-9. Run hosted E2E against the preview URL:
-   - `PLAYWRIGHT_BASE_URL=<preview-url> pnpm test:e2e`
-   - `RUN_REAL_BACKGROUND_REMOVAL=1 PLAYWRIGHT_BASE_URL=<preview-url> pnpm --filter @obscura/web test:e2e tests/e2e/background-removal-real.spec.ts --project=chromium`
-10. Verify target headers and cross-origin isolation:
+5. Verify the static metadata files exist in the build output:
+   - `index.html` contains canonical, Open Graph, Twitter, manifest, and theme-color metadata.
+   - `robots.txt` returns the intended allow-all policy.
+   - `manifest.webmanifest` is present.
+   - `og-image.svg` is present.
+6. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`. The initial production target is the pinned IMG.LY CDN asset path unless `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` is set for self-hosting.
+7. Verify build chunks so ffmpeg and background-removal libraries are not synchronously pulled into the first-load app chunk.
+8. Verify COOP/COEP headers when required.
+9. Verify `/assets/*` target deploy responses include `Cache-Control: public, max-age=31536000, immutable`.
+10. Verify the AGPL-compatible open-source release evidence for background removal: public source URL, build instructions, dependency versions, and third-party license notices. If the release is closed-source or commercial, stop until a separate IMG.LY/commercial license or approved replacement exists.
+11. Run browser smoke checks on the target deploy:
+    - app loads,
+    - upload fixture media works,
+    - image preview/edit/export smoke works,
+    - video preview/export smoke works where feasible,
+    - no user media upload path appears in network inspection.
+12. Run hosted E2E against the preview URL:
+    - `PLAYWRIGHT_BASE_URL=<preview-url> pnpm test:e2e`
+    - `RUN_REAL_BACKGROUND_REMOVAL=1 PLAYWRIGHT_BASE_URL=<preview-url> pnpm --filter @obscura/web test:e2e tests/e2e/background-removal-real.spec.ts --project=chromium`
+13. Verify target headers, metadata files, and cross-origin isolation:
     - `curl -I <preview-or-production-url>`
+    - `curl -I <preview-or-production-url>/robots.txt`
+    - `curl -I <preview-or-production-url>/manifest.webmanifest`
+    - `curl -I <preview-or-production-url>/assets/<hashed-asset-file>`
     - `globalThis.crossOriginIsolated === true` in the browser.
-11. For production, request explicit confirmation before deploying or promoting.
+14. Verify Vercel/Open Graph preview tooling can read the share metadata and no longer reports a missing `twitter:card`.
+15. For production, request explicit confirmation before deploying or promoting.
 
 ## Health Checks
 

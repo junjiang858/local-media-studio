@@ -31,10 +31,6 @@ import { detectInitialLanguage, messages, type Language } from "../i18n";
 import { useJobStore } from "../stores/job-store";
 import { getVisibleAssets, useMediaStore, type WorkspaceAsset } from "../stores/media-store";
 import {
-  getBackgroundRemovalErrorMessage,
-  runImageBackgroundRemoval,
-} from "../utils/background-removal";
-import {
   getImagePreviewFingerprint,
   getVideoPreviewFingerprint,
   revokeGeneratedPreview,
@@ -670,6 +666,7 @@ export default function App() {
     });
 
     try {
+      const { runImageBackgroundRemoval } = await import("../utils/background-removal");
       const result = await runImageBackgroundRemoval({
         onProgress: (update) => updateJob(jobId, update),
         source: asset.file,
@@ -687,7 +684,7 @@ export default function App() {
       });
       showStudioSuccess(t.backgroundRemovalComplete);
     } catch (error) {
-      const errorMessage = getBackgroundRemovalErrorMessage(error, t.backgroundRemovalFailed);
+      const errorMessage = getProcessingErrorMessage(error, t.backgroundRemovalFailed);
       failJob(jobId, {
         code: "background-removal-failed",
         message: errorMessage,
@@ -879,6 +876,10 @@ export default function App() {
 
 function getBackgroundRemovalJobId(assetId: string) {
   return `background-removal:${assetId}`;
+}
+
+function getProcessingErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 function getJobInputSnapshot(job: WorkerJob) {
