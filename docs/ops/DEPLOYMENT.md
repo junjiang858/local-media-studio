@@ -5,7 +5,8 @@
 - Project charter confirmed: Yes, `docs/project/PROJECT_CHARTER.md`.
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, selected accelerated path B in chat on 2026-06-22.
-- Last reviewed: 2026-06-22.
+- Last reviewed: 2026-06-25.
+- Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path. Production should self-host the matching background-removal data package instead of relying on the package default CDN path.
 
 ## Deployment Summary
 
@@ -26,9 +27,9 @@ Deployment must support static assets for the app, ffmpeg.wasm assets, backgroun
 
 No runtime secrets are required in v1.
 
-| Name                                  | Required | Scope                        | Notes                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------- | -------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` | No       | Public build-time asset path | Optional override for the `@imgly/background-removal` model/WASM asset base path. It is not a secret. If omitted, the app uses the documented IMG.LY static asset base for the pinned package version. Production can set this to a self-hosted static path such as `/background-removal/` after the matching asset bundle is provisioned. |
+| Name                                  | Required       | Scope                        | Notes                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------- | -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` | Production yes | Public build-time asset path | Public base URL for the `@imgly/background-removal` model/WASM asset bundle. It is not a secret. Local and staging may omit it and use the pinned IMG.LY static asset base. Production should set it to a self-hosted static path such as `/background-removal/` after the matching asset bundle is provisioned. |
 
 Future public build-time flags, model asset base paths, analytics keys, cloud endpoints, or API URLs require source-of-truth updates before implementation.
 
@@ -36,7 +37,14 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 
 - App assets are produced by the Vite build.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
-- Background-removal model/runtime assets must be served from the explicit `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` base path. Local/staging may use the documented IMG.LY static asset base for the pinned package version; production privacy reviews may require copying the matching background-removal data package to a self-hosted static path such as `/background-removal/`.
+- Background-removal model/runtime assets must be served from the explicit `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` base path in production. Local/staging may use the documented IMG.LY static asset base for the pinned package version.
+- Production self-hosting procedure for `@imgly/background-removal@1.7.0`:
+  1. Download the matching data package from `https://staticimgly.com/@imgly/background-removal-data/1.7.0/package.tgz`.
+  2. Extract the archive outside Git history.
+  3. Copy the extracted `package/dist/` contents to the production static asset directory served as `/background-removal/` or an equivalent immutable asset base.
+  4. Set `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH=/background-removal/` for the production build.
+  5. Verify that `/background-removal/resources.json`, model files, and WASM files load with CORS/CORP-compatible headers under COOP/COEP.
+- Do not commit the downloaded model/runtime bundle to Git unless the project owner explicitly accepts repository size, update, and license obligations. The 2026-06-25 HEAD check for the pinned `1.7.0` package reported `Content-Length: 284706412` for `package.tgz`.
 - User media is not a deployment asset and must not be uploaded as part of deployment.
 - Test fixture media must remain tiny, non-private, and license-safe.
 
@@ -45,6 +53,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 - If ffmpeg.wasm or related processing requires `SharedArrayBuffer` or multi-threaded WASM, deployment must set cross-origin isolation headers:
   - `Cross-Origin-Opener-Policy: same-origin`
   - `Cross-Origin-Embedder-Policy: require-corp`
+- Local Vite dev and preview servers must use the same COOP/COEP headers so background-removal and ffmpeg browser verification matches the release runtime.
 - Asset sources must be compatible with COOP/COEP. Cross-origin model/WASM assets may need CORS/CORP-compatible hosting.
 - If a selected library works without SharedArrayBuffer in a slower mode, the deployment doc must note the mode and performance tradeoff before release.
 - Target browser support for first implementation should prioritize Chromium-based browsers unless a later doc update broadens support.
@@ -57,13 +66,14 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 4. Build the app with `pnpm build`.
 5. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`.
 6. Verify COOP/COEP headers when required.
-7. Run browser smoke checks on the target deploy:
+7. Verify the AGPL-compatible open-source release evidence for background removal: public source URL, build instructions, dependency versions, and third-party license notices. If the release is closed-source or commercial, stop until a separate IMG.LY/commercial license or approved replacement exists.
+8. Run browser smoke checks on the target deploy:
    - app loads,
    - upload fixture media works,
    - image preview/edit/export smoke works,
    - video preview/export smoke works where feasible,
    - no user media upload path appears in network inspection.
-8. For production, request explicit confirmation before deploying or promoting.
+9. For production, request explicit confirmation before deploying or promoting.
 
 ## Health Checks
 
@@ -102,18 +112,25 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 
 ## Pre-Launch Checklist
 
-- [ ] All source-of-truth docs are current.
-- [ ] `pnpm check` or equivalent passes.
-- [ ] Build passes.
-- [ ] Browser smoke tests pass for upload, preview, edit, and export.
-- [ ] Required env vars are documented; v1 should have no secrets.
-- [ ] Secrets are not committed.
-- [ ] Static WASM/model asset paths are verified.
-- [ ] COOP/COEP headers are configured and verified if required.
-- [ ] Dependency and license review is complete, especially `@imgly/background-removal`.
-- [ ] Privacy check confirms user media is not uploaded.
-- [ ] Health checks pass.
-- [ ] Rollback path is documented and tested for preview/staging before production.
+This checklist is evidence-sensitive. Checked items reflect the latest local MVP closure verification in the current working tree. Production or hosted-environment items stay unchecked until they are verified on the target deployment.
+
+- [x] All source-of-truth docs are current for the MVP closure review.
+- [x] `pnpm check` or equivalent passes. Latest evidence: `pnpm check` passed on 2026-06-25.
+- [x] Build passes. Latest evidence: `pnpm check` ran the production Vite build successfully on 2026-06-25.
+- [x] Browser smoke tests pass for upload, preview, edit, and export. Latest evidence: `pnpm test:e2e` passed on 2026-06-25.
+- [x] Real background-removal browser smoke passes. Latest evidence: `RUN_REAL_BACKGROUND_REMOVAL=1 pnpm --filter @obscura/web test:e2e tests/e2e/background-removal-real.spec.ts --project=chromium` passed on 2026-06-25.
+- [x] Required env vars are documented; v1 should have no secrets.
+- [x] Secrets are not committed in tracked env/config files. Latest evidence: tracked secret/env filename scan only found `.env.example` on 2026-06-25.
+- [ ] Production static WASM/model asset paths are verified, including `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`.
+- [x] Local Vite dev/preview COOP/COEP headers are configured and verified for browser tests.
+- [ ] Target deploy COOP/COEP headers are configured and verified if required.
+- [ ] Open-source AGPL-compatible release evidence is published: public source URL, build instructions, dependency versions, and third-party license notices.
+- [x] Closed-source or commercial distribution is not in scope for this release; any future such distribution remains blocked until a separate IMG.LY/commercial license or approved replacement for `@imgly/background-removal` exists.
+- [ ] Production background-removal model/runtime assets are self-hosted or the project owner has explicitly accepted using IMG.LY's CDN in production.
+- [x] Privacy check confirms user media is not uploaded. Latest evidence: default E2E and real background-removal E2E network assertions passed on 2026-06-25.
+- [x] Local health checks pass. Latest evidence: app build, browser smoke, image fixture, video fixture, ffmpeg path, and background-removal path passed in local automated verification on 2026-06-25.
+- [x] Rollback path is documented.
+- [ ] Rollback path is tested for preview/staging before production.
 
 ## Change Rule
 

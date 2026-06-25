@@ -149,14 +149,14 @@ Job launchers must use values captured at submit time. They must not read mutabl
 
 ## Security Boundary
 
-| Risk                     | Rule                                                                          | Verification                                                    |
-| ------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Accidental media upload  | No app code or dependency integration may upload user media in v1             | Browser network inspection and tests around upload/export flows |
-| Raw media in logs        | Logs must not include raw media, subtitles, local paths, or generated content | Console/log review during browser tests                         |
-| Long-running UI lockup   | Heavy processing should run through Worker APIs                               | Browser interaction stays responsive during jobs                |
-| Unsupported encoder path | Optional encoders must fail with readable errors instead of empty downloads   | Unit tests and browser export smoke checks                      |
-| Unsafe persistence       | Raw media must not be silently stored long-term                               | Storage inspection and code review                              |
-| Dependency/license risk  | Background-removal AGPL/license caveat must remain documented                 | Pre-release dependency/license review                           |
+| Risk                     | Rule                                                                                                                                  | Verification                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Accidental media upload  | No app code or dependency integration may upload user media in v1                                                                     | Browser network inspection and tests around upload/export flows  |
+| Raw media in logs        | Logs must not include raw media, subtitles, local paths, or generated content                                                         | Console/log review during browser tests                          |
+| Long-running UI lockup   | Heavy processing should run through Worker APIs                                                                                       | Browser interaction stays responsive during jobs                 |
+| Unsupported encoder path | Optional encoders must fail with readable errors instead of empty downloads                                                           | Unit tests and browser export smoke checks                       |
+| Unsafe persistence       | Raw media must not be silently stored long-term                                                                                       | Storage inspection and code review                               |
+| Dependency/license risk  | Background-removal follows the approved AGPL-compatible open-source release path; closed-source/commercial distribution remains gated | 2026-06-25 license review plus source/build/license notice check |
 
 ## Change Rule
 

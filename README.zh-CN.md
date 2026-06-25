@@ -127,7 +127,7 @@ v1 的产品承诺是本地优先媒体处理：
 - UI：Tailwind CSS v4、shadcn/ui 和 Radix UI 模式、Material Symbols SVG React。
 - 状态和校验：Zustand、zundo、Zod。
 - 图片编辑：Canvas API、Cropper.js、Konva/react-konva。
-- 背景移除：`@imgly/background-removal`，并记录 AGPL/许可证 caveat。
+- 背景移除：`@imgly/background-removal`，除非另行取得授权，否则按 AGPL-3.0 处理；Obscura 走开源 AGPL-compatible 发布路径。
 - 视频处理：在 Web Worker 中运行 ffmpeg.wasm，并通过 Comlink 协调。
 - 测试：Vitest、React Testing Library、Playwright。
 
@@ -216,4 +216,6 @@ v1 明确不做：
 
 Obscura 项目代码基于 [MIT License](LICENSE) 授权。
 
-第三方依赖的许可证仍然适用。尤其是 `@imgly/background-removal` 带有已记录的 AGPL/许可证 caveat，在公开发布、闭源分发或商业分发前必须重新审查。
+第三方依赖的许可证仍然适用。尤其是 `@imgly/background-removal`，除非另行取得 IMG.LY 授权，否则按 AGPL-3.0 处理。Obscura 是开源项目，并通过 AGPL-compatible 公开发布路径使用该依赖：为公开应用保留对应源码、构建说明、依赖版本和第三方许可证说明。闭源分发或商业分发则需要单独取得 IMG.LY/商业授权，或替换为已批准且许可证匹配的依赖/模型。
+
+Production 构建也应自托管匹配版本的 `@imgly/background-removal-data` 资源包并设置 `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`，除非项目 owner 明确接受在 production 使用包默认 CDN 路径。

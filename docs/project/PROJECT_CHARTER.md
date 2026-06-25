@@ -174,18 +174,18 @@
 
 ## Acceptance Criteria
 
-- [ ] A user can upload multiple images and videos into one media library.
-- [ ] A user can switch to previous and next assets from the preview workspace.
-- [ ] The media library shows thumbnails, file name, media type, file size, generated-result status when relevant, and the selected preview exposes full format, dimensions, duration, and MIME metadata.
-- [ ] A user can crop with a visible crop rectangle, rotate, flip, resize, beautify/filter, annotate with movable layers, watermark as a movable layer, and export an image.
-- [ ] A user can compare an edited image with the original.
-- [ ] A user can undo, redo, and reset image edits.
-- [ ] A user can run basic local automatic background removal on an image and export the result.
-- [ ] A user can preview a video in a workbench with play/pause, reset time, loop, scrubber, thumbnail trim handles, reset controls, manual subtitle cues, and export the result.
-- [ ] A video trim or format conversion can generate a derived local preview asset before download.
-- [ ] Export flows show richer format options, quality or size options when feasible, progress, cancel or retry where feasible, and readable errors.
-- [ ] The first version does not upload user media to a backend or third-party API.
-- [ ] The product clearly handles unsupported formats, large files, and processing failures.
+- [x] A user can upload multiple images and videos into one media library.
+- [x] A user can switch to previous and next assets from the preview workspace.
+- [x] The media library shows thumbnails, file name, media type, file size, generated-result status when relevant, and the selected preview exposes full format, dimensions, duration, and MIME metadata.
+- [x] A user can crop with a visible crop rectangle, rotate, flip, resize, beautify/filter, annotate with movable layers, watermark as a movable layer, and export an image.
+- [x] A user can compare an edited image with the original.
+- [x] A user can undo, redo, and reset image edits.
+- [x] A user can run basic local automatic background removal on an image and export the result.
+- [x] A user can preview a video in a workbench with play/pause, reset time, loop, scrubber, thumbnail trim handles, reset controls, manual subtitle cues, and export the result.
+- [x] A video trim or format conversion can generate a derived local preview asset before download.
+- [x] Export flows show richer format options, quality or size options when feasible, progress, cancel or retry where feasible, and readable errors.
+- [x] The first version does not upload user media to a backend or third-party API.
+- [x] The product clearly handles unsupported formats, large files, and processing failures.
 
 ## Open Questions
 

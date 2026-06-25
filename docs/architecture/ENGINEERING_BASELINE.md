@@ -135,7 +135,7 @@ Planned implementation layout:
 ## Dependency And License Baseline
 
 - All dependencies must be listed in `docs/architecture/TECH_STACK.md` before installation.
-- `@imgly/background-removal` carries AGPL/license caveats. Before public or commercial distribution, re-check its license and document the acceptance or replacement path.
+- `@imgly/background-removal@1.7.0` license review was completed on 2026-06-25: the installed package and upstream README identify AGPL-3.0 licensing unless a separate IMG.LY license is obtained. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path. Public release must keep corresponding source, build instructions, dependency versions, and third-party license notices available. Closed-source distribution or commercial distribution remains blocked until the project owner obtains a separate IMG.LY/commercial license or replaces the dependency/model.
 - Avoid commercial SDKs in v1 unless the tech stack document is updated and user approval is received.
 - Avoid adding large media libraries when a native browser API or existing selected library covers the requirement.
 - Run dependency audit before release and after adding media/WASM/ML dependencies.

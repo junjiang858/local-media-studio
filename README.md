@@ -127,7 +127,7 @@ The v1 product promise is local-first media handling:
 - UI: Tailwind CSS v4, shadcn/ui and Radix UI patterns, Material Symbols SVG React.
 - State and validation: Zustand, zundo, Zod.
 - Image editing: Canvas API, Cropper.js, Konva/react-konva.
-- Background removal: `@imgly/background-removal`, with documented AGPL/license caveats.
+- Background removal: `@imgly/background-removal`, AGPL-3.0 unless separately licensed, used through Obscura's open-source AGPL-compatible release path.
 - Video processing: ffmpeg.wasm in Web Workers coordinated through Comlink.
 - Testing: Vitest, React Testing Library, Playwright.
 
@@ -216,4 +216,6 @@ Update the appropriate document before changing product scope, architecture, dep
 
 Obscura project code is licensed under the [MIT License](LICENSE).
 
-Third-party dependency licenses still apply. In particular, `@imgly/background-removal` carries documented AGPL/license caveats that must be reviewed before public release, closed-source distribution, or commercial distribution.
+Third-party dependency licenses still apply. In particular, `@imgly/background-removal` is AGPL-3.0 unless separately licensed by IMG.LY. Obscura is an open-source project and uses this dependency through an AGPL-compatible public release path: keep corresponding source, build instructions, dependency versions, and third-party license notices available for the public app. Closed-source distribution or commercial distribution would require a separate IMG.LY/commercial license or replacement with an approved dependency/model.
+
+Production builds should also self-host the matching `@imgly/background-removal-data` asset bundle and set `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`, rather than relying on the package default CDN path, unless the project owner explicitly accepts that production dependency.
