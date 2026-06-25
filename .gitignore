@@ -1,5 +1,11 @@
 # Local agent/tooling state
-.codex/
+.codex/*
+!.codex/skills/
+.codex/skills/*
+!.codex/skills/agent-project-kit/
+!.codex/skills/agent-project-kit/**
+.codex/skills/agent-project-kit/.git/
+.codex/skills/agent-project-kit/.git/**
 
 # Dependencies
 node_modules/
