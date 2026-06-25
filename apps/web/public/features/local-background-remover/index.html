@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Background Remover No Upload - Obscura</title>
+    <meta
+      name="description"
+      content="Remove image backgrounds in a local-first browser workflow. Obscura processes selected images in the browser and creates a transparent PNG result."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Background Remover No Upload - Obscura" />
+    <meta
+      property="og:description"
+      content="Remove image backgrounds locally in the browser and export a transparent PNG."
+    />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Background Remover No Upload - Obscura" />
+    <meta
+      name="twitter:description"
+      content="A local-first browser background remover for private image cleanup."
+    />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I remove an image background without uploading it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Obscura runs background removal as a local-first browser workflow. The app may download model assets, but your selected image is processed in the browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What file does background removal create?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Obscura creates a generated PNG with transparency and inserts it into the current media library session."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I keep editing after background removal?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The result becomes a separate local asset, so you can select it, inspect it, and export it."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="SEO pages">
+          <a href="/features/private-image-editor/">Image editor</a>
+          <a href="/features/browser-video-trimmer/">Video trimmer</a>
+          <a href="/privacy/local-first-media-editor/">Privacy</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">Background remover no upload</p>
+            <h1>Remove backgrounds in your browser.</h1>
+            <p>
+              Use Obscura to cut out subjects, create transparent PNGs, and keep private source
+              images out of cloud upload workflows.
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">Open editor</a>
+              <a class="button secondary" href="/features/private-image-editor/">Image tools</a>
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img
+              src="/og-image.svg"
+              width="1200"
+              height="630"
+              alt="Obscura local background-removal workspace preview"
+            />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>A local-first cutout workflow.</h2>
+          <p>
+            Background removal is useful for profile images, product drafts, social graphics, and
+            presentation assets. Obscura keeps it inside the same image workspace as crop,
+            watermarking, and export.
+          </p>
+          <div class="grid">
+            <article class="tile">
+              <h3>Transparent PNG output</h3>
+              <p>
+                Generate a clean PNG result that can be exported or used as a new session asset.
+              </p>
+            </article>
+            <article class="tile">
+              <h3>Visible progress</h3>
+              <p>Model loading and processing appear in the local processing center.</p>
+            </article>
+            <article class="tile">
+              <h3>Private source files</h3>
+              <p>The v1 app does not upload user media to a backend or third-party API.</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>How to remove a background.</h2>
+          <div class="steps">
+            <div class="step"><strong>Import</strong>Add an image to the local workspace.</div>
+            <div class="step">
+              <strong>Process</strong>Run background removal from the image tools.
+            </div>
+            <div class="step">
+              <strong>Export</strong>Save the transparent PNG when it is ready.
+            </div>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Background remover FAQ.</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>Does background removal work offline?</h3>
+              <p>
+                The app can process locally, but the model/runtime assets must be available first.
+              </p>
+            </article>
+            <article class="faq-item">
+              <h3>Is the result editable?</h3>
+              <p>
+                The result is added as a separate local asset, so it can be inspected and exported.
+              </p>
+            </article>
+            <article class="faq-item">
+              <h3>Is manual mask refinement included?</h3>
+              <p>No. Manual erase and restore refinement is deferred beyond the first MVP.</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Related private editing pages.</h2>
+          <div class="link-list">
+            <a href="/features/private-image-editor/">Private image editor</a>
+            <a href="/features/browser-video-trimmer/">Trim video in browser</a>
+            <a href="/features/add-subtitles-to-video/">Add subtitles locally</a>
+            <a href="/privacy/local-first-media-editor/">Why local-first matters</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura prepares images and short videos without backend media upload.</span>
+      </footer>
+    </div>
+  </body>
+</html>

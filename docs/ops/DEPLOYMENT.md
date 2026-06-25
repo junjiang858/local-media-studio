@@ -8,7 +8,7 @@
 - Last reviewed: 2026-06-25.
 - Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path.
 - Current public release preparation: The project owner selected Vercel GitHub integration for build/deploy and explicitly accepted using the pinned IMG.LY CDN background-removal model/runtime asset path for the initial public production release. Self-hosting remains an approved later hardening option.
-- Current public metadata update: The canonical public URL is `https://obscura-rouge.vercel.app/`. The static app ships Open Graph/Twitter metadata, a share preview image, `robots.txt`, and a basic installable web app manifest without adding a service worker.
+- Current public metadata update: The canonical public URL is `https://obscura-rouge.vercel.app/`. The static app ships Open Graph/Twitter metadata, a share preview image, `robots.txt`, `sitemap.xml`, static SEO acquisition pages, and a basic installable web app manifest without adding a service worker.
 
 ## Deployment Summary
 
@@ -64,8 +64,10 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 - HTML entry files, root metadata files, `robots.txt`, `manifest.webmanifest`, and share preview images must not receive the `/assets/*` immutable cache rule unless their URLs become content-hashed.
 - The app's current public metadata assets are:
   - `/og-image.svg` for Open Graph/Twitter previews.
-  - `/robots.txt` with `User-agent: *` and `Allow: /`.
+  - `/robots.txt` with `User-agent: *`, `Allow: /`, and the canonical sitemap URL.
+  - `/sitemap.xml` with the canonical home page and static SEO acquisition pages.
   - `/manifest.webmanifest` for basic install metadata.
+- Static SEO acquisition pages may live under `/features/*/` and `/privacy/*/`. They must be plain static content pages that link into the app and must not add backend, SSR, service worker, or media upload behavior.
 - Do not add a service worker in this release. Any service worker or runtime cache strategy must be documented here before implementation because it can complicate WASM, static asset, and app-shell freshness behavior.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
 - Background-removal model/runtime assets use the pinned IMG.LY static CDN base for the initial public production release. User media is not sent to IMG.LY; the browser only downloads static model/runtime assets.
@@ -102,6 +104,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 5. Verify the static metadata files exist in the build output:
    - `index.html` contains canonical, Open Graph, Twitter, manifest, and theme-color metadata.
    - `robots.txt` returns the intended allow-all policy.
+   - `sitemap.xml` includes only canonical 200-status URLs.
    - `manifest.webmanifest` is present.
    - `og-image.svg` is present.
 6. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`. The initial production target is the pinned IMG.LY CDN asset path unless `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` is set for self-hosting.
@@ -121,6 +124,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 13. Verify target headers, metadata files, and cross-origin isolation:
     - `curl -I <preview-or-production-url>`
     - `curl -I <preview-or-production-url>/robots.txt`
+    - `curl -I <preview-or-production-url>/sitemap.xml`
     - `curl -I <preview-or-production-url>/manifest.webmanifest`
     - `curl -I <preview-or-production-url>/assets/<hashed-asset-file>`
     - `globalThis.crossOriginIsolated === true` in the browser.

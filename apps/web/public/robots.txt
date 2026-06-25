@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://obscura-rouge.vercel.app/sitemap.xml

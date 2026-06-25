@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trim Video in Your Browser - Obscura</title>
+    <meta
+      name="description"
+      content="Trim short videos in a local-first browser editor. Obscura previews clips, adjusts speed, handles manual subtitles, and exports without backend upload."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Trim Video in Your Browser - Obscura" />
+    <meta
+      property="og:description"
+      content="A browser video trimmer for private short-video preparation."
+    />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/features/browser-video-trimmer/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Trim Video in Your Browser - Obscura" />
+    <meta
+      name="twitter:description"
+      content="Preview, trim, adjust speed, and export short videos locally in the browser."
+    />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link rel="canonical" href="https://obscura-rouge.vercel.app/features/browser-video-trimmer/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I trim video in the browser?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Obscura supports single-video trim workflows in the browser and uses local ffmpeg.wasm processing for export paths."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Obscura support long professional timelines?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The first MVP focuses on single-video editing, not multi-track timeline production."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I preview before downloading?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Video trim and conversion flows can create derived local preview assets before download."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="SEO pages">
+          <a href="/features/private-image-editor/">Image editor</a>
+          <a href="/features/add-subtitles-to-video/">Subtitles</a>
+          <a href="/privacy/local-first-media-editor/">Privacy</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">Browser video trimmer</p>
+            <h1>Trim short videos locally.</h1>
+            <p>
+              Obscura helps creators preview, trim, adjust speed, add manual subtitles, and export
+              short videos from a focused browser workspace.
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">Open editor</a>
+              <a class="button secondary" href="/features/add-subtitles-to-video/"
+                >Subtitle tools</a
+              >
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img
+              src="/og-image.svg"
+              width="1200"
+              height="630"
+              alt="Obscura local short-video editing workspace preview"
+            />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>Single-video editing for quick exports.</h2>
+          <p>
+            The first version of Obscura is not a CapCut-style multi-track editor. It is designed
+            for focused short-video preparation when privacy and speed matter.
+          </p>
+          <div class="grid">
+            <article class="tile">
+              <h3>Precise trim controls</h3>
+              <p>Set start and end times with timeline handles and numeric inputs.</p>
+            </article>
+            <article class="tile">
+              <h3>Playback workbench</h3>
+              <p>Preview the clip with play, pause, reset time, scrubber, and loop controls.</p>
+            </article>
+            <article class="tile">
+              <h3>Local export</h3>
+              <p>Run video processing in the browser worker path and download the result.</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>How browser trimming works.</h2>
+          <div class="steps">
+            <div class="step">
+              <strong>Preview</strong>Load a short video and inspect it in the player.
+            </div>
+            <div class="step">
+              <strong>Trim</strong>Choose the usable range and apply a derived preview.
+            </div>
+            <div class="step">
+              <strong>Download</strong>Export the selected format when the result is ready.
+            </div>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Video trimmer FAQ.</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>Are videos uploaded to a server?</h3>
+              <p>No. Obscura v1 has no backend upload endpoint for user media.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Which videos work best?</h3>
+              <p>Short videos in browser-friendly formats are the best fit for the first MVP.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can I convert formats?</h3>
+              <p>
+                Yes. Obscura supports local video format export paths where browser processing
+                allows it.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Related local media pages.</h2>
+          <div class="link-list">
+            <a href="/features/private-image-editor/">Private image editor</a>
+            <a href="/features/local-background-remover/">Background remover no upload</a>
+            <a href="/features/add-subtitles-to-video/">Add subtitles locally</a>
+            <a href="/privacy/local-first-media-editor/">Local-first media editor</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura focuses on private single-asset editing in v1.</span>
+      </footer>
+    </div>
+  </body>
+</html>

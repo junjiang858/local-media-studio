@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local-First Media Editor - Obscura Privacy</title>
+    <meta
+      name="description"
+      content="Obscura is a local-first image and short-video editor. Learn how the v1 browser workflow avoids backend media upload and keeps private files local."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Local-First Media Editor - Obscura Privacy" />
+    <meta
+      property="og:description"
+      content="Why Obscura keeps personal images and short videos in the browser workflow."
+    />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Local-First Media Editor - Obscura Privacy" />
+    <meta
+      name="twitter:description"
+      content="A privacy-focused media editor that avoids backend media upload in v1."
+    />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does local-first mean in Obscura?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In v1, Obscura processes selected media in the browser and does not provide a backend upload endpoint for user media."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Obscura use cloud processing?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Cloud media processing, accounts, and remote persistence are outside the v1 scope."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can app assets be downloaded from third parties?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Static model or runtime assets may be downloaded as application resources. This is different from uploading user media."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="SEO pages">
+          <a href="/features/private-image-editor/">Image editor</a>
+          <a href="/features/local-background-remover/">Background remover</a>
+          <a href="/features/browser-video-trimmer/">Video trimmer</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">Local-first privacy</p>
+            <h1>A media editor that avoids backend upload.</h1>
+            <p>
+              Obscura is designed for personal creators who want quick image and short-video edits
+              without sending private files to a cloud workspace.
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">Open editor</a>
+              <a class="button secondary" href="/features/private-image-editor/"
+                >Private image tools</a
+              >
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img
+              src="/og-image.svg"
+              width="1200"
+              height="630"
+              alt="Obscura local-first media workspace preview"
+            />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>What stays local in v1.</h2>
+          <p>
+            Uploaded files are represented by browser File objects, object URLs, and session state.
+            The first MVP does not include accounts, cloud storage, server uploads, or remote media
+            processing.
+          </p>
+          <div class="grid">
+            <article class="tile">
+              <h3>Selected files</h3>
+              <p>The app works with files that you explicitly choose or drop into the workspace.</p>
+            </article>
+            <article class="tile">
+              <h3>Edit state</h3>
+              <p>Crop values, subtitle cues, and export settings live in the browser session.</p>
+            </article>
+            <article class="tile">
+              <h3>Generated results</h3>
+              <p>
+                Processed images or videos become temporary local session assets before download.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Where network requests can still happen.</h2>
+          <p>
+            A local-first app can still download application assets. Background removal may load
+            model/runtime files, and the static web app loads JavaScript, CSS, images, and WASM
+            assets. These are app resources, not uploads of your selected media.
+          </p>
+          <div class="note">
+            <p>
+              Any future cloud processing, account system, remote persistence, or analytics over
+              user media requires a source-of-truth update before implementation.
+            </p>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Local-first FAQ.</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>Does Obscura store raw media long term?</h3>
+              <p>No. Raw media persistence is not part of the v1 product boundary.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Does Obscura have accounts?</h3>
+              <p>No. Accounts, sync, and collaboration are outside the first MVP.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Why not use cloud editing?</h3>
+              <p>
+                Many personal creators need quick edits for private files and do not want an upload
+                step.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>Explore local media workflows.</h2>
+          <div class="link-list">
+            <a href="/features/private-image-editor/">Private image editor</a>
+            <a href="/features/local-background-remover/">Background remover no upload</a>
+            <a href="/features/browser-video-trimmer/">Trim video in browser</a>
+            <a href="/features/add-subtitles-to-video/">Add subtitles locally</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura v1 is single-user, local-first, and browser-based.</span>
+      </footer>
+    </div>
+  </body>
+</html>

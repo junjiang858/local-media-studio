@@ -42,6 +42,17 @@ Rules:
 - Prioritize scannable density, efficient controls, clear state, restrained motion, and mature design-system patterns.
 - Document any future marketing or brand surface separately from the editing workspace before implementation.
 
+## Static SEO Acquisition Surface
+
+The editing workspace remains the first screen at `/`. Organic search acquisition may use separate static HTML pages under `apps/web/public/` when the goal is crawlable educational or feature content rather than app interaction.
+
+- Static acquisition pages are plain HTML/CSS assets emitted by Vite from `public/`; they must not introduce Next.js, SSR, a backend, or a separate router.
+- Static acquisition pages must use direct, crawlable HTML content for headings, body copy, internal links, FAQ sections, canonical URLs, Open Graph/Twitter metadata, and JSON-LD where useful.
+- The approved initial page families are feature pages and privacy/local-first pages that link users into the app with a single primary CTA.
+- Static SEO pages should use a restrained Obscura studio content style: dark theme, cyan accent, 8px working radii, concise copy, and no decorative motion dependency.
+- These pages are not allowed to change the editor IA, app shell, media-processing behavior, storage behavior, or local-first promise.
+- Sitemap and robots metadata for these pages belong in `apps/web/public/` and `docs/ops/DEPLOYMENT.md`.
+
 ## Product MVP UI Quality Gate
 
 - MVP UI quality standard: The first MVP may be narrow, but the visible workspace must feel like a coherent media tool, with real controls, stable layout, complete states, and localized copy.

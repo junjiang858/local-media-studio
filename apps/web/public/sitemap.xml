@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://obscura-rouge.vercel.app/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/features/private-image-editor/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/features/local-background-remover/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/features/browser-video-trimmer/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/features/add-subtitles-to-video/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/privacy/local-first-media-editor/</loc>
+    <lastmod>2026-06-25</lastmod>
+  </url>
+</urlset>
