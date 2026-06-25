@@ -1,321 +1,125 @@
 ---
 name: agent-project-kit
-description: Use when planning, building, or reviewing AI-assisted software projects from vague idea to delivery, especially for Vibe Coding, project charters, tech stack decisions, Agent constitution, skill workflows, frontend/backend/database skeletons, security acceptance, tool permissions, or AI-friendly engineering rules.
+description: Use when starting or governing AI-assisted software projects, especially project baseline setup, source-of-truth documents, architecture or contract changes, implementation readiness, tool permissions, security or deployment boundaries, or routing bounded feature work.
 ---
 
 # Agent Project Kit
 
 ## Overview
 
-Guide an AI-assisted software project through staged clarification, documented decisions, implementation boundaries, and evidence-based acceptance. Treat AI as a collaborator that needs product context, engineering rules, and verification gates before it writes or changes code.
+Guide AI-assisted software projects through staged clarification, source-of-truth documents, implementation boundaries, and evidence-based acceptance. Use this skill as the project router before implementation discipline takes over.
 
 ## Core Rule
 
-Do not jump from a vague idea to documents, technology choices, project scaffolding, or implementation. First identify the current project stage, load only the relevant reference, clarify the minimum facts for that stage, and ask for explicit consent before creating or updating any project document file or before irreversible or high-risk work.
+Do not jump from a vague idea to documents, technology choices, scaffolding, or implementation. First classify the current stage, read only the matching reference, clarify the minimum missing facts, and ask for explicit consent before creating or updating project source-of-truth documents or doing irreversible or high-risk work.
 
-For vague product ideas, do not narrow only inside the user's first wording. Before project purpose confirmation or project charter drafting, run the Reference Project Scan Gate so the user sees concrete existing projects, products, open-source repos, or adjacent implementations with direct links and can choose the direction with better context.
+Never create application scaffolding, UI pages, API skeletons, database schemas, package manager files, implementation directories, or runnable product behavior until the Project Specification Readiness Gate passes or the user explicitly confirms a narrow bootstrap-only exception.
 
-Before confirming a technology stack for a Product MVP, run the Capability Library Scan Gate. The agent must derive the needed technical capabilities from the confirmed project purpose and charter facts, research mature open-source or inspectable third-party libraries for those capabilities, and present the chosen stack together with the project-needed library set for user review.
+## Default Workflow Priority
 
-Never create application scaffolding, UI pages, API skeletons, database schemas, package manager files, or implementation directories until the Project Specification Readiness Gate is satisfied or the user explicitly confirms a narrow bootstrap-only exception.
+When this skill is loaded or the user request matches AI-assisted project initiation, project baseline setup, source-of-truth documents, architecture or contract changes, implementation readiness, tool permissions, security boundaries, deployment boundaries, or bounded-feature routing, Agent Project Kit is the default primary workflow.
+
+Use overlapping skills, including Superpowers, OpenSpec, GitHub Spec Kit, issue trackers, review skills, TDD skills, security skills, and deployment skills, only as auxiliary method libraries after this skill classifies the project path and protects the source-of-truth gates.
+
+If an overlapping workflow tool is unavailable, use the Optional Workflow Tool Fallback in `references/workflow-checklists.md` instead of blocking or asking the user to install tools they did not request.
+
+Skip this priority only when the user explicitly names another workflow as primary, or when the task is a Local Fix Path such as a small code explanation, copy tweak, single command, or isolated test fix that does not change product or engineering contracts.
 
 ## Global Interaction Rules
 
 ### Confirmation Prompt Rule
 
-Any task that asks for user confirmation, consent, approval, or a path choice must include a plain-text fallback in the assistant message. Do not depend on UI buttons, `request_user_input`, AskUserQuestion, or any host-specific quick action. Interactive tools may be used when available, but the visible message must still contain enough text for the user to reply directly.
-
-When options are useful, label them clearly, such as `A. Continue` and `B. Revise`, and state what each option authorizes. For one-way or high-risk confirmations, state the exact action that will happen and wait for an explicit affirmative reply before acting.
+Any request for confirmation, consent, approval, or a path choice must include plain-text options in the assistant message. Do not depend on UI buttons, host quick actions, or tool-only prompts.
 
 ### User Language Rule
 
-Always match the user's current language for questions, confirmations, progress updates, final answers, and milestone messages unless the user requests another language. If the conversation contains multiple languages, use the language of the user's latest instruction. Preserve the same operational meaning across languages; do not force Chinese examples on non-Chinese users or English examples on Chinese users.
+Use the user's current language for questions, confirmations, progress updates, final answers, and milestone messages unless the user requests another language. Preserve the same operational meaning in the user's current language.
 
 ## Goal Contract
 
-At the start of every project-level run, state the current goal in one sentence. The goal must include:
+At the start of every project-level run, state the Goal Contract in one sentence:
 
-- Target outcome: what stage outcome the user is trying to reach.
-- Completion signal: what concrete artifacts, confirmations, or evidence prove that outcome is reached.
+- Target outcome: the stage outcome or project state the user is trying to reach.
+- Completion signal: the artifacts, confirmations, audits, or evidence that prove the outcome is reached.
 - Next action: the single next question, document, audit, or implementation step.
 
-Do not declare the goal achieved merely because a document was written. Declare success only when the goal's completion signal is satisfied and the user has confirmed the relevant source-of-truth artifact or readiness result.
+For a new Product MVP, the default target is first MVP slice accepted after the project engineering baseline is ready. The two early milestones are project engineering baseline ready and First MVP slice accepted with evidence.
 
-For the common "create/start this project" flow, the default target outcome is: the project reaches an approved first MVP slice after the engineering baseline is ready. This default has two milestones:
+After the first slice, use explicit lifecycle states from `references/mvp-closure.md`: `MVP Scope Incomplete`, `Full MVP Scope Complete`, and `Release Ready`. When `Full MVP Scope Complete` is reached, switch to Formal Product Development Mode.
 
-1. Project engineering baseline ready.
-2. First MVP slice accepted with evidence.
+Do not declare a milestone complete just because a document was written. Completion requires the relevant gate, confirmation, implementation evidence, or closure audit described in `references/workflow-checklists.md` and `references/mvp-closure.md`.
 
-The project engineering baseline milestone is achieved when:
+## Path Router
 
-- Project purpose is confirmed.
-- Required source-of-truth documents for the product shape are present or explicitly marked not applicable.
-- The Project Specification Readiness Gate has passed.
-- High-risk security/tool/deployment boundaries are documented when relevant.
-- The user has confirmed the readiness result or approved the next implementation step.
+Use the lightest path that protects the project:
 
-When this milestone is achieved, end with a concise readiness message in the user's current language. Preserve the same meaning; do not force Chinese for non-Chinese users.
+| Path | Use when | Minimum behavior |
+| --- | --- | --- |
+| Project Baseline Path | New project, project reorganization, missing core documents, technology stack choice, engineering baseline, security, tool, or deployment boundary setup. | Run staged clarification, reference scan, capability scan, document consent, and readiness gates before implementation. |
+| Contract-Changing Feature Path | A feature or fix changes product behavior, routes, UI states, component responsibilities, API contracts, data shape, permissions, dependencies, deployment, tool permissions, or operations. | Run the Contract Impact Check, update affected source-of-truth documents first, then implement. |
+| Bounded Feature Path | Baseline exists and the work stays inside approved source-of-truth contracts. | Read relevant docs, state no source-of-truth update is needed, then use the Implementation Handoff. |
+| Local Fix Path | Small bug fix, copy/style tweak, test fix, code explanation, single command, or local task that does not change product or engineering contracts. | Skip the project baseline flow and use the lightest direct engineering method. |
 
-Chinese example:
+Before treating work as bounded, run the Contract Impact Check from `references/workflow-checklists.md`.
 
-```text
-🎉 恭喜，项目工程基线已就绪！
+## Core Gates
 
-✅ 项目目标、技术路线、核心文档和实现前门禁已经到位。
-🚀 下一步可以从第一个已批准的产品闭环开始实现。
-```
+Keep the gate names in working memory, then read the routed reference for details:
 
-English example:
+- Reference Project Scan Gate: for vague or early product ideas before requirements, Project Purpose Confirmation, stack choice, or charter drafting. See `references/project-initiation.md`.
+- Requirements Depth Gate: before asking to write `docs/project/PROJECT_CHARTER.md`. See `references/project-initiation.md`.
+- Project Purpose Confirmation: before technology stack, frontend, backend, database, or implementation planning. See `references/project-initiation.md`.
+- Capability Library Scan Gate: before technology stack confirmation, dependency installation, package manager edits, scaffolding, or implementation. Treat default stack recommendations as context-aware candidates. See `references/architecture-baseline.md`.
+- Document Consent Gate: before creating, copying, overwriting, moving, or editing `AGENTS.md`, files under `docs/`, or other source-of-truth documents. See `references/workflow-checklists.md`.
+- Project Specification Readiness Gate: before any scaffold, package manager file, UI/API/database code, migration, local dev server, or runnable behavior. See `references/workflow-checklists.md`.
+- Source-of-Truth Change Gate: before implementation that changes product design, contracts, data shape, permissions, dependencies, tools, deployment, or operations. See `references/workflow-checklists.md`.
+- Source-of-Truth Distillation Gate: when detail would bloat current-state docs; route stable feature behavior to `docs/features/`, one-change detail to `docs/changes/`, long-term decisions to `docs/decisions/`, and process artifacts to `docs/agent-project-kit/`. See `references/document-layout.md` and `references/workflow-checklists.md`.
+- Product MVP UI Quality Gate: before frontend implementation or first frontend MVP slice completion. See `references/frontend.md`.
+- MVP Closure Sentinel: before claiming `Full MVP Scope Complete` or `Release Ready`, or when the user asks what remains, whether the MVP is complete, whether release is safe, or what to do next after implementation. See `references/mvp-closure.md`.
 
-```text
-🎉 Project engineering baseline is ready!
+When multiple readiness documents are missing, offer exactly two plain-text options:
 
-✅ The project goal, technical route, core documents, and implementation readiness gate are in place.
-🚀 Next, you can start implementing the first approved product loop.
-```
-
-The first MVP slice milestone is achieved only after the baseline is ready and one approved, user-verifiable product slice has been implemented and checked. For web products, this usually includes the first MVP page as the user entry, but the completion standard is the slice, not a static page. For non-web projects, the slice can be the first API, worker flow, CLI flow, automation run, or other product workflow.
-
-A first MVP slice must include:
-
-- One approved core user scenario from entry to useful outcome.
-- The necessary UI page, API, worker, CLI, automation, or integration surface for that scenario.
-- Required states, data/API/mock behavior, and acceptance criteria from the source-of-truth documents.
-- For frontend slices, a UI/UX/design system result that satisfies the Product MVP UI Quality Gate.
-- Fresh verification evidence such as build, test, browser, API, CLI, worker, or run logs.
-
-Chinese example:
-
-```text
-🎉 恭喜，首个 MVP 切片已完成！
-
-✅ 第一个已批准的产品闭环已经实现，并提供了运行、构建、浏览器、API 或任务验收证据。
-🚀 下一步可以继续扩展后续页面、数据流、接口、任务或部署发布。
-```
-
-English example:
-
-```text
-🎉 First MVP slice is complete!
-
-✅ The first approved product loop has been implemented with run, build, browser, API, or task verification evidence.
-🚀 Next, you can expand the remaining pages, data flows, APIs, jobs, or deployment path.
-```
-
-## Default Workflow Priority
-
-When this skill is loaded or the user request matches AI-assisted project initiation, planning, architecture, frontend, backend, database, security, tool permissions, acceptance, or delivery workflow, Agent Project Kit is the default primary workflow.
-
-Use overlapping skills, including `superpowers` planning, TDD, execution, or review skills, only as auxiliary method libraries. Do not let overlapping skills replace this skill's stage router, confirmation gates, or required artifacts.
-
-Skip this priority only when the user explicitly names another skill or process as the primary workflow, or when the task is a local code fix, code explanation, single command, or other non-project-level task.
-
-## Guided Interaction
-
-Ask one question at a time when gathering missing project context. Do not present a full intake questionnaire unless the user explicitly asks for one.
-
-For vague project starts, use this loop:
-
-1. State the current stage in one short sentence.
-2. Ask the single most important next question.
-3. Wait for the answer.
-4. When the initial idea is clear enough to search and the scan is not done yet, complete the Reference Project Scan Gate and ask the user to choose a direction.
-5. Wait for the user's direction choice.
-6. Reflect the answer into the current artifact.
-7. Continue only to the next necessary question or draft.
-
-If two details are inseparable, ask at most two short questions. Prefer multiple-choice options when they reduce effort.
-
-Do not treat a one-sentence project idea as enough context for a project charter. When the user's wording contains ambiguous domain nouns or product-shape terms, clarify what they mean in this project before drafting a PRD-quality artifact. Identify the core objects the product manages, the main operations users perform on them, and the boundaries around roles, data, external systems, execution, observability, and safety.
-
-## Reference Project Scan Gate
-
-Before Requirements Depth Gate, Project Purpose Confirmation, technology selection, or project charter drafting for a vague or early product idea, scan for concrete reference projects.
-
-The scan must include 3-7 specific projects, products, open-source repositories, plugins, templates, or adjacent implementations. Each item must include project name, direct link, and decision impact:
-
-- Project name.
-- A direct link to the product page, repository, documentation, marketplace page, or other primary source.
-- Source type: open-source repo, commercial product, plugin, framework example, template, or adjacent implementation.
-- What this project can teach or contribute to the user's idea.
-- What not to copy blindly.
-- How it changes the user's possible MVP direction.
-
-Do not satisfy this gate with abstract categories like "similar SaaS products", "open-source tools", or "competitors" without concrete links. If the community landscape may have changed, use web search or another live source. If live search is unavailable, say that the scan is incomplete and ask whether to continue with known examples or wait for research.
-
-After the scan, offer 2-4 direction choices grounded in those references. Ask the user to pick, combine, or reject a direction. Do not continue to project purpose confirmation, `docs/project/PROJECT_CHARTER.md`, technology selection, or implementation planning until the user chooses or confirms a direction after seeing the linked references.
-
-## Project Purpose Confirmation
-
-Before moving beyond project initiation, summarize the project purpose for the user: who it serves, what problem it solves, what the product does, and what the MVP should cover first. Ask the user to confirm or correct that summary.
-
-Do not move into technology stack, frontend, backend, database, or implementation planning until the user confirms the project purpose summary.
-
-## Capability Library Scan Gate
-
-Before technology stack confirmation, `docs/architecture/TECH_STACK.md`, dependency installation, package manager edits, scaffolding, or implementation, scan for third-party libraries that match the project's required technical capabilities.
-
-The scan starts from confirmed project facts, not generic popularity. First extract the required technical capabilities, such as authentication, forms, validation, tables, charts, rich text, file upload, search, background jobs, payments, email, realtime, AI SDKs, workflow orchestration, observability, testing, or deployment. Then research only libraries that serve those capabilities.
-
-Each recommended or rejected candidate must include capability, library name, direct link, ecosystem, open-source or inspectability status, license or commercial constraint when relevant, maintenance evidence, why it fits or does not fit this project, migration or lock-in risk, and whether it is included now, deferred, or rejected.
-
-Prefer mature, well-documented, actively maintained, open-source libraries when they fit the project. Do not add a library just because it is popular; if the MVP can use framework-native functionality without losing clarity, mark the library as deferred or unnecessary.
-
-If the library landscape may have changed, use live search, official docs, package registries, GitHub repositories, release notes, or security advisories. If live research is unavailable, say that maintenance confidence is incomplete and ask whether to continue with known candidates or wait for research.
-
-Present the final review as one combined stack decision:
-
-- Core stack: framework, runtime, database, deployment, package manager, testing.
-- Capability library table: included, deferred, and rejected libraries.
-- Reasons why the included libraries are necessary for this project.
-- Risks, licensing notes, and replacement triggers.
-
-Do not confirm a technology stack, write `docs/architecture/TECH_STACK.md`, install dependencies, or scaffold implementation until the user confirms the combined core stack and third-party library set.
-
-## Document Consent Gate
-
-Do not create, copy, overwrite, move, or edit any project source-of-truth document until the user explicitly agrees to write that specific document or has directly asked for that exact document to be written. This includes `AGENTS.md`, every file under `docs/`, and any root-level planning document.
-
-Before writing a document file:
-
-1. Confirm the current stage artifact in conversation.
-2. State the target path and what the document will contain.
-3. Ask whether to write or update that file.
-4. Wait for an affirmative answer.
-
-Consent applies only to the named document and current stage. Writing `docs/project/PROJECT_CHARTER.md` does not imply permission to write `docs/architecture/TECH_STACK.md`, `AGENTS.md`, or engineering baseline files.
-
-When multiple documents are missing for the next stage, first interpret the current stage, then explain which missing documents directly unblock that next stage and why they are needed now. Offer exactly two paths:
-
-1. Steady path: create or update only the single most important next document, then ask for review before continuing.
-2. Accelerated path: ask the user to authorize the named missing batch for this stage, create or update only those listed documents, then run the implementation readiness audit.
-
-Render these as plain-text options even when no interactive choice tool is available. Do not depend on UI buttons, `request_user_input`, or any host-specific quick action. Label the choices clearly, such as `A. Steady path` and `B. Accelerated path`, and include the exact document paths covered by each choice.
-
-Batch consent is limited to the named document list and current stage. It is not permanent permission, does not cover future documents discovered later, and does not authorize implementation code, scaffolding, package manager files, UI pages, APIs, database schemas, migrations, or runnable behavior.
-
-The agent may discuss, summarize, or propose a short outline in chat before consent, but must not create or modify document files before consent.
-
-## Requirements Depth Gate
-
-Before asking to write `docs/project/PROJECT_CHARTER.md`, gather enough context for a PRD-quality charter. At minimum, the conversation must cover:
-
-- The selected direction from the Reference Project Scan Gate and any reference projects the user wants to borrow from or avoid.
-- Target user or user role.
-- Core scenario and pain point.
-- MVP outcome and first-use workflow.
-- Must-have features, explicit non-goals, and postponed items.
-- Core domain objects and important data, resources, or external systems.
-- Key business rules, permissions, and safety constraints.
-- Acceptance criteria that can be checked objectively.
-- Open questions that would affect architecture or implementation.
-
-If these are not known yet, keep asking one focused question at a time. If the user is unsure, offer 2-3 concrete options and ask them to choose or revise one.
-
-## Project Specification Readiness Gate
-
-Before creating or modifying implementation files, scaffolding a repo, adding package manager files, creating `apps/` or `packages/`, writing UI/API/database code, or starting a dev server, verify that the relevant source-of-truth documents exist and are confirmed by the user.
-
-For a Product MVP with web, backend, database, tool execution, deployment, or AI workflow concerns, the implementation readiness set is:
-
-- `AGENTS.md`
-- `docs/project/PROJECT_CHARTER.md`
-- `docs/architecture/TECH_STACK.md`
-- `docs/architecture/ENGINEERING_BASELINE.md`
-- `docs/architecture/FRONTEND_PLAN.md` when any frontend UI will be created.
-- `docs/architecture/DATABASE_DESIGN.md` when any database, schema, migration, or persistent data model will be created.
-- `docs/architecture/BACKEND_SPEC.md` when any API, backend service, worker, tool execution, or integration boundary will be created.
-- `docs/workflow/AI_WORKFLOW.md`
-- `docs/ops/TOOL_POLICY.md`
-- `docs/ops/DEPLOYMENT.md` when local run, environment variables, deployment, or operational setup is needed.
-
-For high-risk projects involving uploaded executable content, tool execution, secrets, payments, production data, external writes, or privileged local access, also require explicit security acceptance content before implementation. This can live in `docs/architecture/BACKEND_SPEC.md`, `docs/ops/TOOL_POLICY.md`, or a separately approved security document if the user requests one.
-
-For frontend work, `docs/architecture/FRONTEND_PLAN.md` must include a frontend engineering contract before implementation: source tree, route and app-shell responsibilities, component split rules, state/config/i18n/icon/asset/utility ownership, and import boundaries. A page map or visual style note alone is not enough to start frontend code.
-
-For frontend work, `docs/architecture/FRONTEND_PLAN.md` must also satisfy the Product MVP UI Quality Gate before implementation. It must include the Design Read, design system tokens, UI component strategy, state and interaction contract, responsive and accessibility expectations, anti-slop guardrails, and browser UI quality verification plan. A first MVP page may be narrow, but it must not be a throwaway or visually generic surface.
-
-If any required artifact is missing, do not dump a raw checklist. State the current stage, identify only the documents that directly unblock the next stage, explain why each one matters now, and offer the steady path or accelerated path from the Document Consent Gate. Use plain-text options and do not depend on UI buttons. Do not create code or scaffolding while the gate is incomplete.
-
-Bootstrap-only exception: if the user explicitly asks to create a bare repository skeleton before the readiness set is complete, confirm that the exception is limited to empty folders, root config, Git setup, and documentation plumbing. Do not add UI/API/business logic, database schema, migrations, or runnable product behavior under this exception.
-
-## Source-of-Truth Change Gate
-
-Before implementing any change that alters project design, product behavior, contracts, data shape, permissions, or operations, update the original source-of-truth document first and get the required confirmation. Treat OpenSpec, GitHub Spec Kit, issue specs, design notes, and chat plans as auxiliary inputs unless the user explicitly declares one of them to be the new source of truth.
-
-Design or contract changes include:
-
-- New or changed page, route, component responsibility, UI state, data dependency, or frontend interaction: update `docs/architecture/FRONTEND_PLAN.md`.
-- New or changed frontend source tree, folder responsibility, component split rule, import boundary, shared UI location, i18n/config/state/utils ownership, or file colocation rule: update `docs/architecture/FRONTEND_PLAN.md`.
-- New or changed API, request/response contract, validation rule, error shape, permission rule, backend workflow, integration, worker, or data flow: update `docs/architecture/BACKEND_SPEC.md`.
-- New or changed table, field, relation, index, enum, seed, schema, migration, ownership rule, retention rule, or rollback plan: update `docs/architecture/DATABASE_DESIGN.md`.
-- New or changed framework, dependency, script, repository layout, quality gate, deployment path, environment variable, tool permission, or operational behavior: update the relevant tech stack, engineering baseline, tool policy, or deployment document.
-
-Use this sequence:
-
-1. Read the current source-of-truth documents and identify which ones the requested change affects.
-2. Propose the documentation delta before code, schema, migration, API, or UI edits.
-3. Satisfy the Document Consent Gate and update the existing document files, not only a chat summary or temporary spec.
-4. Confirm the updated documents still satisfy the Project Specification Readiness Gate.
-5. Implement the smallest code change that follows the updated documents.
-6. If implementation reveals an unavoidable design change, pause implementation, update the source-of-truth document first, then continue.
-
-## Product MVP UI Quality Gate
-
-MVP scope may be small, but UI/UX/design system quality is not optional. A Product MVP should cut features, not ship a careless interface. For web products, the first MVP page is the user's entry into the first product loop, so it must feel like a coherent product surface rather than a temporary demo.
-
-Before creating or updating `docs/architecture/FRONTEND_PLAN.md`, run a Design Read:
-
-- Identify the surface type: marketing site, product workspace, SaaS app, admin panel, dashboard, data table, multi-step flow, internal tool, content surface, mobile app, mini program, or hardware UI.
-- Identify audience, product tone, visual density, interaction complexity, accessibility constraints, existing brand assets, and reference signals.
-- State one concise design direction for the plan. If two directions would materially change the product, ask one clarifying question.
-- Use taste-skill and anti-slop rules contextually; do not apply landing-page taste rules blindly to dashboards, admin panels, data tables, or multi-step product UI. For operational product UI, prefer scannable density, efficient controls, clear state, restrained motion, and mature design-system or data-grid patterns.
-
-`docs/architecture/FRONTEND_PLAN.md` must define:
-
-- Design system foundation: selected UI library, icon library, typography, semantic color tokens, spacing, radius, shadow, border, breakpoints, z-index, motion, and theme strategy.
-- Layout contract: app shell, navigation, toolbar, content regions, sidebars, detail panels, tables/lists/cards, dialogs, and mobile collapse rules.
-- State and interaction contract: loading, empty, error, success, disabled, selected, validating, saving, optimistic, permission-denied, focus, hover, active, keyboard, toast, dialog, destructive-action, and undo patterns when relevant.
-- Component strategy: use the approved UI library for common controls, avoid hand-written duplicate base components, customize tokens rather than scattering one-off styles, and split business components by user concept, interaction state, and data boundary.
-- Anti-slop guardrails: no generic AI-purple gradient default, no fake product previews made from decorative divs, no gratuitous glassmorphism or motion, no repeated equal-card layouts unless the product data truly calls for them, no ungrounded metrics, no placeholder-as-label forms, no text overflow, and no incoherent overlaps.
-- Browser UI quality verification: build/type check plus browser inspection of the key flow on desktop and mobile, including visual hierarchy, readable contrast, text fit, stable dimensions, responsive layout, keyboard/focus behavior, and required states.
-
-Before declaring a first frontend MVP slice complete, verify that the page proves the approved product loop, follows the documented design system, exposes the expected states, and has fresh browser evidence. If the UI looks generic, fragmented, inaccessible, or structurally inconsistent with `FRONTEND_PLAN.md`, the slice is not complete even if the happy path works.
+1. Steady path: create or update the single most important next document, then ask for review.
+2. Accelerated path: ask the user to authorize the named missing batch for this stage, create or update only those named documents, then run the readiness audit.
 
 ## Stage Router
 
-| User situation                                                                        | Load                                                                      | Primary output                                                     |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Creating or reorganizing project source-of-truth documents                            | `references/document-layout.md`                                           | root `AGENTS.md` index plus docs under `docs/`                     |
-| Vague idea, unsure what AI can do, or first project                                   | `references/project-initiation.md`                                        | clarified problem, MVP boundary, project charter                   |
-| Choosing stack, repository setup, version safety                                      | `references/project-initiation.md`, `references/architecture-baseline.md` | tech stack decision, architecture track, Git checkpoint rule       |
-| Defining quality gates, scripts, CI, migrations, env, or repo hygiene                 | `references/engineering-baseline.md`                                      | engineering baseline and acceptance checklist                      |
-| Need project-level rules, AGENTS.md, or reusable process                              | `references/engineering-rules.md`                                         | Agent constitution, candidate skill workflow                       |
-| Planning pages, UX states, components, frontend skeleton                              | `references/frontend.md`                                                  | page map, component map, frontend skeleton plan                    |
-| Designing tables, fields, relations, migrations                                       | `references/database.md`                                                  | database design document                                           |
-| Defining APIs, backend business boundaries, backend skeleton, architecture acceptance | `references/backend.md`                                                   | backend business spec, minimal backend skeleton, acceptance report |
-| Checking backend safety, secrets, logs, dependencies, database risk                   | `references/security.md`                                                  | security boundary table, bottom-layer security evidence            |
-| Deciding which tools or MCPs AI may use                                               | `references/tool-policy.md`                                               | `docs/ops/TOOL_POLICY.md` or tool permission matrix                |
-| Need whole-project flow, default stack, or reusable prompt pack                       | `references/workflow-checklists.md`                                       | roadmap, docs checklist, default workflow docs                     |
-| User asks to create the project, scaffold the app, or start implementation            | `references/workflow-checklists.md`, then the missing stage references    | implementation readiness audit before any code                     |
+Read the matching reference before giving stage instructions or editing project files:
+
+| User situation | Load | Primary output |
+| --- | --- | --- |
+| Creating or reorganizing project source-of-truth documents | `references/document-layout.md` | root `AGENTS.md` index plus docs under `docs/` |
+| Vague idea, unsure what AI can do, or first project | `references/project-initiation.md` | clarified problem, reference scan, MVP boundary, project charter |
+| Choosing stack, repository setup, version safety | `references/project-initiation.md`, `references/architecture-baseline.md` | tech stack decision, architecture track, Git checkpoint rule |
+| Defining quality gates, scripts, CI, migrations, env, or repo hygiene | `references/engineering-baseline.md` | engineering baseline and acceptance checklist |
+| Need project-level rules, AGENTS.md, or reusable process | `references/engineering-rules.md` | Agent constitution and candidate skill workflow |
+| Planning pages, UX states, components, frontend skeleton | `references/frontend.md` | page map, component map, frontend skeleton plan |
+| Designing tables, fields, relations, migrations | `references/database.md` | database design document |
+| Defining APIs, backend business boundaries, backend skeleton, architecture acceptance | `references/backend.md` | backend business spec, minimal backend skeleton, acceptance report |
+| Checking backend safety, secrets, logs, dependencies, database risk | `references/security.md` | security boundary table and bottom-layer security evidence |
+| Deciding which tools or MCPs AI may use | `references/tool-policy.md` | `docs/ops/TOOL_POLICY.md` or tool permission matrix |
+| Need whole-project flow, default stack, or reusable prompt pack | `references/workflow-checklists.md` | roadmap, docs checklist, default workflow docs |
+| User asks to create the project, scaffold the app, or start implementation | `references/workflow-checklists.md`, then missing stage references | implementation readiness audit before any code |
+| Existing baseline and bounded feature or local fix | `references/workflow-checklists.md`, then affected source-of-truth docs | Contract Impact Check, Implementation Handoff, verification evidence |
+| User asks whether MVP is complete, what remains, whether release is safe, or asks for post-implementation next steps | `references/mvp-closure.md`, then relevant source-of-truth docs | MVP closure audit, lifecycle state, remaining risks, next step recommendation |
+| Feature/change detail would bloat current-state docs | `references/document-layout.md`, affected stage references | placement in `docs/features/`, `docs/changes/`, `docs/decisions/`, or `docs/agent-project-kit/` |
 
 ## Execution Flow
 
-1. Classify the request into one stage from the router.
-2. State the Goal Contract for the current run: target outcome, completion signal, and next action.
+1. Classify the request into Project Baseline Path, Contract-Changing Feature Path, Bounded Feature Path, or Local Fix Path.
+2. State the Goal Contract for project-level work.
 3. Read the matching reference file before giving instructions or editing project files.
-4. When creating project documents, use `references/document-layout.md` unless the user explicitly requests a different layout.
-5. Check whether required upstream artifacts exist. If only one artifact or fact is missing, request only that item. If multiple readiness documents are missing, run the stage-aware readiness audit and offer both steady and accelerated paths.
-6. When information is missing, use Guided Interaction instead of dumping a long checklist of questions.
-7. For project initiation, satisfy Reference Project Scan Gate, Requirements Depth Gate, and Project Purpose Confirmation before asking to write the project charter.
-8. For every document file, satisfy Document Consent Gate before creating or updating it.
-9. Before technology stack confirmation, satisfy the Capability Library Scan Gate and get user confirmation for the combined core stack and library set.
-10. Before scaffolding or implementation, satisfy the Project Specification Readiness Gate. If documents are missing, stop implementation and offer the steady path and accelerated path as plain-text options.
-11. Before any implementation that changes design or contracts, satisfy the Source-of-Truth Change Gate and update the original project documents first.
-12. Produce the smallest useful approved stage artifact: plan, document, checklist, matrix, skeleton, or acceptance report. After creating or updating any readiness document, rerun the readiness audit summary in the final response; when multiple readiness documents remain, end with the two plain-text options rather than a single "next document" suggestion.
-13. For implementation work, preserve Git checkpoints and return evidence: updated source-of-truth documents when design changed, commands run, tests, build, browser/API checks, or security proof.
-14. For high-risk operations involving production data, secrets, deployment, payments, cloud resources, database writes, or destructive file changes, stop and request explicit confirmation.
-15. When a Goal Contract milestone is genuinely satisfied, say so explicitly. Provide the project engineering baseline congratulatory message at the baseline milestone, and provide the first MVP slice congratulatory message only after the approved slice is implemented and verified with fresh evidence.
+4. For vague project starts, satisfy Reference Project Scan Gate, Requirements Depth Gate, and Project Purpose Confirmation before asking to write the project charter.
+5. For every source-of-truth document file, satisfy Document Consent Gate before creating or updating it.
+6. Before technology stack confirmation, satisfy the Capability Library Scan Gate and get user confirmation for the combined core stack and third-party library set.
+7. Before scaffolding or implementation, satisfy the Project Specification Readiness Gate. If documents are missing, stop implementation and offer the Steady path and Accelerated path with named missing batch and plain-text options.
+8. Before implementation that changes design or contracts, satisfy the Source-of-Truth Change Gate and update the original project documents first.
+9. When change details would bloat current-state docs, satisfy the Source-of-Truth Distillation Gate.
+10. For Bounded Feature Path or Local Fix Path after readiness has passed, use the Implementation Handoff instead of rerunning the full baseline.
+11. For implementation work, return evidence: changed source-of-truth documents when design changed, commands run, tests, build, browser/API checks, deployment checks, or security proof.
+12. For high-risk operations involving production data, secrets, deployment, payments, cloud resources, database writes, or destructive file changes, stop and request explicit confirmation.
+13. Use the MVP Closure Sentinel only when triggered.
+14. When a Goal Contract milestone is genuinely satisfied, say so explicitly in the user's current language.
 
 ## Required Artifacts
 
@@ -331,29 +135,13 @@ When a `templates/` directory is available, copy and adapt its matching template
 - `docs/workflow/AI_WORKFLOW.md`: clarify, spec, plan, implement, verify, archive.
 - `docs/ops/TOOL_POLICY.md`: default tools, project tools, high-risk confirmations.
 - `docs/ops/DEPLOYMENT.md`: local, staging, production, environment variables, health checks, rollback.
+- `docs/features/<feature-name>.md`: stable feature behavior that should be easy to find without bloating current-state architecture docs.
+- `docs/changes/<date-or-id>-<change-name>.md`: one change's proposal, design notes, tasks, acceptance notes, and temporary implementation context.
+- `docs/decisions/ADR-<number>-<topic>.md`: long-term product or architecture decisions and rejected alternatives.
+- `docs/agent-project-kit/`: Agent Project Kit process artifacts such as reference scans, capability scans, readiness audits, MVP closure audits, and handoffs.
 
-These artifacts are not all required for every tiny task, but they are required before implementation when the project contains the corresponding surface. Do not treat `PROJECT_CHARTER.md`, `TECH_STACK.md`, and `ENGINEERING_BASELINE.md` alone as enough to start a Product MVP scaffold with frontend, backend, database, tool execution, or deployment concerns.
-
-## Common Mistakes
-
-| Mistake                                                                                         | Correction                                                                                                                                                                            |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Asking AI to code before scope is clear                                                         | Create or update the project charter first.                                                                                                                                           |
-| Listing vague competitor categories during initiation                                           | Run a Reference Project Scan Gate with project name, direct link, lessons, cautions, and direction choices.                                                                           |
-| Planning implementation before confirming project purpose                                       | Summarize the target user, problem, product role, and MVP; wait for user confirmation.                                                                                                |
-| Confirming a stack without library research                                                     | Run a Capability Library Scan Gate and review project-needed third-party libraries with links, maintenance evidence, and include/defer/reject decisions.                              |
-| Letting AI choose many possible stacks forever                                                  | Discuss alternatives, then commit to one documented main route.                                                                                                                       |
-| Starting a scaffold after only a charter, stack, and engineering baseline                       | Run the Project Specification Readiness Gate and create frontend, database, backend, workflow, tool policy, deployment, and Agent rule documents as applicable before implementation. |
-| Treating frontend directory structure as cleanup after code generation                          | Define the frontend engineering contract in `docs/architecture/FRONTEND_PLAN.md` before writing UI code, then implement against it.                                                   |
-| Putting UI, config, messages, state, icons, mock data, and utilities into one route or app file | Split code by route composition, shared UI, business components, config, i18n, state, assets, and capability-scoped utilities.                                                        |
-| Treating Git as an afterthought                                                                 | Initialize Git early and commit every stable stage.                                                                                                                                   |
-| Putting every rule into the Agent constitution                                                  | Keep project rules short; move task-specific procedures into skills or references.                                                                                                    |
-| Dumping every project document in the repository root                                           | Keep only `AGENTS.md` as the root index; put detailed documents under `docs/`.                                                                                                        |
-| Choosing a throwaway MVP stack for a product MVP                                                | Keep scope small, but choose a stack and repo shape that can grow without a core rewrite.                                                                                             |
-| Accepting "it is secure" as proof                                                               | Require file locations, code paths, tests, and role-based evidence.                                                                                                                   |
-| Opening every tool to AI                                                                        | Separate default-open tools, project-specific tools, and high-risk confirmation gates.                                                                                                |
-| Letting code, migrations, or APIs become the first record of a design change                    | Update the original source-of-truth document first, then implement against it.                                                                                                        |
+These artifacts are not all required for every tiny task, but they are required before implementation when the project contains the corresponding surface.
 
 ## Source Notes
 
-This skill is distilled from the local Obsidian handbook `AI 编程项目实战手册` and intentionally excludes image indexes and screenshot assets. Keep the skill procedural, concise, and evidence-oriented.
+This skill is intentionally a lean router. Keep detailed procedures in `references/`, reusable project documents in `templates/`, and deterministic helpers in `scripts/`.

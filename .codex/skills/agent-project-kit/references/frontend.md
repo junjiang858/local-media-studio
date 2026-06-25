@@ -2,6 +2,21 @@
 
 Use this reference when planning pages, components, UI states, frontend architecture, design tokens, or a first frontend skeleton.
 
+## Contents
+
+- Frontend Understanding
+- Page Map Checklist
+- Frontend Skeleton Checklist
+- Product MVP UI Quality Gate
+- Frontend Engineering Structure
+- File Responsibility Rules
+- Component Split Rules
+- Import Boundary Rules
+- Frontend Structure Acceptance
+- First MVP Page Acceptance
+- Guardrails
+- Prompts
+
 ## Frontend Understanding
 
 Frontend is the user entry, interaction flow, visual state, and data presentation layer. It is not only "making things look good."
@@ -59,13 +74,13 @@ State the design read in one sentence. If two directions would change layout, de
 
 Document three dials in `FRONTEND_PLAN.md`; use them to make layout decisions explicit:
 
-| Dial             | Meaning                                             | Product UI default                                                    |
-| ---------------- | --------------------------------------------------- | --------------------------------------------------------------------- |
-| Design variance  | How conventional or expressive the layout is        | 3-6 for tools and dashboards, 6-8 for brand or marketing surfaces     |
+| Dial | Meaning | Product UI default |
+| --- | --- | --- |
+| Design variance | How conventional or expressive the layout is | 3-6 for tools and dashboards, 6-8 for brand or marketing surfaces |
 | Motion intensity | How much movement supports feedback or storytelling | 1-3 for operational UI, 3-5 for SaaS pages, higher only with a reason |
-| Visual density   | How much information appears per viewport           | 6-9 for dashboards/admin, 4-7 for SaaS apps, 2-4 for marketing        |
+| Visual density | How much information appears per viewport | 6-9 for dashboards/admin, 4-7 for SaaS apps, 2-4 for marketing |
 
-For dashboards, admin panels, data tables, and multi-step product UI, do not apply landing-page taste rules blindly. Prefer scannable density, predictable navigation, efficient controls, clear tables/lists, and restrained motion. For marketing or portfolio surfaces, apply stronger anti-slop and visual asset rules.
+For dashboards, admin panels, data tables, and multi-step product UI, do not apply landing-page taste rules blindly. Prefer scannable density, predictable navigation, efficient controls, clear tables/lists, and restrained motion. In short: do not apply landing-page taste rules blindly to dashboards, admin panels, data tables, or multi-step product UI. For marketing or portfolio surfaces, apply stronger anti-slop and visual asset rules.
 
 ### Design System Contract
 
@@ -79,7 +94,21 @@ For dashboards, admin panels, data tables, and multi-step product UI, do not app
 - Theme strategy: light, dark, or system; include contrast expectations and when dual-mode is required.
 - Component baseline: buttons, inputs, selects, tabs, toolbar, filters, list/table/card, dialog, toast, empty state, error state, loading skeleton, and pagination when relevant.
 
+### Design-system dependency rule
+
+The selected UI and icon libraries are approved project decisions, not fixed skill defaults. When a Figma, Stitch, screenshot, brand system, existing codebase, platform convention, or anti-slop requirement points to a different component or icon language, evaluate the replacement before implementation. Document why the chosen UI library and icon library fit the design, whether the library is open-source or inspectable, how it affects bundle size and maintenance, and what local wrapper or adapter will keep future replacement cheap.
+
 Use the approved UI library for common controls. Do not hand-write repeated base buttons, inputs, dialogs, cards, or tabs inside business pages. If a component appears more than twice or has a shared interaction rule, extract it into the documented shared or domain component location.
+
+Treat common choices such as shadcn/ui and lucide as candidates, not mandatory defaults.
+
+Do not replace UI or icon libraries silently during implementation. Use this sequence:
+
+1. Identify the design-system mismatch or implementation constraint.
+2. Propose the replacement with maintenance, license, accessibility, tree-shaking, and migration notes.
+3. Update `docs/architecture/TECH_STACK.md` and this `FRONTEND_PLAN.md`.
+4. Get user approval.
+5. Install dependencies and implement through documented component or icon adapters.
 
 ### State And Interaction Contract
 
@@ -131,15 +160,15 @@ Frontend file organization and component decomposition are engineering decisions
 Use framework conventions first:
 
 - Next.js: keep `app/` responsible for routing, layouts, loading, and error boundaries. Use `src/` when it helps separate application code from root configuration. Colocate route-specific code when useful, or keep shared code outside `app/`; choose one strategy and stay consistent.
-- Vite + React: keep `main.tsx` as the boot entry and `App.tsx` as application composition. Put product code under `src/` with explicit folders for app shell, components, config, state, messages, utilities, assets, and styles.
-- Workspaces or monorepos: keep deployable apps in `apps/*` and truly shared packages in `packages/*`. Do not create shared packages until more than one app or package needs the code.
+- Client-rendered SPA frameworks: keep the framework boot entry and root composition file clear, such as React `main.tsx`/`App.tsx`, Vue `main.ts`/`App.vue`, or Svelte `main.ts`/`App.svelte`. Put product code under `src/` with explicit folders for app shell, components, config, state, messages, utilities, assets, and styles.
+- Workspaces or monorepos: keep deployable apps in `apps/*` and truly shared packages in `packages/*`. Do not create shared packages until more than one app or a real non-UI package boundary needs the code.
 
-For small single-app React tools, this is an acceptable baseline:
+For small single-package frontend apps, this is an acceptable baseline:
 
 ```text
-apps/web/src/
+src/
   app/
-    App.tsx
+    App.<framework-extension>
   components/
     <domain>/
   config/
@@ -149,13 +178,13 @@ apps/web/src/
   stores/
   utils/
   styles.css
-  main.tsx
+  main.<framework-extension>
 ```
 
 For larger products, multi-page apps, or apps with clear business domains, prefer a domain-oriented structure inspired by feature-sliced architecture:
 
 ```text
-apps/web/src/
+src/ or apps/web/src/
   app/
   pages/ or routes/
   widgets/
@@ -179,7 +208,7 @@ Use only the layers that add clarity. A small app usually needs `app`, route/pag
 - Product constants, design tokens, media presets, workspace settings, and feature flags belong in `config/` or `shared/config/`.
 - Reusable state belongs in `stores/` only when it crosses distant components, routes, tabs, or persistence boundaries. Keep local UI state close to the component first.
 - Utilities must be capability-scoped, such as `utils/browser.ts`, `utils/export-image.ts`, or `shared/lib/date`. Do not create a growing catch-all `utils.ts`.
-- Icons belong in the selected icon library usage layer or in an `icons/` wrapper when the project needs named product icons.
+- Icons belong in the selected icon library usage layer or in an `icons/` wrapper when the project needs named product icons, design-system state variants, or a replacement-safe adapter.
 
 ## Component Split Rules
 

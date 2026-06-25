@@ -2,6 +2,14 @@
 
 Use this reference for backend security acceptance, configuration safety, logging safety, dependency safety, database safety, and evidence-based verification.
 
+## Contents
+
+- Backend Security Boundary
+- Bottom-Layer Security Matrix
+- Security Checklist
+- Risk Table Format
+- Prompts
+
 ## Backend Security Boundary
 
 Feature success only proves the normal path works. Security acceptance proves abnormal requests are rejected.
@@ -16,13 +24,13 @@ Check:
 
 ## Bottom-Layer Security Matrix
 
-| Dimension    | Common risk                                                          | Required evidence                                                           |
-| ------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Config       | Secrets, tokens, admin passwords hard-coded                          | config source list, environment variable read locations, secret scan result |
-| Logs         | Passwords, phone numbers, tokens, raw request bodies in logs         | log field allowlist, masking rule, sample log                               |
-| Dependencies | Known vulnerabilities in framework or libraries                      | dependency version list, vulnerability scan result, upgrade plan            |
-| Database     | Unbounded read/update/delete, missing transaction, accidental delete | permission boundary, transaction strategy, delete and rollback policy       |
-| Acceptance   | Verbal "handled" without proof                                       | role-switched normal and abnormal request evidence                          |
+| Dimension | Common risk | Required evidence |
+| --- | --- | --- |
+| Config | Secrets, tokens, admin passwords hard-coded | config source list, environment variable read locations, secret scan result |
+| Logs | Passwords, phone numbers, tokens, raw request bodies in logs | log field allowlist, masking rule, sample log |
+| Dependencies | Known vulnerabilities in framework or libraries | dependency version list, vulnerability scan result, upgrade plan |
+| Database | Unbounded read/update/delete, missing transaction, accidental delete | permission boundary, transaction strategy, delete and rollback policy |
+| Acceptance | Verbal "handled" without proof | role-switched normal and abnormal request evidence |
 
 ## Security Checklist
 
@@ -39,7 +47,7 @@ Check:
 ## Risk Table Format
 
 | Risk | File or config location | Current behavior | Impact | Fix | Verification | Priority |
-| ---- | ----------------------- | ---------------- | ------ | --- | ------------ | -------- |
+| --- | --- | --- | --- | --- | --- | --- |
 
 ## Prompt: Backend Security Acceptance
 

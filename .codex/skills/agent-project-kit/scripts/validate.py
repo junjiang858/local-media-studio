@@ -8,6 +8,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+SKILL_MAX_LINES = 500
+SKILL_MAX_BYTES = 40_000
+
 
 REQUIRED_FILES = [
     "SKILL.md",
@@ -16,6 +19,7 @@ REQUIRED_FILES = [
     "README.zh-CN.md",
     "LICENSE",
     "scripts/install.sh",
+    "scripts/mvp_closure_snapshot.py",
     "examples/tiny-webapp/README.md",
     "templates/AGENTS.md",
     "templates/docs/project/PROJECT_CHARTER.md",
@@ -24,6 +28,10 @@ REQUIRED_FILES = [
     "templates/docs/architecture/FRONTEND_PLAN.md",
     "templates/docs/architecture/DATABASE_DESIGN.md",
     "templates/docs/architecture/BACKEND_SPEC.md",
+    "templates/docs/features/FEATURE.md",
+    "templates/docs/changes/CHANGE.md",
+    "templates/docs/decisions/ADR.md",
+    "templates/docs/agent-project-kit/PROCESS_ARTIFACTS.md",
     "templates/docs/workflow/AI_WORKFLOW.md",
     "templates/docs/ops/TOOL_POLICY.md",
     "templates/docs/ops/DEPLOYMENT.md",
@@ -41,6 +49,7 @@ REQUIRED_RUNTIME_REFERENCES = [
     "references/security.md",
     "references/tool-policy.md",
     "references/workflow-checklists.md",
+    "references/mvp-closure.md",
 ]
 
 
@@ -51,6 +60,10 @@ def fail(message: str) -> None:
 
 def read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
+
+
+def line_count(text: str) -> int:
+    return text.count("\n") + (0 if text.endswith("\n") else 1)
 
 
 def require_files() -> None:
@@ -69,6 +82,60 @@ def check_skill_frontmatter() -> None:
         fail("SKILL.md frontmatter must use name: agent-project-kit")
     if not re.search(r"^description: Use when ", frontmatter, re.M):
         fail('SKILL.md description must start with "Use when"')
+
+
+def check_context_budget() -> None:
+    skill = read("SKILL.md")
+    lines = line_count(skill)
+    byte_count = len(skill.encode("utf-8"))
+    if lines > SKILL_MAX_LINES:
+        fail(f"SKILL.md is over budget: {lines} lines > {SKILL_MAX_LINES}")
+    if byte_count > SKILL_MAX_BYTES:
+        fail(f"SKILL.md is over budget: {byte_count} bytes > {SKILL_MAX_BYTES}")
+
+
+def check_reference_contents() -> None:
+    for path in REQUIRED_RUNTIME_REFERENCES:
+        text = read(path)
+        if not re.search(r"^## Contents\n", text, re.M):
+            fail(f"{path} must include a ## Contents section near the top")
+
+
+def check_skill_stays_router_sized() -> None:
+    skill = read("SKILL.md")
+    detailed_phrases = [
+        "Chinese example:",
+        "English example:",
+        "The scan must include 3-7",
+        "Each recommended or rejected candidate must include",
+        "For a Product MVP with web, backend, database",
+        "Core source-of-truth documents describe the current system contract",
+    ]
+    for phrase in detailed_phrases:
+        if phrase in skill:
+            fail(f"SKILL.md contains detailed reference content that should be routed out: {phrase}")
+
+
+def check_migrated_rule_coverage() -> None:
+    required_pairs = [
+        ("references/workflow-checklists.md", "Do not depend on UI buttons"),
+        ("references/workflow-checklists.md", "Batch consent is limited to the named document list and current stage"),
+        ("references/workflow-checklists.md", "Writing one source-of-truth document does not authorize another"),
+        ("references/workflow-checklists.md", "Common Mistakes"),
+        ("references/mvp-closure.md", "Do not run a fresh audit for Local Fix Path"),
+        ("references/mvp-closure.md", "Use only a cached or recent closure result for ordinary project-level final suggestions"),
+        ("references/mvp-closure.md", "After implementation work, append a short next step recommendation"),
+        ("references/architecture-baseline.md", "Each recommended or rejected candidate must include"),
+        ("references/architecture-baseline.md", "Do not confirm a technology stack"),
+        ("references/frontend.md", "Design-system dependency rule"),
+        ("references/frontend.md", "selected UI and icon libraries are approved project decisions"),
+        ("references/project-initiation.md", "ambiguous domain nouns"),
+        ("references/project-initiation.md", "If two details are inseparable"),
+        ("references/mvp-closure.md", "Store MVP closure audits"),
+    ]
+    for path, phrase in required_pairs:
+        if phrase not in read(path):
+            fail(f"{path} must preserve migrated rule detail: {phrase}")
 
 
 def check_readme_language_switch() -> None:
@@ -123,6 +190,10 @@ def check_project_document_layout() -> None:
         "docs/architecture/ENGINEERING_BASELINE.md",
         "docs/workflow/AI_WORKFLOW.md",
         "docs/ops/TOOL_POLICY.md",
+        "docs/features/",
+        "docs/changes/",
+        "docs/decisions/",
+        "docs/agent-project-kit/",
     ]
     for path in required_doc_paths:
         if path not in agents:
@@ -144,11 +215,11 @@ def check_product_mvp_baseline() -> None:
 def check_product_mvp_ui_quality_gate() -> None:
     required_pairs = [
         ("SKILL.md", "Product MVP UI Quality Gate"),
-        ("SKILL.md", "MVP scope may be small, but UI/UX/design system quality is not optional"),
-        ("SKILL.md", "Design Read"),
-        ("SKILL.md", "do not apply landing-page taste rules blindly to dashboards, admin panels, data tables, or multi-step product UI"),
+        ("SKILL.md", "references/frontend.md"),
         ("references/frontend.md", "Product MVP UI Quality Gate"),
+        ("references/frontend.md", "MVP scope may be small, but UI/UX/design system quality is not optional"),
         ("references/frontend.md", "Design Read"),
+        ("references/frontend.md", "do not apply landing-page taste rules blindly to dashboards, admin panels, data tables, or multi-step product UI"),
         ("references/frontend.md", "Design Dials"),
         ("references/frontend.md", "State And Interaction Contract"),
         ("references/frontend.md", "Anti-Slop Guardrails"),
@@ -176,52 +247,129 @@ def check_product_mvp_ui_quality_gate() -> None:
             fail(f"{path} must include {phrase}")
 
 
+def check_default_stack_flexibility() -> None:
+    required_pairs = [
+        ("SKILL.md", "default stack recommendations as context-aware candidates"),
+        ("references/architecture-baseline.md", "Repository Shape Decision"),
+        ("references/architecture-baseline.md", "Do not create empty shared packages"),
+        ("references/architecture-baseline.md", "Single package frontend app"),
+        ("references/frontend.md", "For small single-package frontend apps"),
+        ("references/frontend.md", "Treat common choices such as shadcn/ui and lucide as candidates"),
+        ("references/frontend.md", "Do not replace UI or icon libraries silently"),
+        ("references/workflow-checklists.md", "Defaults are candidates, not mandates"),
+        ("references/workflow-checklists.md", "UI library, and icon library must be justified"),
+        ("templates/docs/architecture/TECH_STACK.md", "Repository shape rationale"),
+        ("templates/docs/architecture/TECH_STACK.md", "| Icons |"),
+        ("templates/docs/architecture/TECH_STACK.md", "UI/icon/repository choices that may be replaced with approval"),
+        ("templates/docs/architecture/FRONTEND_PLAN.md", "UI library rationale"),
+        ("templates/docs/architecture/FRONTEND_PLAN.md", "Icon library rationale"),
+        ("templates/docs/architecture/FRONTEND_PLAN.md", "Design-source alignment"),
+        ("templates/docs/architecture/FRONTEND_PLAN.md", "Replacement rule"),
+        ("templates/docs/architecture/FRONTEND_PLAN.md", "<approved frontend root"),
+        ("templates/docs/architecture/ENGINEERING_BASELINE.md", "Repository Shape"),
+        ("templates/AGENTS.md", "repository shape, UI library, and icon library"),
+        ("README.md", "default stack choices as candidates"),
+        ("README.zh-CN.md", "默认技术栈当作候选"),
+    ]
+    for path, phrase in required_pairs:
+        if phrase not in read(path):
+            fail(f"{path} must include flexible stack rule: {phrase}")
+
+
+def check_mvp_closure_semantics() -> None:
+    required_pairs = [
+        ("SKILL.md", "MVP Scope Incomplete"),
+        ("SKILL.md", "Full MVP Scope Complete"),
+        ("SKILL.md", "Release Ready"),
+        ("SKILL.md", "Formal Product Development Mode"),
+        ("SKILL.md", "MVP Closure Sentinel"),
+        ("SKILL.md", "references/mvp-closure.md"),
+        ("references/mvp-closure.md", "Trigger Policy"),
+        ("references/mvp-closure.md", "Required Inputs"),
+        ("references/mvp-closure.md", "Audit Steps"),
+        ("references/mvp-closure.md", "Common Risk Signals"),
+        ("references/mvp-closure.md", "Output Format"),
+        ("references/mvp-closure.md", "Cache And Process Artifacts"),
+        ("references/mvp-closure.md", "mock-only"),
+        ("references/mvp-closure.md", "production-unverified"),
+        ("references/mvp-closure.md", "deployment-gap"),
+        ("references/mvp-closure.md", "security-gap"),
+        ("references/mvp-closure.md", "doc-code-drift"),
+        ("references/mvp-closure.md", "missing-e2e"),
+        ("references/mvp-closure.md", "ux-unverified"),
+        ("references/workflow-checklists.md", "MVP Closure Prompt"),
+        ("references/workflow-checklists.md", "Formal Product Development Mode"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "MVP Closure States"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "Full MVP Scope Complete"),
+        ("templates/docs/agent-project-kit/PROCESS_ARTIFACTS.md", "MVP closure audits"),
+        ("scripts/mvp_closure_snapshot.py", "mvp-closure-status.md"),
+        ("scripts/mvp_closure_snapshot.py", "references/mvp-closure.md"),
+        ("scripts/install.sh", 'copy_dir "$ROOT_DIR/scripts" "$TARGET_DIR/scripts"'),
+        ("README.md", "MVP Closure Sentinel"),
+        ("README.md", "Full MVP Scope Complete"),
+        ("README.md", "Release Ready"),
+        ("README.md", "🎉 MVP scope is complete"),
+        ("README.md", "🎉 Release validation passed"),
+        ("README.zh-CN.md", "MVP Closure Sentinel"),
+        ("README.zh-CN.md", "Full MVP Scope Complete"),
+        ("README.zh-CN.md", "Release Ready"),
+        ("README.zh-CN.md", "🎉 文档定义的 MVP 范围已完成"),
+        ("README.zh-CN.md", "🎉 发布验证已通过"),
+    ]
+    for path, phrase in required_pairs:
+        if phrase not in read(path):
+            fail(f"{path} must include MVP closure semantic: {phrase}")
+
+
 def check_workflow_priority_and_confirmation() -> None:
     required_pairs = [
         ("SKILL.md", "Default Workflow Priority"),
         ("SKILL.md", "Agent Project Kit is the default primary workflow"),
         ("SKILL.md", "overlapping skills"),
+        ("SKILL.md", "Project Baseline Path"),
+        ("SKILL.md", "Contract-Changing Feature Path"),
+        ("SKILL.md", "Bounded Feature Path"),
+        ("SKILL.md", "Local Fix Path"),
+        ("SKILL.md", "Contract Impact Check"),
+        ("SKILL.md", "Optional Workflow Tool Fallback"),
+        ("SKILL.md", "Implementation Handoff"),
+        ("SKILL.md", "Source-of-Truth Distillation Gate"),
+        ("SKILL.md", "docs/features/"),
+        ("SKILL.md", "docs/changes/"),
+        ("SKILL.md", "docs/decisions/"),
+        ("SKILL.md", "docs/agent-project-kit/"),
         ("SKILL.md", "Project Purpose Confirmation"),
         ("SKILL.md", "Document Consent Gate"),
         ("SKILL.md", "Requirements Depth Gate"),
         ("SKILL.md", "Reference Project Scan Gate"),
-        ("SKILL.md", "project name, direct link"),
-        ("SKILL.md", "Do not continue to project purpose confirmation"),
         ("SKILL.md", "Capability Library Scan Gate"),
-        ("SKILL.md", "capability, library name, direct link"),
-        ("SKILL.md", "Do not confirm a technology stack"),
         ("SKILL.md", "Goal Contract"),
         ("SKILL.md", "Target outcome"),
         ("SKILL.md", "Completion signal"),
         ("SKILL.md", "Confirmation Prompt Rule"),
         ("SKILL.md", "User Language Rule"),
-        ("SKILL.md", "Any task that asks for user confirmation"),
-        ("SKILL.md", "match the user's current language"),
         ("SKILL.md", "Project Specification Readiness Gate"),
         ("SKILL.md", "Source-of-Truth Change Gate"),
         ("SKILL.md", "Never create application scaffolding"),
-        ("SKILL.md", "frontend engineering contract"),
-        ("SKILL.md", "component split rules"),
         ("SKILL.md", "in the user's current language"),
-        ("SKILL.md", "🎉 恭喜，项目工程基线已就绪"),
-        ("SKILL.md", "🎉 Project engineering baseline is ready"),
         ("SKILL.md", "First MVP slice accepted with evidence"),
-        ("SKILL.md", "🎉 恭喜，首个 MVP 切片已完成"),
-        ("SKILL.md", "🎉 First MVP slice is complete"),
         ("SKILL.md", "Steady path"),
         ("SKILL.md", "Accelerated path"),
         ("SKILL.md", "named missing batch"),
         ("SKILL.md", "plain-text options"),
-        ("SKILL.md", "Do not depend on UI buttons"),
-        ("SKILL.md", "After creating or updating any readiness document"),
-        ("SKILL.md", "ambiguous domain nouns"),
-        ("SKILL.md", "Do not move into technology stack, frontend, backend, database, or implementation planning until the user confirms"),
         ("references/project-initiation.md", "Project Purpose Confirmation"),
         ("references/project-initiation.md", "Requirements Depth Gate"),
         ("references/project-initiation.md", "Reference Project Scan"),
+        ("references/project-initiation.md", "project name, direct link"),
+        ("references/project-initiation.md", "Do not continue to project purpose confirmation"),
         ("references/project-initiation.md", "direct project links"),
         ("references/project-initiation.md", "user chooses a direction"),
         ("references/project-initiation.md", "Implementation Readiness Audit"),
+        ("references/project-initiation.md", "Optional Workflow Tool Fallback"),
+        ("references/project-initiation.md", "docs/features/"),
+        ("references/project-initiation.md", "docs/changes/"),
+        ("references/project-initiation.md", "docs/decisions/"),
+        ("references/project-initiation.md", "docs/agent-project-kit/"),
         ("references/project-initiation.md", "Confirmation Prompt Rule"),
         ("references/project-initiation.md", "User Language Rule"),
         ("references/project-initiation.md", "Do not create `apps/`, `packages/`, UI screens, API controllers, database schemas"),
@@ -240,8 +388,18 @@ def check_workflow_priority_and_confirmation() -> None:
         ("references/architecture-baseline.md", "maintenance evidence"),
         ("references/architecture-baseline.md", "Before writing `docs/architecture/TECH_STACK.md`, ask for consent"),
         ("references/architecture-baseline.md", "A confirmed technology stack is not permission to scaffold or implement"),
+        ("references/architecture-baseline.md", "Optional Workflow Tool Fallback"),
         ("references/engineering-baseline.md", "An engineering baseline is necessary but not sufficient for implementation"),
         ("references/workflow-checklists.md", "Goal And Completion Signal"),
+        ("references/workflow-checklists.md", "Task Routing"),
+        ("references/workflow-checklists.md", "Contract Impact Check"),
+        ("references/workflow-checklists.md", "Optional Workflow Tool Fallback"),
+        ("references/workflow-checklists.md", "Implementation Handoff"),
+        ("references/workflow-checklists.md", "Source-of-Truth Distillation Gate"),
+        ("references/workflow-checklists.md", "docs/features/"),
+        ("references/workflow-checklists.md", "docs/changes/"),
+        ("references/workflow-checklists.md", "docs/decisions/"),
+        ("references/workflow-checklists.md", "docs/agent-project-kit/"),
         ("references/workflow-checklists.md", "Reference project scan completed"),
         ("references/workflow-checklists.md", "concrete project links"),
         ("references/workflow-checklists.md", "Capability library scan completed"),
@@ -254,6 +412,9 @@ def check_workflow_priority_and_confirmation() -> None:
         ("references/workflow-checklists.md", "Source-of-Truth Change Gate"),
         ("references/workflow-checklists.md", "Source-of-Truth Change Prompt"),
         ("references/workflow-checklists.md", "Project scaffold or implementation only after readiness passes"),
+        ("references/workflow-checklists.md", "Any task that asks for user confirmation"),
+        ("references/workflow-checklists.md", "match the user's current language"),
+        ("references/workflow-checklists.md", "After creating or updating any readiness document"),
         ("references/workflow-checklists.md", "in the user's current language"),
         ("references/workflow-checklists.md", "🎉 恭喜，项目工程基线已就绪"),
         ("references/workflow-checklists.md", "🎉 Project engineering baseline is ready"),
@@ -264,6 +425,12 @@ def check_workflow_priority_and_confirmation() -> None:
         ("references/workflow-checklists.md", "plain-text options"),
         ("references/workflow-checklists.md", "Do not depend on UI buttons"),
         ("references/engineering-rules.md", "Source-of-truth change gate"),
+        ("references/engineering-rules.md", "Source-of-truth distillation"),
+        ("references/document-layout.md", "Document Lifespan"),
+        ("references/document-layout.md", "docs/features/"),
+        ("references/document-layout.md", "docs/changes/"),
+        ("references/document-layout.md", "docs/decisions/"),
+        ("references/document-layout.md", "docs/agent-project-kit/"),
         ("references/frontend.md", "Project Specification Readiness Gate"),
         ("references/frontend.md", "update `docs/architecture/FRONTEND_PLAN.md` before editing frontend code"),
         ("references/frontend.md", "Frontend Engineering Structure"),
@@ -277,6 +444,14 @@ def check_workflow_priority_and_confirmation() -> None:
         ("references/backend.md", "Do not build even a minimal backend skeleton"),
         ("references/backend.md", "update `docs/architecture/BACKEND_SPEC.md` before editing backend code"),
         ("README.md", "Goal And Completion Signal"),
+        ("README.md", "Bounded Feature Path"),
+        ("README.md", "Contract-Changing Feature Path"),
+        ("README.md", "Optional accelerators"),
+        ("README.md", "Source-of-Truth Distillation"),
+        ("README.md", "docs/features/"),
+        ("README.md", "docs/changes/"),
+        ("README.md", "docs/decisions/"),
+        ("README.md", "docs/agent-project-kit/"),
         ("README.md", "Reference project scan gate"),
         ("README.md", "direct project links"),
         ("README.md", "Capability library scan gate"),
@@ -292,6 +467,14 @@ def check_workflow_priority_and_confirmation() -> None:
         ("README.md", "🎉 Project engineering baseline is ready"),
         ("README.md", "🎉 First MVP slice is complete"),
         ("README.zh-CN.md", "目标与完成信号"),
+        ("README.zh-CN.md", "Bounded Feature Path"),
+        ("README.zh-CN.md", "Contract-Changing Feature Path"),
+        ("README.zh-CN.md", "可选增强"),
+        ("README.zh-CN.md", "真源文档蒸馏"),
+        ("README.zh-CN.md", "docs/features/"),
+        ("README.zh-CN.md", "docs/changes/"),
+        ("README.zh-CN.md", "docs/decisions/"),
+        ("README.zh-CN.md", "docs/agent-project-kit/"),
         ("README.zh-CN.md", "参考项目扫描门禁"),
         ("README.zh-CN.md", "具体项目链接"),
         ("README.zh-CN.md", "能力库扫描门禁"),
@@ -315,9 +498,24 @@ def check_workflow_priority_and_confirmation() -> None:
         ("templates/docs/project/PROJECT_CHARTER.md", "Operations And States"),
         ("templates/docs/architecture/TECH_STACK.md", "Decision Status"),
         ("templates/docs/architecture/TECH_STACK.md", "Selection Context"),
+        ("templates/docs/architecture/TECH_STACK.md", "AI workflow discipline"),
+        ("templates/docs/architecture/TECH_STACK.md", "Spec management"),
+        ("templates/docs/architecture/TECH_STACK.md", "Optional Workflow Tool Fallback"),
         ("templates/docs/architecture/TECH_STACK.md", "Capability Library Scan"),
         ("templates/docs/architecture/TECH_STACK.md", "Maintenance evidence"),
+        ("templates/docs/features/FEATURE.md", "Change Rule"),
+        ("templates/docs/features/FEATURE.md", "docs/changes/"),
+        ("templates/docs/changes/CHANGE.md", "Contract Impact Check"),
+        ("templates/docs/changes/CHANGE.md", "Distillation"),
+        ("templates/docs/decisions/ADR.md", "Alternatives Considered"),
+        ("templates/docs/agent-project-kit/PROCESS_ARTIFACTS.md", "Distillation Rule"),
         ("templates/AGENTS.md", "Update the relevant source-of-truth document before code"),
+        ("templates/AGENTS.md", "Contract Impact Check"),
+        ("templates/AGENTS.md", "Bounded Feature Path"),
+        ("templates/AGENTS.md", "docs/features/"),
+        ("templates/AGENTS.md", "docs/changes/"),
+        ("templates/AGENTS.md", "docs/decisions/"),
+        ("templates/AGENTS.md", "docs/agent-project-kit/"),
         ("templates/AGENTS.md", "Confirmation Prompt Rule"),
         ("templates/AGENTS.md", "User Language Rule"),
         ("templates/AGENTS.md", "Accelerated path"),
@@ -326,6 +524,10 @@ def check_workflow_priority_and_confirmation() -> None:
         ("templates/AGENTS.md", "frontend engineering contract"),
         ("templates/AGENTS.md", "component split rules"),
         ("templates/docs/workflow/AI_WORKFLOW.md", "docs evidence must come before code evidence"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "Contract Impact Check"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "Optional Workflow Tool Fallback"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "Implementation Handoff"),
+        ("templates/docs/workflow/AI_WORKFLOW.md", "Source-of-Truth Distillation"),
         ("templates/docs/architecture/FRONTEND_PLAN.md", "First MVP Page"),
         ("templates/docs/architecture/FRONTEND_PLAN.md", "Related first MVP slice"),
         ("templates/docs/architecture/FRONTEND_PLAN.md", "Frontend Source Tree"),
@@ -358,6 +560,10 @@ def check_workflow_priority_and_confirmation() -> None:
 def main() -> None:
     require_files()
     check_skill_frontmatter()
+    check_context_budget()
+    check_skill_stays_router_sized()
+    check_reference_contents()
+    check_migrated_rule_coverage()
     check_readme_language_switch()
     check_markdown_fences()
     check_reference_links()
@@ -365,6 +571,8 @@ def main() -> None:
     check_project_document_layout()
     check_product_mvp_baseline()
     check_product_mvp_ui_quality_gate()
+    check_default_stack_flexibility()
+    check_mvp_closure_semantics()
     check_workflow_priority_and_confirmation()
     print("Repository validation passed.")
 

@@ -2,15 +2,15 @@
 
 ## Required Scripts
 
-| Script         | Command | Required now | Notes |
-| -------------- | ------- | ------------ | ----- |
-| `dev`          |         |              |       |
-| `build`        |         |              |       |
-| `typecheck`    |         |              |       |
-| `lint`         |         |              |       |
-| `format:check` |         |              |       |
-| `test`         |         |              |       |
-| `check`        |         |              |       |
+| Script | Command | Required now | Notes |
+| --- | --- | --- | --- |
+| `dev` |  |  |  |
+| `build` |  |  |  |
+| `typecheck` |  |  |  |
+| `lint` |  |  |  |
+| `format:check` |  |  |  |
+| `test` |  |  |  |
+| `check` |  |  |  |
 
 ## Code Quality
 
@@ -19,6 +19,13 @@
 - Prettier:
 - TypeScript strictness:
 - Shared config package:
+
+## Repository Shape
+
+- Approved shape:
+- Reason this shape fits:
+- App/package boundaries:
+- Rule for adding `apps/*` or `packages/*` later:
 
 ## CI
 
@@ -43,12 +50,12 @@
 
 ## Testing Layers
 
-| Layer               | Tool | Covers | Required now |
-| ------------------- | ---- | ------ | ------------ |
-| Unit                |      |        |              |
-| Integration         |      |        |              |
-| Browser/e2e         |      |        |              |
-| Security regression |      |        |              |
+| Layer | Tool | Covers | Required now |
+| --- | --- | --- | --- |
+| Unit |  |  |  |
+| Integration |  |  |  |
+| Browser/e2e |  |  |  |
+| Security regression |  |  |  |
 
 ## Commit Discipline
 

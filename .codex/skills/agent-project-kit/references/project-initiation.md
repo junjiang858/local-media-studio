@@ -2,6 +2,21 @@
 
 Use this reference for cognition calibration, project charter work, technology selection, Git setup, and early project safety.
 
+## Contents
+
+- Principles
+- Interaction Defaults
+- Stage Flow
+- Guided Interaction
+- Reference Project Scan
+- Requirements Depth Gate
+- Project Purpose Confirmation
+- Project Charter Checklist
+- Technology Decision Checklist
+- Git Discipline
+- Implementation Readiness Audit
+- Prompts
+
 ## Principles
 
 - AI lowers the cost of writing code, not the need for product judgment, technical boundaries, and acceptance responsibility.
@@ -13,6 +28,8 @@ Use this reference for cognition calibration, project charter work, technology s
 - Technology choice should follow product shape, team capability, launch pressure, ecosystem maturity, documentation quality, security posture, and licensing.
 - Git is the rollback and comparison mechanism for fast AI edits; initialize it before meaningful implementation.
 - `PROJECT_CHARTER.md`, `TECH_STACK.md`, and `ENGINEERING_BASELINE.md` alone are not enough to begin a Product MVP scaffold when the project also has frontend, backend, database, tool execution, deployment, or AI workflow concerns.
+- External workflow tools such as Superpowers, OpenSpec, and GitHub Spec Kit are optional accelerators. Do not block project initiation if they are unavailable; document the fallback workflow in `docs/workflow/AI_WORKFLOW.md`.
+- Core source-of-truth documents should stay current-state. Put stable feature behavior in `docs/features/`, one-change detail in `docs/changes/`, long-term decisions in `docs/decisions/`, and Agent Project Kit process artifacts in `docs/agent-project-kit/`.
 
 ## Interaction Defaults
 
@@ -39,12 +56,15 @@ Use the user's current language for questions, confirmations, progress updates, 
 11. Define `docs/architecture/ENGINEERING_BASELINE.md` before implementation, again only after consent to write it.
 12. Define the remaining implementation-readiness documents before scaffolding: `AGENTS.md`, `docs/architecture/FRONTEND_PLAN.md`, `docs/architecture/DATABASE_DESIGN.md`, `docs/architecture/BACKEND_SPEC.md`, `docs/workflow/AI_WORKFLOW.md`, `docs/ops/TOOL_POLICY.md`, and `docs/ops/DEPLOYMENT.md` as applicable.
 13. Initialize Git, create the first documentation checkpoint, and define commit rules.
-14. Only after the readiness set is complete should the agent ask whether to scaffold or implement the first approved MVP slice.
-15. After implementation starts, keep the first deliverable narrow: one approved MVP slice with verification evidence. For web products this usually includes the first MVP page; for non-web projects it may be the first API, worker flow, CLI flow, automation run, or integration workflow.
+14. Establish document-lifespan rules for `docs/features/`, `docs/changes/`, `docs/decisions/`, and `docs/agent-project-kit/` so future work does not bloat current-state docs.
+15. Only after the readiness set is complete should the agent ask whether to scaffold or implement the first approved MVP slice.
+16. After implementation starts, keep the first deliverable narrow: one approved MVP slice with verification evidence. For web products this usually includes the first MVP page; for non-web projects it may be the first API, worker flow, CLI flow, automation run, or integration workflow.
 
-## Guided Intake
+## Guided Interaction
 
 Ask one question at a time. Do not present a full intake questionnaire at project start.
+
+If two details are inseparable, ask at most two short questions. Prefer multiple-choice options when they reduce effort.
 
 Start with the smallest question that unlocks the next artifact:
 
@@ -56,7 +76,7 @@ Start with the smallest question that unlocks the next artifact:
 
 Do not ask all five at once. Ask the next question only after the previous answer is reflected back briefly.
 
-Do not stop after one sentence if the product domain is still ambiguous. Before the charter stage, unpack the core nouns in the user's idea:
+Do not stop after one sentence if the product domain is still ambiguous. When the user's wording contains ambiguous domain nouns or product-shape terms, clarify what they mean in this project before drafting a PRD-quality artifact. Before the charter stage, unpack the core nouns in the user's idea:
 
 - Managed objects: what entities, records, resources, jobs, content, tools, assets, users, or workflows does the product manage?
 - User operations: what can users create, configure, trigger, inspect, compare, approve, publish, retry, archive, or delete?
@@ -76,12 +96,12 @@ The scan must include 3-7 specific projects, products, repositories, plugins, te
 Required output shape:
 
 | Project | Direct link | Source type | What to borrow | What not to copy blindly | Direction impact |
-| ------- | ----------- | ----------- | -------------- | ------------------------ | ---------------- |
-|         |             |             |                |                          |                  |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
 
 Rules:
 
-- Include a project name and direct link for every row.
+- Include project name, direct link, and source type for every row.
 - Include at least one open-source or inspectable implementation when the idea involves software users can reasonably build on.
 - Separate direct competitors from adjacent inspiration; both can be useful.
 - Explain concrete borrowable pieces such as onboarding, workflow shape, data model, plugin architecture, API surface, local-first design, community distribution, or pricing model.
@@ -95,7 +115,7 @@ After the table, present 2-4 direction choices grounded in the linked projects. 
 3. Shift to a plugin, extension, template, or integration around an existing ecosystem.
 4. Choose a differentiated niche that the scan reveals is underserved.
 
-Ask the user to choose, combine, or reject the directions. Do not proceed to Project Purpose Confirmation until the user chooses a direction or explicitly asks to continue with the original idea after reviewing the scan.
+Ask the user to choose, combine, or reject the directions. Do not proceed to Project Purpose Confirmation until the user chooses a direction or explicitly asks to continue with the original idea after reviewing the scan. Do not continue to project purpose confirmation before this choice.
 
 ## Requirements Depth Gate
 
@@ -141,8 +161,9 @@ Move in this order:
 9. Recommend exactly one technical route plus included/deferred/rejected third-party libraries, then get user confirmation before writing `docs/architecture/TECH_STACK.md`.
 10. After stack confirmation and document-write consent, move to root `AGENTS.md`, `docs/architecture/ENGINEERING_BASELINE.md`, and `docs/ops/TOOL_POLICY.md`.
 11. Before implementation, complete the project-specific readiness set: frontend plan for UI work, database design for persisted data, backend spec for API/service/tool execution, AI workflow for agent process, deployment plan for local or hosted runtime, and explicit security acceptance content for high-risk execution or secrets.
-12. When multiple readiness documents are missing, identify the current stage and explain which missing documents directly unblock the next stage. Offer plain-text options: a steady path for the single most important next document and an accelerated path for the named missing batch. Do not depend on UI buttons.
-13. Only then discuss first implementation planning for the first MVP slice.
+12. Document Optional Workflow Tool Fallback in `docs/workflow/AI_WORKFLOW.md` so unavailable Superpowers, OpenSpec, GitHub Spec Kit, or similar tools do not block progress.
+13. When multiple readiness documents are missing, identify the current stage and explain which missing documents directly unblock the next stage. Offer plain-text options: a steady path for the single most important next document and an accelerated path for the named missing batch. Do not depend on UI buttons.
+14. Only then discuss first implementation planning for the first MVP slice.
 
 If the user says "not sure", offer 2-3 concrete options and ask them to choose one.
 

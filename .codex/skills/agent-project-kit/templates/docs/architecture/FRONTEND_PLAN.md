@@ -18,11 +18,11 @@
 
 ## Design Dials
 
-| Dial             | Value | Rationale |
-| ---------------- | ----- | --------- |
-| Design variance  |       |           |
-| Motion intensity |       |           |
-| Visual density   |       |           |
+| Dial | Value | Rationale |
+| --- | --- | --- |
+| Design variance |  |  |
+| Motion intensity |  |  |
+| Visual density |  |  |
 
 Rules:
 
@@ -45,8 +45,8 @@ Rules:
 ## Page Map
 
 | Route or screen | Goal | Primary action | Data needed | States |
-| --------------- | ---- | -------------- | ----------- | ------ |
-|                 |      |                |             |        |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
 ## First MVP Page
 
@@ -62,8 +62,8 @@ Rules:
 ## Component Map
 
 | Component | Purpose | Owner layer or folder | Reuse scope | State owned |
-| --------- | ------- | --------------------- | ----------- | ----------- |
-|           |         |                       |             |             |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
 ## Frontend Architecture
 
@@ -81,27 +81,27 @@ Rules:
 Document the approved frontend file structure before implementation. Mark which folders are framework conventions and which are project conventions.
 
 ```text
-apps/web/src/
+<approved frontend root, such as src/ or apps/web/src/>
 ```
 
 ## File Boundary Contract
 
-| Concern                        | Approved location | Notes |
-| ------------------------------ | ----------------- | ----- |
-| App boot entry                 |                   |       |
-| Route/page files               |                   |       |
-| App shell and providers        |                   |       |
-| Shared UI primitives           |                   |       |
-| Business/domain components     |                   |       |
-| Feature or workflow components |                   |       |
-| Data/API clients or mocks      |                   |       |
-| Local or global stores         |                   |       |
-| Config, constants, tokens      |                   |       |
-| i18n messages                  |                   |       |
-| Icons                          |                   |       |
-| Assets/media                   |                   |       |
-| Utilities and browser adapters |                   |       |
-| Global styles                  |                   |       |
+| Concern | Approved location | Notes |
+| --- | --- | --- |
+| App boot entry |  |  |
+| Route/page files |  |  |
+| App shell and providers |  |  |
+| Shared UI primitives |  |  |
+| Business/domain components |  |  |
+| Feature or workflow components |  |  |
+| Data/API clients or mocks |  |  |
+| Local or global stores |  |  |
+| Config, constants, tokens |  |  |
+| i18n messages |  |  |
+| Icons |  |  |
+| Assets/media |  |  |
+| Utilities and browser adapters |  |  |
+| Global styles |  |  |
 
 Rules:
 
@@ -130,7 +130,11 @@ Rules:
 ## Design System
 
 - UI library:
+- UI library rationale:
 - Icon library:
+- Icon library rationale:
+- Design-source alignment:
+- Replacement rule:
 - Theme strategy:
 - Semantic color tokens:
 - Typography scale:
@@ -146,17 +150,17 @@ Rules:
 ## State And Interaction Contract
 
 | State or interaction | Pattern | Components affected | Notes |
-| -------------------- | ------- | ------------------- | ----- |
-| Loading              |         |                     |       |
-| Empty                |         |                     |       |
-| Error                |         |                     |       |
-| Success              |         |                     |       |
-| Disabled             |         |                     |       |
-| Validating or saving |         |                     |       |
-| Selected or editing  |         |                     |       |
-| Destructive action   |         |                     |       |
-| Focus and keyboard   |         |                     |       |
-| Hover, active, touch |         |                     |       |
+| --- | --- | --- | --- |
+| Loading |  |  |  |
+| Empty |  |  |  |
+| Error |  |  |  |
+| Success |  |  |  |
+| Disabled |  |  |  |
+| Validating or saving |  |  |  |
+| Selected or editing |  |  |  |
+| Destructive action |  |  |  |
+| Focus and keyboard |  |  |  |
+| Hover, active, touch |  |  |  |
 
 Rules:
 
@@ -176,12 +180,13 @@ Rules:
 - [ ] No text overflow, clipped labels, button wrapping on desktop, or incoherent overlap
 - [ ] No card-in-card layout unless the nested frame represents a real tool, modal, or repeated item
 - [ ] UI library components are customized through tokens or documented component variants, not scattered one-off styles
+- [ ] UI and icon libraries match the approved design source or have a documented, approved reason to differ
 
 ## Implementation Order
 
 1. First MVP page for the first MVP slice:
-2.
-3.
+2. 
+3. 
 
 ## Change Rule
 
