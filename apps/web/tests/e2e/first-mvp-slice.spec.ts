@@ -62,7 +62,11 @@ test("edits and downloads an image without external media upload requests", asyn
   await expect(page.getByText(/export saved/i)).toBeVisible();
 
   expect(download.suggestedFilename()).toBe("local-image-edited.png");
-  expect(externalRequests).toEqual([]);
+  expectNoUnapprovedExternalRequests(externalRequests, [
+    "local-image",
+    "local-image-edited",
+    "Draft",
+  ]);
 });
 
 test("uses Chinese for Chinese browsers and allows manual English switching", async ({
@@ -137,7 +141,7 @@ test("supports mobile tabs, keyboard asset switching, and unsupported media stat
 
   await expect(page.getByRole("heading", { name: /notes\.txt/i })).toBeVisible();
   await expect(page.getByText(/unsupported format/i)).toBeVisible();
-  expect(externalRequests).toEqual([]);
+  expectNoUnapprovedExternalRequests(externalRequests, ["local-image", "local-video", "notes"]);
 
   await context.close();
 });
@@ -223,8 +227,30 @@ test("edits and exports a short video with timeline evidence and no media upload
 
   await expect(page.getByText(/export saved/i)).toBeVisible({ timeout: 60_000 });
   expect(download.suggestedFilename()).toBe("local-video-edited.mp4");
-  expect(externalRequests).toEqual([]);
+  expectNoUnapprovedExternalRequests(externalRequests, [
+    "local-video",
+    "local-video-edited",
+    "Local caption",
+  ]);
 });
+
+function expectNoUnapprovedExternalRequests(externalRequests: string[], privateMarkers: string[]) {
+  const unapprovedRequests = externalRequests.filter((requestUrl) => {
+    const url = new URL(requestUrl);
+    const isApprovedVercelTelemetryScript =
+      url.hostname === "va.vercel-scripts.com" &&
+      url.pathname.startsWith("/v1/") &&
+      url.pathname.endsWith(".js");
+
+    return !isApprovedVercelTelemetryScript;
+  });
+  const leakedPrivateMarkers = externalRequests.filter((requestUrl) =>
+    privateMarkers.some((marker) => requestUrl.toLowerCase().includes(marker.toLowerCase())),
+  );
+
+  expect(unapprovedRequests).toEqual([]);
+  expect(leakedPrivateMarkers).toEqual([]);
+}
 
 async function expectNoDocumentOverflow(page: Page) {
   await expect

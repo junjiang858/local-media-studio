@@ -129,6 +129,7 @@ The v1 product promise is local-first media handling:
 - Image editing: Canvas API, Cropper.js, Konva/react-konva.
 - Background removal: `@imgly/background-removal`, AGPL-3.0 unless separately licensed, used through Obscura's open-source AGPL-compatible release path.
 - Video processing: ffmpeg.wasm in Web Workers coordinated through Comlink.
+- Deployment and observability: Vercel GitHub integration, COOP/COEP headers, Vercel Web Analytics, and Vercel Speed Insights.
 - Testing: Vitest, React Testing Library, Playwright.
 
 ## 🗂️ Repository Layout
@@ -175,6 +176,17 @@ Run browser tests:
 pnpm test:e2e
 ```
 
+## 🚢 Public Release
+
+The public web app is intended to deploy as a static Vite app through Vercel's GitHub integration:
+
+- Build command: `pnpm build`
+- Output directory: `apps/web/dist`
+- Required headers: `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`
+- Approved observability: Vercel Web Analytics and Vercel Speed Insights for page/performance telemetry only; enable both in the Vercel dashboard after the project is connected
+
+The first public release uses the pinned IMG.LY CDN asset path for background-removal model/runtime assets. User images and videos are not uploaded to IMG.LY; the browser downloads static model files only. Self-hosting the matching model bundle through `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` remains an approved later hardening path.
+
 ## 📚 Documentation Map
 
 - [Project charter](docs/project/PROJECT_CHARTER.md): product purpose, MVP scope, non-goals, risks, and acceptance criteria.
@@ -186,6 +198,7 @@ pnpm test:e2e
 - [AI workflow](docs/workflow/AI_WORKFLOW.md): planning, implementation, confirmation, and verification rules.
 - [Tool policy](docs/ops/TOOL_POLICY.md): allowed tools, confirmation requirements, and forbidden operations.
 - [Deployment](docs/ops/DEPLOYMENT.md): static deployment model, browser requirements, headers, and rollout checks.
+- [Third-party notices](THIRD_PARTY_NOTICES.md): open-source release evidence, dependency versions, and third-party license notes.
 
 ## 🗺️ Roadmap
 
@@ -218,4 +231,6 @@ Obscura project code is licensed under the [MIT License](LICENSE).
 
 Third-party dependency licenses still apply. In particular, `@imgly/background-removal` is AGPL-3.0 unless separately licensed by IMG.LY. Obscura is an open-source project and uses this dependency through an AGPL-compatible public release path: keep corresponding source, build instructions, dependency versions, and third-party license notices available for the public app. Closed-source distribution or commercial distribution would require a separate IMG.LY/commercial license or replacement with an approved dependency/model.
 
-Production builds should also self-host the matching `@imgly/background-removal-data` asset bundle and set `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`, rather than relying on the package default CDN path, unless the project owner explicitly accepts that production dependency.
+The project owner explicitly accepts using the pinned IMG.LY CDN model/runtime asset path for the first public production release. Production self-hosting with `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` remains an approved later hardening option.
+
+See [Third-party notices](THIRD_PARTY_NOTICES.md) for public release evidence and key dependency license notes, including `@imgly/background-removal` and `@ffmpeg/core`.

@@ -6,30 +6,53 @@
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, selected accelerated path B in chat on 2026-06-22.
 - Last reviewed: 2026-06-25.
-- Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path. Production should self-host the matching background-removal data package instead of relying on the package default CDN path.
+- Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path.
+- Current public release preparation: The project owner selected Vercel GitHub integration for build/deploy and explicitly accepted using the pinned IMG.LY CDN background-removal model/runtime asset path for the initial public production release. Self-hosting remains an approved later hardening option.
 
 ## Deployment Summary
 
-The first MVP is a static client-side web app built with React + Vite. It has no backend server, no database, no server-side media upload endpoint, and no runtime secrets in v1.
+The first MVP is a static client-side web app built with React + Vite and deployed through Vercel's GitHub integration. It has no backend server, no database, no server-side media upload endpoint, and no runtime secrets in v1.
 
 Deployment must support static assets for the app, ffmpeg.wasm assets, background-removal model/runtime assets, and any cross-origin isolation headers required by the selected WASM path.
 
 ## Environments
 
-| Environment | Purpose                                  | URL or command                              | Notes                                             |
-| ----------- | ---------------------------------------- | ------------------------------------------- | ------------------------------------------------- |
-| Local       | Development and browser verification     | `pnpm dev` after scaffolding                | Starts Vite dev server for `apps/web`.            |
-| Test        | Local automated checks                   | `pnpm check` and later `pnpm test:e2e`      | Uses tiny fixture media only.                     |
-| Staging     | Preview deploy for browser/device checks | Vercel preview or equivalent static preview | Requires approval before external preview deploy. |
-| Production  | Public static web app                    | Vercel production or equivalent static host | Requires explicit production deploy confirmation. |
+| Environment | Purpose                                  | URL or command                           | Notes                                             |
+| ----------- | ---------------------------------------- | ---------------------------------------- | ------------------------------------------------- |
+| Local       | Development and browser verification     | `pnpm dev` after scaffolding             | Starts Vite dev server for `apps/web`.            |
+| Test        | Local automated checks                   | `pnpm check` and later `pnpm test:e2e`   | Uses tiny fixture media only.                     |
+| Staging     | Preview deploy for browser/device checks | Vercel Git preview deployment            | Requires approval before external preview deploy. |
+| Production  | Public static web app                    | Vercel production deployment from `main` | Requires explicit production deploy confirmation. |
+
+## Vercel GitHub Project Settings
+
+When importing the GitHub repository into Vercel, keep the project rooted at the repository root and let Vercel detect pnpm from `packageManager` and `pnpm-lock.yaml`.
+
+| Setting                   | Value                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Git branch for production | `main`                                                                                                  |
+| Framework preset          | Vite                                                                                                    |
+| Root directory            | Repository root                                                                                         |
+| Install command           | Vercel default package-manager detection                                                                |
+| Build command             | `pnpm build`                                                                                            |
+| Output directory          | `apps/web/dist`                                                                                         |
+| Node.js version           | Vercel default latest LTS, currently 24.x; select 24.x manually if the dashboard does not default to it |
+
+The versioned `vercel.json` keeps the build command, output directory, framework preset, and COOP/COEP headers in source control.
+
+After the Vercel project is created from GitHub:
+
+- Enable Web Analytics in the Vercel project dashboard.
+- Enable Speed Insights in the Vercel project dashboard.
+- Do not enable BotID, Log Drains, browser replay, or third-party error/RUM integrations for v1 without a source-of-truth update.
 
 ## Environment Variables
 
 No runtime secrets are required in v1.
 
-| Name                                  | Required       | Scope                        | Notes                                                                                                                                                                                                                                                                                                            |
-| ------------------------------------- | -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` | Production yes | Public build-time asset path | Public base URL for the `@imgly/background-removal` model/WASM asset bundle. It is not a secret. Local and staging may omit it and use the pinned IMG.LY static asset base. Production should set it to a self-hosted static path such as `/background-removal/` after the matching asset bundle is provisioned. |
+| Name                                  | Required | Scope                        | Notes                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------- | -------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` | Optional | Public build-time asset path | Public base URL for the `@imgly/background-removal` model/WASM asset bundle. It is not a secret. The initial public production release may omit it and use the pinned IMG.LY static asset base explicitly accepted by the project owner. Set it to a self-hosted static path such as `/background-removal/` only when the matching asset bundle is provisioned. |
 
 Future public build-time flags, model asset base paths, analytics keys, cloud endpoints, or API URLs require source-of-truth updates before implementation.
 
@@ -37,8 +60,8 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 
 - App assets are produced by the Vite build.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
-- Background-removal model/runtime assets must be served from the explicit `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` base path in production. Local/staging may use the documented IMG.LY static asset base for the pinned package version.
-- Production self-hosting procedure for `@imgly/background-removal@1.7.0`:
+- Background-removal model/runtime assets use the pinned IMG.LY static CDN base for the initial public production release. User media is not sent to IMG.LY; the browser only downloads static model/runtime assets.
+- Optional production self-hosting procedure for `@imgly/background-removal@1.7.0`:
   1. Download the matching data package from `https://staticimgly.com/@imgly/background-removal-data/1.7.0/package.tgz`.
   2. Extract the archive outside Git history.
   3. Copy the extracted `package/dist/` contents to the production static asset directory served as `/background-removal/` or an equivalent immutable asset base.
@@ -64,7 +87,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 2. Run `pnpm check` once scripts exist.
 3. Run `pnpm test:e2e` once browser workflows exist.
 4. Build the app with `pnpm build`.
-5. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`.
+5. Verify static asset paths for WASM/model files, including the effective background-removal `publicPath`. The initial production target is the pinned IMG.LY CDN asset path unless `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` is set for self-hosting.
 6. Verify COOP/COEP headers when required.
 7. Verify the AGPL-compatible open-source release evidence for background removal: public source URL, build instructions, dependency versions, and third-party license notices. If the release is closed-source or commercial, stop until a separate IMG.LY/commercial license or approved replacement exists.
 8. Run browser smoke checks on the target deploy:
@@ -73,7 +96,13 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
    - image preview/edit/export smoke works,
    - video preview/export smoke works where feasible,
    - no user media upload path appears in network inspection.
-9. For production, request explicit confirmation before deploying or promoting.
+9. Run hosted E2E against the preview URL:
+   - `PLAYWRIGHT_BASE_URL=<preview-url> pnpm test:e2e`
+   - `RUN_REAL_BACKGROUND_REMOVAL=1 PLAYWRIGHT_BASE_URL=<preview-url> pnpm --filter @obscura/web test:e2e tests/e2e/background-removal-real.spec.ts --project=chromium`
+10. Verify target headers and cross-origin isolation:
+    - `curl -I <preview-or-production-url>`
+    - `globalThis.crossOriginIsolated === true` in the browser.
+11. For production, request explicit confirmation before deploying or promoting.
 
 ## Health Checks
 
@@ -91,7 +120,9 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 
 - Local/browser logs may include non-sensitive job state and error codes.
 - Logs must not include raw media, file contents, subtitles, local paths, full object URLs, tokens, secrets, or private user metadata.
-- No production analytics in v1 unless source-of-truth docs are updated first.
+- Vercel Web Analytics and Vercel Speed Insights are approved for the initial public production release.
+- Analytics must remain page/performance telemetry only in v1. Do not add custom events that include media file names, subtitles, object URLs, local paths, image/video metadata, or private user content.
+- Vercel runtime logs are expected to be minimal because v1 is a static SPA without backend functions. Log Drains, browser error replay, session recording, or third-party RUM/error vendors require a source-of-truth update before use.
 - Browser error reporting services are deferred because they may collect sensitive context; any introduction requires tool/deployment/privacy review.
 
 ## Rollback
@@ -121,14 +152,16 @@ This checklist is evidence-sensitive. Checked items reflect the latest local MVP
 - [x] Real background-removal browser smoke passes. Latest evidence: `RUN_REAL_BACKGROUND_REMOVAL=1 pnpm --filter @obscura/web test:e2e tests/e2e/background-removal-real.spec.ts --project=chromium` passed on 2026-06-25.
 - [x] Required env vars are documented; v1 should have no secrets.
 - [x] Secrets are not committed in tracked env/config files. Latest evidence: tracked secret/env filename scan only found `.env.example` on 2026-06-25.
-- [ ] Production static WASM/model asset paths are verified, including `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`.
+- [x] Vercel build/output/header configuration is versioned in `vercel.json`.
+- [ ] Target deployment static WASM/model asset paths are verified, including the effective background-removal CDN or `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` path.
 - [x] Local Vite dev/preview COOP/COEP headers are configured and verified for browser tests.
 - [ ] Target deploy COOP/COEP headers are configured and verified if required.
-- [ ] Open-source AGPL-compatible release evidence is published: public source URL, build instructions, dependency versions, and third-party license notices.
+- [x] Open-source AGPL-compatible release evidence is prepared in repository docs: public source URL, build instructions, dependency versions, and third-party license notices.
 - [x] Closed-source or commercial distribution is not in scope for this release; any future such distribution remains blocked until a separate IMG.LY/commercial license or approved replacement for `@imgly/background-removal` exists.
-- [ ] Production background-removal model/runtime assets are self-hosted or the project owner has explicitly accepted using IMG.LY's CDN in production.
+- [x] Production background-removal model/runtime asset strategy is owner-accepted: initial public production uses the pinned IMG.LY CDN static asset path; self-hosting remains optional later hardening.
 - [x] Privacy check confirms user media is not uploaded. Latest evidence: default E2E and real background-removal E2E network assertions passed on 2026-06-25.
 - [x] Local health checks pass. Latest evidence: app build, browser smoke, image fixture, video fixture, ffmpeg path, and background-removal path passed in local automated verification on 2026-06-25.
+- [ ] Vercel Web Analytics and Speed Insights are verified on a preview or production deployment.
 - [x] Rollback path is documented.
 - [ ] Rollback path is tested for preview/staging before production.
 

@@ -129,6 +129,7 @@ v1 的产品承诺是本地优先媒体处理：
 - 图片编辑：Canvas API、Cropper.js、Konva/react-konva。
 - 背景移除：`@imgly/background-removal`，除非另行取得授权，否则按 AGPL-3.0 处理；Obscura 走开源 AGPL-compatible 发布路径。
 - 视频处理：在 Web Worker 中运行 ffmpeg.wasm，并通过 Comlink 协调。
+- 部署和观测：Vercel GitHub 集成、COOP/COEP 响应头、Vercel Web Analytics 和 Vercel Speed Insights。
 - 测试：Vitest、React Testing Library、Playwright。
 
 ## 🗂️ 仓库结构
@@ -175,6 +176,17 @@ pnpm check
 pnpm test:e2e
 ```
 
+## 🚢 公网发布
+
+公开 Web 应用计划通过 Vercel GitHub 集成部署为静态 Vite 应用：
+
+- 构建命令：`pnpm build`
+- 输出目录：`apps/web/dist`
+- 必需响应头：`Cross-Origin-Opener-Policy: same-origin` 和 `Cross-Origin-Embedder-Policy: require-corp`
+- 已批准观测：Vercel Web Analytics 和 Vercel Speed Insights，仅用于页面和性能遥测；关联 Vercel 项目后需要在 Dashboard 中启用
+
+第一个公开版本使用固定版本的 IMG.LY CDN 路径加载背景移除模型和运行时资产。用户图片和视频不会上传到 IMG.LY；浏览器只下载静态模型文件。后续仍可通过 `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` 自托管匹配模型包来强化发布路径。
+
 ## 📚 文档地图
 
 - [项目章程](docs/project/PROJECT_CHARTER.md)：产品目的、MVP 范围、非目标、风险和验收标准。
@@ -186,6 +198,7 @@ pnpm test:e2e
 - [AI 工作流](docs/workflow/AI_WORKFLOW.md)：规划、实现、确认和验证规则。
 - [工具政策](docs/ops/TOOL_POLICY.md)：允许的工具、确认要求和禁止操作。
 - [部署](docs/ops/DEPLOYMENT.md)：静态部署模型、浏览器要求、响应头和发布检查。
+- [第三方许可证说明](THIRD_PARTY_NOTICES.md)：开源发布证据、依赖版本和第三方许可证说明。
 
 ## 🗺️ 路线图
 
@@ -218,4 +231,6 @@ Obscura 项目代码基于 [MIT License](LICENSE) 授权。
 
 第三方依赖的许可证仍然适用。尤其是 `@imgly/background-removal`，除非另行取得 IMG.LY 授权，否则按 AGPL-3.0 处理。Obscura 是开源项目，并通过 AGPL-compatible 公开发布路径使用该依赖：为公开应用保留对应源码、构建说明、依赖版本和第三方许可证说明。闭源分发或商业分发则需要单独取得 IMG.LY/商业授权，或替换为已批准且许可证匹配的依赖/模型。
 
-Production 构建也应自托管匹配版本的 `@imgly/background-removal-data` 资源包并设置 `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH`，除非项目 owner 明确接受在 production 使用包默认 CDN 路径。
+项目 owner 明确接受第一个公开 production 版本使用固定版本的 IMG.LY CDN 模型和运行时资产路径。通过 `VITE_BACKGROUND_REMOVAL_PUBLIC_PATH` 自托管 production 资源仍然是后续可批准的强化方案。
+
+更多公开发布证据和关键依赖许可证说明见 [第三方许可证说明](THIRD_PARTY_NOTICES.md)，包括 `@imgly/background-removal` 和 `@ffmpeg/core`。
