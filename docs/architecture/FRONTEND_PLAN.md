@@ -5,7 +5,7 @@
 - Project charter confirmed: Yes, `docs/project/PROJECT_CHARTER.md`.
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, approved in chat on 2026-06-22.
-- Last reviewed: 2026-06-23.
+- Last reviewed: 2026-06-26.
 - Current background processing checkpoint: Approved by user on 2026-06-23. Scope adds a local background processing center for generated-preview, encoding/export, and background-removal jobs; completed generated results are inserted into the media library as new session assets; new jobs use a launch animation that sends a task token into the queue.
 
 ## Product Tone
@@ -49,6 +49,7 @@ The editing workspace remains the first screen at `/`. Organic search acquisitio
 - Static acquisition pages are plain HTML/CSS assets emitted by Vite from `public/`; they must not introduce Next.js, SSR, a backend, or a separate router.
 - Static acquisition pages must use direct, crawlable HTML content for headings, body copy, internal links, FAQ sections, canonical URLs, Open Graph/Twitter metadata, and JSON-LD where useful.
 - The approved initial page families are feature pages and privacy/local-first pages that link users into the app with a single primary CTA.
+- Static acquisition pages may ship English and Simplified Chinese variants. Language variants should use canonical URLs for their own language, `hreflang` alternates for equivalent pages, and natural search copy written for the target language instead of direct machine-style translation.
 - Static SEO pages should use a restrained Obscura studio content style: dark theme, cyan accent, 8px working radii, concise copy, and no decorative motion dependency.
 - These pages are not allowed to change the editor IA, app shell, media-processing behavior, storage behavior, or local-first promise.
 - Sitemap and robots metadata for these pages belong in `apps/web/public/` and `docs/ops/DEPLOYMENT.md`.

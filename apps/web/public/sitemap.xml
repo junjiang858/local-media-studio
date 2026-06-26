@@ -1,27 +1,210 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
   <url>
     <loc>https://obscura-rouge.vercel.app/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://obscura-rouge.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://obscura-rouge.vercel.app/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://obscura-rouge.vercel.app/" />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://obscura-rouge.vercel.app/" />
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://obscura-rouge.vercel.app/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://obscura-rouge.vercel.app/" />
+    <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/features/private-image-editor/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/private-image-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/private-image-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/private-image-editor/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/features/private-image-editor/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/private-image-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/private-image-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/private-image-editor/"
+    />
+    <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/features/local-background-remover/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/local-background-remover/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/features/local-background-remover/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/local-background-remover/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/features/browser-video-trimmer/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/browser-video-trimmer/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/browser-video-trimmer/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/browser-video-trimmer/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/features/browser-video-trimmer/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/browser-video-trimmer/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/browser-video-trimmer/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/browser-video-trimmer/"
+    />
+    <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/features/add-subtitles-to-video/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/add-subtitles-to-video/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/add-subtitles-to-video/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/add-subtitles-to-video/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/features/add-subtitles-to-video/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/add-subtitles-to-video/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/add-subtitles-to-video/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/add-subtitles-to-video/"
+    />
+    <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/privacy/local-first-media-editor/</loc>
-    <lastmod>2026-06-25</lastmod>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <lastmod>2026-06-26</lastmod>
   </url>
 </urlset>

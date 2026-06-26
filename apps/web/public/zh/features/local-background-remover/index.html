@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>无上传在线抠图工具 - Obscura</title>
+    <meta
+      name="description"
+      content="用 Obscura 在浏览器中移除图片背景，生成透明 PNG。图片在本地优先流程中处理，无需上传到后端。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="无上传在线抠图工具 - Obscura" />
+    <meta property="og:description" content="在浏览器中移除图片背景，并导出透明 PNG。" />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/zh/features/local-background-remover/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="无上传在线抠图工具 - Obscura" />
+    <meta name="twitter:description" content="本地优先的在线抠图和透明背景导出流程。" />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/zh/features/local-background-remover/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/features/local-background-remover/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/features/local-background-remover/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": "zh-Hans",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "可以不上传图片就在线抠图吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "可以。Obscura 的抠图流程在浏览器中运行，应用可能下载模型资源，但用户选择的图片不会上传到后端。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "抠图后会生成什么文件？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Obscura 会生成带透明背景的 PNG，并把结果作为当前会话中的本地素材。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "抠图后还能继续编辑吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "可以。生成结果会作为独立素材进入媒体库，你可以继续查看、编辑和导出。"
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/zh/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="中文 SEO 页面">
+          <a href="/zh/features/private-image-editor/">图片编辑</a>
+          <a href="/zh/features/browser-video-trimmer/">视频剪辑</a>
+          <a href="/zh/privacy/local-first-media-editor/">隐私</a>
+          <a href="/features/local-background-remover/">English</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">无上传在线抠图</p>
+            <h1>在浏览器中移除图片背景。</h1>
+            <p>
+              Obscura 帮你把人物图、商品图和封面素材快速抠出透明背景，同时保持本地优先的处理边界。
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">打开编辑器</a>
+              <a class="button secondary" href="/zh/features/private-image-editor/">查看图片编辑</a>
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img src="/og-image.svg" width="1200" height="630" alt="Obscura 在线抠图工具预览" />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>为需要透明背景的素材准备。</h2>
+          <p>
+            用于商品展示、头像、封面、贴纸和社交配图。你可以先选择图片，再在浏览器里生成透明 PNG
+            结果。
+          </p>
+          <div class="grid">
+            <article class="tile">
+              <h3>本地优先流程</h3>
+              <p>图片在浏览器中进入抠图流程，v1 不提供后端上传端点。</p>
+            </article>
+            <article class="tile">
+              <h3>透明 PNG 结果</h3>
+              <p>生成结果会作为本地会话素材出现，便于继续检查和导出。</p>
+            </article>
+            <article class="tile">
+              <h3>继续编辑</h3>
+              <p>你可以在生成结果上继续添加水印、标注或做基础调整。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>在线抠图 FAQ。</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>模型资源来自哪里？</h3>
+              <p>应用可能下载静态模型或运行时资源，这是应用资源加载，不是上传你的图片。</p>
+            </article>
+            <article class="faq-item">
+              <h3>抠图质量适合什么场景？</h3>
+              <p>适合日常创作和轻量素材处理，复杂发丝、透明物体和反光边缘可能需要后续人工修正。</p>
+            </article>
+            <article class="faq-item">
+              <h3>会覆盖原图吗？</h3>
+              <p>不会。生成结果作为新的会话素材出现，原始图片仍然保留在媒体库中。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>相关中文页面。</h2>
+          <div class="link-list">
+            <a href="/zh/features/private-image-editor/">在线图片编辑器</a>
+            <a href="/zh/features/browser-video-trimmer/">浏览器视频剪辑工具</a>
+            <a href="/zh/features/add-subtitles-to-video/">在线视频加字幕工具</a>
+            <a href="/zh/privacy/local-first-media-editor/">本地优先媒体编辑器</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura 把用户媒体留在浏览器编辑流程中。</span>
+      </footer>
+    </div>
+  </body>
+</html>

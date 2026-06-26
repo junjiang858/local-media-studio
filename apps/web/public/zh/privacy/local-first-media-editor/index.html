@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>本地优先媒体编辑器 - Obscura 隐私</title>
+    <meta
+      name="description"
+      content="了解 Obscura 如何用本地优先的浏览器流程处理图片和短视频，v1 不提供后端上传、账号、云端媒体库或远程处理。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="本地优先媒体编辑器 - Obscura 隐私" />
+    <meta property="og:description" content="Obscura 为什么把私人图片和短视频留在浏览器流程中。" />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="本地优先媒体编辑器 - Obscura 隐私" />
+    <meta name="twitter:description" content="图片和短视频编辑保持在浏览器本地流程中。" />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/privacy/local-first-media-editor/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "inLanguage": "zh-Hans",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Obscura 的本地优先是什么意思？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "在 v1 中，Obscura 在浏览器中处理用户选择的媒体，不提供用于上传用户媒体的后端端点。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Obscura 使用云端处理媒体吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "不使用。云端媒体处理、账号系统和远程持久化都不属于 v1 范围。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "应用会下载第三方静态资源吗？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "可能会。模型或 WASM 等静态应用资源可以被下载，但这不同于上传用户媒体文件。"
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/zh/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="中文 SEO 页面">
+          <a href="/zh/features/private-image-editor/">图片编辑</a>
+          <a href="/zh/features/local-background-remover/">在线抠图</a>
+          <a href="/zh/features/browser-video-trimmer/">视频剪辑</a>
+          <a href="/privacy/local-first-media-editor/">English</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">本地优先隐私边界</p>
+            <h1>编辑媒体，不把私人文件交给后端。</h1>
+            <p>
+              Obscura 的 v1
+              范围是单用户浏览器工具：没有账号、没有云端媒体库，也没有用于处理私人媒体的服务器上传流程。
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">打开编辑器</a>
+              <a class="button secondary" href="/zh/features/private-image-editor/">查看图片编辑</a>
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img
+              src="/og-image.svg"
+              width="1200"
+              height="630"
+              alt="Obscura 本地优先媒体编辑器预览"
+            />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>隐私边界清晰。</h2>
+          <p>
+            Obscura 不是云端素材库，也不是协作平台。它的重点是把常见媒体处理留在浏览器工作流里。
+          </p>
+          <div class="grid">
+            <article class="tile">
+              <h3>没有后端上传</h3>
+              <p>v1 不提供上传用户图片或视频到后端进行处理的接口。</p>
+            </article>
+            <article class="tile">
+              <h3>没有账号系统</h3>
+              <p>首版不包含登录、团队协作、云同步或远程媒体库。</p>
+            </article>
+            <article class="tile">
+              <h3>应用资源可下载</h3>
+              <p>模型、WASM 或脚本资源可能加载到浏览器，但用户媒体不因此上传。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>本地优先 FAQ。</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>文件名会作为分析事件发送吗？</h3>
+              <p>不会。项目文档明确禁止把文件名、字幕、媒体内容、路径或派生内容放进分析数据。</p>
+            </article>
+            <article class="faq-item">
+              <h3>导出结果会自动保存到云端吗？</h3>
+              <p>不会。导出结果由用户在浏览器中下载，v1 没有远程持久化。</p>
+            </article>
+            <article class="faq-item">
+              <h3>未来会加入云端处理吗？</h3>
+              <p>除非先更新项目范围并得到明确确认，否则 v1 不会加入云端媒体处理。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>相关中文页面。</h2>
+          <div class="link-list">
+            <a href="/zh/features/private-image-editor/">在线图片编辑器</a>
+            <a href="/zh/features/local-background-remover/">无上传在线抠图工具</a>
+            <a href="/zh/features/browser-video-trimmer/">浏览器视频剪辑工具</a>
+            <a href="/zh/features/add-subtitles-to-video/">在线视频加字幕工具</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura v1 没有云端媒体处理、账号或远程媒体库。</span>
+      </footer>
+    </div>
+  </body>
+</html>

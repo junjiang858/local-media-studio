@@ -5,10 +5,10 @@
 - Project charter confirmed: Yes, `docs/project/PROJECT_CHARTER.md`.
 - Tech stack confirmed: Yes, `docs/architecture/TECH_STACK.md`.
 - User approved writing this document: Yes, selected accelerated path B in chat on 2026-06-22.
-- Last reviewed: 2026-06-25.
+- Last reviewed: 2026-06-26.
 - Current background-removal release review: `@imgly/background-removal@1.7.0` is AGPL-3.0 unless separately licensed. The project owner confirmed Obscura is open source and selected the AGPL-compatible public release path.
 - Current public release preparation: The project owner selected Vercel GitHub integration for build/deploy and explicitly accepted using the pinned IMG.LY CDN background-removal model/runtime asset path for the initial public production release. Self-hosting remains an approved later hardening option.
-- Current public metadata update: The canonical public URL is `https://obscura-rouge.vercel.app/`. The static app ships Open Graph/Twitter metadata, a share preview image, `robots.txt`, `sitemap.xml`, static SEO acquisition pages, and a basic installable web app manifest without adding a service worker.
+- Current public metadata update: The canonical public URL is `https://obscura-rouge.vercel.app/`. The static app ships Open Graph/Twitter metadata, a share preview image, `robots.txt`, `sitemap.xml`, English and Simplified Chinese static SEO acquisition pages, and a basic installable web app manifest without adding a service worker.
 
 ## Deployment Summary
 
@@ -65,9 +65,9 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
 - The app's current public metadata assets are:
   - `/og-image.svg` for Open Graph/Twitter previews.
   - `/robots.txt` with `User-agent: *`, `Allow: /`, and the canonical sitemap URL.
-  - `/sitemap.xml` with the canonical home page and static SEO acquisition pages.
+  - `/sitemap.xml` with the canonical home page, static SEO acquisition pages, and language alternates when a page has English and Simplified Chinese variants.
   - `/manifest.webmanifest` for basic install metadata.
-- Static SEO acquisition pages may live under `/features/*/` and `/privacy/*/`. They must be plain static content pages that link into the app and must not add backend, SSR, service worker, or media upload behavior.
+- Static SEO acquisition pages may live under `/features/*/`, `/privacy/*/`, and `/zh/*/` for Simplified Chinese variants. They must be plain static content pages that link into the app and must not add backend, SSR, service worker, or media upload behavior.
 - Do not add a service worker in this release. Any service worker or runtime cache strategy must be documented here before implementation because it can complicate WASM, static asset, and app-shell freshness behavior.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
 - Background-removal model/runtime assets use the pinned IMG.LY static CDN base for the initial public production release. User media is not sent to IMG.LY; the browser only downloads static model/runtime assets.
