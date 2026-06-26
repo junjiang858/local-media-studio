@@ -5,16 +5,40 @@
 >
   <url>
     <loc>https://obscura-rouge.vercel.app/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://obscura-rouge.vercel.app/" />
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://obscura-rouge.vercel.app/zh/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://obscura-rouge.vercel.app/" />
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/"
+    />
     <lastmod>2026-06-26</lastmod>
   </url>
   <url>
     <loc>https://obscura-rouge.vercel.app/zh/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://obscura-rouge.vercel.app/" />
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://obscura-rouge.vercel.app/zh/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://obscura-rouge.vercel.app/" />
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/"
+    />
     <lastmod>2026-06-26</lastmod>
   </url>
   <url>
@@ -204,6 +228,120 @@
       rel="alternate"
       hreflang="x-default"
       href="https://obscura-rouge.vercel.app/privacy/local-first-media-editor/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/guides/trim-video-in-browser/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/guides/convert-images-locally/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/convert-images-locally/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/convert-images-locally/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/convert-images-locally/"
+    />
+    <lastmod>2026-06-26</lastmod>
+  </url>
+  <url>
+    <loc>https://obscura-rouge.vercel.app/zh/guides/convert-images-locally/</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/convert-images-locally/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/convert-images-locally/"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/convert-images-locally/"
     />
     <lastmod>2026-06-26</lastmod>
   </url>

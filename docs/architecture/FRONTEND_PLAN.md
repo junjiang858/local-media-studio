@@ -48,11 +48,12 @@ The editing workspace remains the first screen at `/`. Organic search acquisitio
 
 - Static acquisition pages are plain HTML/CSS assets emitted by Vite from `public/`; they must not introduce Next.js, SSR, a backend, or a separate router.
 - Static acquisition pages must use direct, crawlable HTML content for headings, body copy, internal links, FAQ sections, canonical URLs, Open Graph/Twitter metadata, and JSON-LD where useful.
-- The approved initial page families are feature pages and privacy/local-first pages that link users into the app with a single primary CTA.
+- The approved initial page families are feature pages, privacy/local-first pages, and guide pages that link users into the app with a single primary CTA.
 - Static acquisition pages may ship English and Simplified Chinese variants. Language variants should use canonical URLs for their own language, `hreflang` alternates for equivalent pages, and natural search copy written for the target language instead of direct machine-style translation.
 - Static SEO pages should use a restrained Obscura studio content style: dark theme, cyan accent, 8px working radii, concise copy, and no decorative motion dependency.
 - These pages are not allowed to change the editor IA, app shell, media-processing behavior, storage behavior, or local-first promise.
 - Sitemap and robots metadata for these pages belong in `apps/web/public/` and `docs/ops/DEPLOYMENT.md`.
+- The first organic acquisition guide batch targets three high-intent how-to queries for no-upload background removal, browser video trimming, and local image format conversion in English and Simplified Chinese. Additional guide topics should be added only after Search Console shows impressions, indexing behavior, and keyword gaps for the first batch.
 
 ## Product MVP UI Quality Gate
 

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>如何在浏览器中本地裁剪视频 - Obscura</title>
+    <meta
+      name="description"
+      content="使用 Obscura 在浏览器中裁剪短视频，设置开始和结束时间，生成预览并导出结果。"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="如何在浏览器中本地裁剪视频 - Obscura" />
+    <meta property="og:description" content="面向短视频的本地优先浏览器裁剪流程。" />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="如何在浏览器中本地裁剪视频 - Obscura" />
+    <meta name="twitter:description" content="在浏览器里裁剪短视频并导出。" />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/trim-video-in-browser/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/trim-video-in-browser/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "如何在浏览器中本地裁剪视频",
+        "description": "使用 Obscura 在浏览器中裁剪短视频。",
+        "inLanguage": "zh-Hans",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "导入短视频",
+            "text": "打开 Obscura 并从设备选择一个视频文件。"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "设置范围",
+            "text": "用时间轴手柄或数字输入设置裁剪开始和结束时间。"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "生成并导出",
+            "text": "生成本地预览，检查后导出成品视频。"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/zh/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="中文 SEO 页面">
+          <a href="/zh/features/browser-video-trimmer/">视频剪辑</a>
+          <a href="/zh/features/add-subtitles-to-video/">字幕工具</a>
+          <a href="/zh/features/private-image-editor/">图片编辑</a>
+          <a href="/guides/trim-video-in-browser/">English</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">浏览器视频裁剪</p>
+            <h1>不用安装软件，也能裁剪短视频。</h1>
+            <p>
+              Obscura
+              面向单个短视频：导入素材，设置开始和结束时间，生成本地预览，再导出适合发布的结果。
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">打开编辑器</a>
+              <a class="button secondary" href="/zh/features/browser-video-trimmer/"
+                >查看视频工具</a
+              >
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img src="/og-image.svg" width="1200" height="630" alt="Obscura 浏览器视频裁剪工作区" />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>短视频裁剪流程。</h2>
+          <div class="steps">
+            <div class="step"><strong>导入</strong>选择设备里的短视频文件。</div>
+            <div class="step"><strong>设置范围</strong>拖动手柄或输入精确时间。</div>
+            <div class="step"><strong>预览</strong>先生成本地结果，再决定是否导出。</div>
+          </div>
+        </section>
+        <section class="section">
+          <h2>导出前重点检查。</h2>
+          <div class="grid">
+            <article class="tile">
+              <h3>开头和结尾</h3>
+              <p>去掉多余空白、误触录制和片尾冗余画面。</p>
+            </article>
+            <article class="tile">
+              <h3>播放速度</h3>
+              <p>确认速度设置符合发布场景，需要时恢复默认速度。</p>
+            </article>
+            <article class="tile">
+              <h3>预览格式</h3>
+              <p>如果希望浏览器直接预览，优先选择 MP4 或 WebM。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>视频裁剪 FAQ。</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>适合剪长视频吗？</h3>
+              <p>不适合。Obscura v1 更适合单个短视频的轻量处理。</p>
+            </article>
+            <article class="faq-item">
+              <h3>裁剪视频会上传吗？</h3>
+              <p>不会。v1 处理用户选择的媒体时不走后端上传。</p>
+            </article>
+            <article class="faq-item">
+              <h3>可以同时加字幕吗？</h3>
+              <p>可以。Obscura 支持手动创建短视频字幕时间段。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>继续浏览视频教程。</h2>
+          <div class="link-list">
+            <a href="/zh/features/add-subtitles-to-video/">在线视频加字幕工具</a>
+            <a href="/zh/privacy/local-first-media-editor/">本地优先媒体编辑器</a>
+            <a href="/zh/guides/remove-image-background-without-uploading/">无需上传图片去背景</a>
+            <a href="/zh/guides/convert-images-locally/">本地转换图片格式</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura v1 不提供后端媒体上传端点。</span>
+      </footer>
+    </div>
+  </body>
+</html>

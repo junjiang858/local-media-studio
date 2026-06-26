@@ -67,7 +67,7 @@ Future public build-time flags, model asset base paths, analytics keys, cloud en
   - `/robots.txt` with `User-agent: *`, `Allow: /`, and the canonical sitemap URL.
   - `/sitemap.xml` with the canonical home page, static SEO acquisition pages, and language alternates when a page has English and Simplified Chinese variants.
   - `/manifest.webmanifest` for basic install metadata.
-- Static SEO acquisition pages may live under `/features/*/`, `/privacy/*/`, and `/zh/*/` for Simplified Chinese variants. They must be plain static content pages that link into the app and must not add backend, SSR, service worker, or media upload behavior.
+- Static SEO acquisition pages may live under `/features/*/`, `/privacy/*/`, `/guides/*/`, and `/zh/*/` for Simplified Chinese variants. They must be plain static content pages that link into the app and must not add backend, SSR, service worker, or media upload behavior.
 - Do not add a service worker in this release. Any service worker or runtime cache strategy must be documented here before implementation because it can complicate WASM, static asset, and app-shell freshness behavior.
 - ffmpeg.wasm core/worker assets must be served from a reliable path documented during implementation.
 - Background-removal model/runtime assets use the pinned IMG.LY static CDN base for the initial public production release. User media is not sent to IMG.LY; the browser only downloads static model/runtime assets.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>如何无需上传图片去背景 - Obscura</title>
+    <meta
+      name="description"
+      content="了解如何用 Obscura 在浏览器中完成图片去背景，私人图片无需上传到后端媒体服务。"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:title" content="如何无需上传图片去背景 - Obscura" />
+    <meta property="og:description" content="本地优先的浏览器图片去背景工作流。" />
+    <meta property="og:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <meta
+      property="og:url"
+      content="https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="如何无需上传图片去背景 - Obscura" />
+    <meta name="twitter:description" content="在浏览器里处理图片背景，并导出结果。" />
+    <meta name="twitter:image" content="https://obscura-rouge.vercel.app/og-image.svg" />
+    <link
+      rel="canonical"
+      href="https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <link
+      rel="alternate"
+      hreflang="zh-Hans"
+      href="https://obscura-rouge.vercel.app/zh/guides/remove-image-background-without-uploading/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://obscura-rouge.vercel.app/guides/remove-image-background-without-uploading/"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/seo/seo.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "如何无需上传图片去背景",
+        "description": "使用 Obscura 在浏览器中完成图片去背景。",
+        "inLanguage": "zh-Hans",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "打开编辑器",
+            "text": "在浏览器中打开 Obscura，并选择需要处理的图片。"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "运行去背景",
+            "text": "启动背景移除工具，等待本地处理任务完成。"
+          },
+          {
+            "@type": "HowToStep",
+            "name": "导出结果",
+            "text": "检查抠图效果，选择格式并下载编辑后的图片。"
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="/zh/"><span class="brand-mark">O</span><span>Obscura</span></a>
+        <nav class="nav-links" aria-label="中文 SEO 页面">
+          <a href="/zh/features/local-background-remover/">在线抠图</a>
+          <a href="/zh/guides/trim-video-in-browser/">视频裁剪教程</a>
+          <a href="/zh/privacy/local-first-media-editor/">隐私</a>
+          <a href="/guides/remove-image-background-without-uploading/">English</a>
+        </nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="hero-text">
+            <p class="kicker">无需上传图片去背景</p>
+            <h1>在浏览器里完成图片去背景。</h1>
+            <p>
+              Obscura
+              适合处理商品图、头像、封面和社交素材。你选择的原图留在浏览器工作流中，不通过后端媒体服务上传。
+            </p>
+            <div class="cta-row">
+              <a class="button primary" href="/">打开编辑器</a>
+              <a class="button secondary" href="/zh/features/local-background-remover/"
+                >查看抠图功能</a
+              >
+            </div>
+          </div>
+          <figure class="hero-media">
+            <img src="/og-image.svg" width="1200" height="630" alt="Obscura 图片去背景工作区" />
+          </figure>
+        </section>
+        <section class="section">
+          <h2>本地优先的抠图流程。</h2>
+          <div class="steps">
+            <div class="step"><strong>选择图片</strong>导入商品图、人物照或社交素材。</div>
+            <div class="step"><strong>本地处理</strong>启动背景移除任务并等待完成。</div>
+            <div class="step"><strong>导出文件</strong>检查透明背景或成品图后下载。</div>
+          </div>
+          <div class="note">
+            <p>
+              背景移除可能会下载模型和运行时资源作为应用资产，但用户选择的图片仍在浏览器会话中处理。
+            </p>
+          </div>
+        </section>
+        <section class="section">
+          <h2>适合这些图片处理场景。</h2>
+          <div class="grid">
+            <article class="tile">
+              <h3>商品图</h3>
+              <p>快速清理背景，准备电商、作品集或社交发布素材。</p>
+            </article>
+            <article class="tile">
+              <h3>头像和封面</h3>
+              <p>裁出主体后继续调整尺寸、水印和导出格式。</p>
+            </article>
+            <article class="tile">
+              <h3>私人草稿</h3>
+              <p>不想把原图交给上传型工具时，可以先在浏览器中处理。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>图片去背景 FAQ。</h2>
+          <div class="faq-list">
+            <article class="faq-item">
+              <h3>Obscura 会上传原图吗？</h3>
+              <p>不会。v1 没有后端媒体上传端点。</p>
+            </article>
+            <article class="faq-item">
+              <h3>去背景后还能继续编辑吗？</h3>
+              <p>可以继续裁剪、调整、标注、添加水印并导出。</p>
+            </article>
+            <article class="faq-item">
+              <h3>所有边缘都能完美处理吗？</h3>
+              <p>不能。发丝、玻璃、运动模糊等复杂场景仍需要人工检查效果。</p>
+            </article>
+          </div>
+        </section>
+        <section class="section">
+          <h2>继续浏览相关教程。</h2>
+          <div class="link-list">
+            <a href="/zh/guides/convert-images-locally/">本地转换图片格式</a>
+            <a href="/zh/features/private-image-editor/">在线图片编辑器</a>
+            <a href="/zh/guides/trim-video-in-browser/">浏览器本地裁剪视频</a>
+            <a href="/zh/privacy/local-first-media-editor/">本地优先隐私说明</a>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>Obscura v1 不提供后端媒体上传端点。</span>
+      </footer>
+    </div>
+  </body>
+</html>
